@@ -25,9 +25,9 @@ services:
       - .:/srv/node-scripts/:cached
       - /srv/node-scripts/node_modules
     ports:
-      - 4444:4444
+      - 80:80
     environment:
-      PORT:  4444
+      PORT:  80
       MASTER_KEY: ${CORE_MASTER_KEY}
       APP_ID: ${CORE_APP_ID}
       ALLOW_INSECURE_HTTP: ${CORE_ALLOW_INSECURE_HTTP}
