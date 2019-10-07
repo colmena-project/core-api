@@ -22,7 +22,7 @@ services:
     build:
       context: ../core-api
     volumes:
-      - ../core-api:/srv/node-scripts/:cached
+      - .:/srv/node-scripts/:cached
       - /srv/node-scripts/node_modules
     ports:
       - 4444:4444
