@@ -1,0 +1,36 @@
+version: '3'
+services:
+  redis:
+    image: redis:alpine
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    networks:
+      default:
+        aliases:
+          - redis-server
+  core-api:
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    build:
+      context: ../core-api
+    volumes:
+      - ../core-api:/srv/node-scripts/:cached
+      - /srv/node-scripts/node_modules
+    ports:
+      - 4444:4444
+    environment:
+      PORT:  4444
+      MASTER_KEY: ${CORE_MASTER_KEY}
+      APP_ID: ${CORE_APP_ID}
+      ALLOW_INSECURE_HTTP: ${CORE_ALLOW_INSECURE_HTTP}
+      MONGO_DSN: ${MONGO_DSN}
+      CORE_DASHBOARD_PASS: ${CORE_DASHBOARD_PASS}
+      PARSE_SERVER_URL: ${PARSE_SERVER_URL}

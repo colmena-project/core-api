@@ -1,0 +1,26 @@
+{
+  "name": "colmena-core-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon -L . --ignore './logs/*'",
+    "inspect": "node --inspect .",
+    "start": "node ."
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "escape-html": "^1.0.3",
+    "expo-server-sdk": "^3.1.0",
+    "express": "^4.17.1",
+    "hat": "0.0.3",
+    "parse-dashboard": "^2.0.2",
+    "parse-server": "^3.9.0",
+    "saslprep": "^1.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  }
+}

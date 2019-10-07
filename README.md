@@ -1,2 +1,3 @@
-# api
-Api server 
+# colmena-core-api
+Core API Services
+
