@@ -1,9 +1,11 @@
-const common = require('./functions/common');
+const { Parse } = global;
 
-Parse.Cloud.beforeLogin(async request => {
-  const { object: user }  = request;
-  if(user.get('isBanned')) {
-   throw new Error('Access denied, your account is disabled.');
+const { common, maps } = require('./functions');
+
+Parse.Cloud.beforeLogin(async (request) => {
+  const { object: user } = request;
+  if (user.get('isBanned')) {
+    throw new Error('Access denied, your account is disabled.');
   }
 });
 
@@ -22,4 +24,4 @@ Parse.Cloud.beforeLogin(async request => {
 
 // Common Cloud Functions
 Parse.Cloud.define('ping', common.ping);
-
+Parse.Cloud.define('distanceCalculate', maps.distanceCalculate);
