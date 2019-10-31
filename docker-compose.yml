@@ -25,12 +25,14 @@ services:
       - .:/srv/node-scripts/:cached
       - /srv/node-scripts/node_modules
     ports:
-      - 80:80
+      - 4444:4444
     environment:
-      PORT:  80
+      PORT:  4444
       MASTER_KEY: ${CORE_MASTER_KEY}
       APP_ID: ${CORE_APP_ID}
       ALLOW_INSECURE_HTTP: ${CORE_ALLOW_INSECURE_HTTP}
       MONGO_DSN: ${MONGO_DSN}
       CORE_DASHBOARD_PASS: ${CORE_DASHBOARD_PASS}
       PARSE_SERVER_URL: ${PARSE_SERVER_URL}
+      FACEBOOK_APP_ID: ${FACEBOOK_APP_ID}
+      GOOGLE_MAPS_DISTANCE_MATRIX_API_KEY: ${GOOGLE_MAPS_DISTANCE_MATRIX_API_KEY}
