@@ -3,6 +3,7 @@ const { ParseServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
 
 const masterKey = process.env.MASTER_KEY;
+const readOnlyMasterKey = process.env.READ_ONLY_MASTER_KEY;
 const appId = process.env.APP_ID;
 const mongoDSN = process.env.MONGO_DSN;
 const redisDSN = process.env.REDIS_DSN;
@@ -16,6 +17,7 @@ const api = new ParseServer({
   allowClientClassCreation: false,
   appId,
   masterKey,
+  readOnlyMasterKey,
   logsFolder: null,
   verbose: false,
   silent: false,
@@ -45,12 +47,18 @@ const dashboard = new ParseDashboard({
       serverURL,
       appId,
       masterKey,
+      readOnlyMasterKey,
     },
   ],
   users: [
     {
       user: 'admin',
-      pass: process.env.CORE_DASHBOARD_PASS,
+      pass: process.env.DASHBOARD_PASS,
+    },
+    {
+      user: 'test',
+      pass: process.env.DASHBOARD_TEST_PASS,
+      readOnly: true,
     },
   ],
   useEncryptedPasswords: true,
