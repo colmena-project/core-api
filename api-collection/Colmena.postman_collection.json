@@ -1,0 +1,141 @@
+{
+	"info": {
+		"_postman_id": "0772cb7a-dbbf-41aa-bd51-47994b5df747",
+		"name": "Colmena",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:4444/parse/login",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"value": "{{APPLICATION_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "admin",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "javascript"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4444/parse/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4444",
+					"path": [
+						"parse",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:4444/parse/functions/getMyAccount",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"value": "{{APPLICATION_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"value": "{{SESSION_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [],
+					"options": {
+						"raw": {
+							"language": "javascript"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/getMyAccount",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"getMyAccount"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "b5d9bfde-ac11-4e9a-a40f-89bf1f7fc034",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "44c49743-f1cb-4683-9ecb-dc8fd8285804",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "5d87a81b-f27b-4b1f-8865-b4b9ddcd7092",
+			"key": "APPLICATION_ID",
+			"value": "F930d5lx5zXy8LNH1CpLa6AaLfMMFfZY",
+			"type": "string"
+		},
+		{
+			"id": "c7acb931-b0fd-4e84-8273-92338df8bdf1",
+			"key": "SESSION_TOKEN",
+			"value": "r:001dbe156f96a670286a018c243ee8e6",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
