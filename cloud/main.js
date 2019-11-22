@@ -1,6 +1,6 @@
 const { Parse } = global;
 
-const { common, maps } = require('./functions');
+const { common, maps, account } = require('./functions');
 
 Parse.Cloud.beforeLogin(async (request) => {
   const { object: user } = request;
@@ -17,7 +17,6 @@ Parse.Cloud.beforeLogin(async (request) => {
 
 // After Delete Triggers
 
-
 // Before Find Triggers
 
 // After Find Triggers
@@ -25,3 +24,7 @@ Parse.Cloud.beforeLogin(async (request) => {
 // Common Cloud Functions
 Parse.Cloud.define('ping', common.ping);
 Parse.Cloud.define('distanceCalculate', maps.distanceCalculate);
+Parse.Cloud.define('registerSimpleAccount', account.registerSimpleAccount);
+Parse.Cloud.define('getMyAccount', account.getMyAccount);
+
+// Parse.Cloud.Run('registerSimpleAccount', { params: {} });
