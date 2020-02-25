@@ -21,7 +21,7 @@ const registerSimpleAccount = async (request) => {
   account.set('firstName', firstName);
   account.set('lastName', lastName);
   account.set('user', user);
-  await account.save();
+  await account.save({ sessionToken: user.getSessionToken() });
   try {
     await getMailAdapter().sendMail({
       to: user.get("email"), 
@@ -47,7 +47,7 @@ const getMyAccount = async (request) => {
   await checkUser(user);
   const query = new Parse.Query('Account');
   query.equalTo('user', user);
-  const account = await query.first({ useMasterKey: true });
+  const account = await query.first({ sessionToken: user.getSessionToken() });
   return { account };
 };
 
