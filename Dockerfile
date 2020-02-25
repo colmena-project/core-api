@@ -12,6 +12,7 @@ RUN wget -qO - http://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add - 
 # Bundle APP files
 COPY package.json server.js ./
 COPY cloud ./cloud
+COPY adapters ./adapters
 COPY seeds ./seeds
 
 # Install app dependencies
