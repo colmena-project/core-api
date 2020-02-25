@@ -6,6 +6,8 @@ const ping = (request) => ({
 });
 
 const testMail = async (request) => {
+  const { master } = request;
+  if (!master) throw new Parse.Error(403, 'You cannot call this cloud function');
   const { to, subject, text } = request.params;
   if (!(to && subject && text))
     throw new Parse.Error(404, 'Invalid Request. See if to, subject and text params are setted.');
