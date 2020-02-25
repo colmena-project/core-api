@@ -7,16 +7,20 @@ let SimpleSendGridAdapter = mailOptions => {
   
   let sendgrid = new SendGrid.MailService()
 
-  let sendMail = ({to, subject, text, html }) => {
+  let sendMail = ({to, subject, text, html, templateId, dynamic_template_data }) => {
 
     sendgrid.setApiKey(mailOptions.apiKey);
-    const msg = {
+    let msg = {
       to: to,
       from: mailOptions.fromAddress,
       subject: subject,
       text: text,
       html: html || `<div>${text}</div>`,
     };
+
+    if (templateId && dynamic_template_data ){
+      msg = { ...msg, templateId, dynamic_template_data }
+    }
 
     return sendgrid.send(msg);
 
