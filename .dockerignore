@@ -1,0 +1,6 @@
+*
+!cloud/*
+!seeds/*
+!package.json
+!server.js
+!adapters/*
