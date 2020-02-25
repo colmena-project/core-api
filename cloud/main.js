@@ -18,7 +18,7 @@ loadTriggers();
 Parse.Cloud.define('ping', common.ping);
 Parse.Cloud.define('testMail', common.testMail);
 Parse.Cloud.define('distanceCalculate', maps.distanceCalculate);
-Parse.Cloud.define('createAccount', account.registerSimpleAccount);
+Parse.Cloud.define('createAccount', account.createAccount);
 Parse.Cloud.define('getMyAccount', account.getMyAccount);
 
 // Parse.Cloud.Run('registerSimpleAccount', { params: {} });
