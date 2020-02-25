@@ -15,8 +15,11 @@ const checkUser = async (user) => {
 const registerSimpleAccount = async (request) => {
   const { params, user } = request;
   await checkUser(user);
+  const { firstName, lastName } = params;
   const Account = Parse.Object.extend('Account');
   const account = new Account();
+  account.set('firstName', firstName);
+  account.set('lastName', lastName);
   account.set('user', user);
   await account.save();
   try {
@@ -24,10 +27,12 @@ const registerSimpleAccount = async (request) => {
       to: user.get("email"), 
       subject: "New Colmena Account created",
       text: "Usted ha creado una nueva cuenta en Colmena App.",
-      html: `<div>
-        <h3>Usted ha creado una nueva cuenta en Colmena App.</h3>
-        <br>Username:</br> ${user.get("username")}
-      </div>`,
+      templateId: 'd-496bcadd14964012b70b8be0eaf9f8c2',
+      dynamic_template_data: {
+        subject: "New Colmena Account created",
+        name: `${account.get("firstName")} ${account.get("lastName")}`,
+        username: user.get("username")
+      },
     });
   } catch (error) {
     throw new Parse.Error(500, `Cannot send mail to ${to}`);

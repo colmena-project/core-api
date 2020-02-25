@@ -7,10 +7,13 @@ const ping = (request) => ({
 
 const testMail = async (request) => {
   const { to, subject, text } = request.params;
-  if (!(to && subject && text)) throw new Parse.Error(404, 'Invalid Request. See if to, subject and text params are setted.');
+  if (!(to && subject && text))
+    throw new Parse.Error(404, 'Invalid Request. See if to, subject and text params are setted.');
+
+  let providerResponse = null
   try {
-    await getMailAdapter().sendMail({
-      to, 
+    providerResponse = await getMailAdapter().sendMail({
+      to,
       subject,
       text,
     });
@@ -18,7 +21,7 @@ const testMail = async (request) => {
     console.error(error);
     throw new Parse.Error(500, 'Cannot send mail to santiagosemhan@gmail.com');
   }
-  return 'Test mail was sent ok';
+  return { msg: `Test mail was sent ok. To: ${to}`};
 };
 
 module.exports = {
