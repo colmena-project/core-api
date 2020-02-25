@@ -26,7 +26,6 @@ const registerSimpleAccount = async (request) => {
     await getMailAdapter().sendMail({
       to: user.get("email"), 
       subject: "New Colmena Account created",
-      text: "Usted ha creado una nueva cuenta en Colmena App.",
       templateId: 'd-496bcadd14964012b70b8be0eaf9f8c2',
       dynamic_template_data: {
         subject: "New Colmena Account created",
