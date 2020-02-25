@@ -12,7 +12,7 @@ const checkUser = async (user) => {
   return Promise.resolve();
 };
 
-const registerSimpleAccount = async (request) => {
+const createAccount = async (request) => {
   const { params, user } = request;
   await checkUser(user);
   const { firstName, lastName } = params;
@@ -50,6 +50,6 @@ const getMyAccount = async (request) => {
 };
 
 module.exports = {
-  registerSimpleAccount,
+  createAccount,
   getMyAccount,
 };
