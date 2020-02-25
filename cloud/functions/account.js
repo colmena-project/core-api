@@ -33,7 +33,7 @@ const createAccount = async (request) => {
       },
     });
   } catch (error) {
-    throw new Parse.Error(500, `Cannot send mail to ${to}`);
+    throw new Parse.Error(500, `Cannot send mail to ${user.get("email")}`);
   }
   return {
     account,
