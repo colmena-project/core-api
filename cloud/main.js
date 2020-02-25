@@ -1,5 +1,5 @@
 const { Parse } = global;
-
+const { registerClasses, loadTriggers } = require('./utils/core');
 const { common, maps, account } = require('./functions');
 
 Parse.Cloud.beforeLogin(async (request) => {
@@ -9,20 +9,14 @@ Parse.Cloud.beforeLogin(async (request) => {
   }
 });
 
-// Before Save Triggers
+registerClasses();
 
-// After Save Triggers
-
-// Before Delete Triggers
-
-// After Delete Triggers
-
-// Before Find Triggers
-
-// After Find Triggers
+// Load triggers for each registered class
+loadTriggers();
 
 // Common Cloud Functions
 Parse.Cloud.define('ping', common.ping);
+Parse.Cloud.define('testMail', common.testMail);
 Parse.Cloud.define('distanceCalculate', maps.distanceCalculate);
 Parse.Cloud.define('registerSimpleAccount', account.registerSimpleAccount);
 Parse.Cloud.define('getMyAccount', account.getMyAccount);

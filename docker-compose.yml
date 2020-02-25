@@ -21,6 +21,8 @@ services:
         max-file: "10"
     build:
       context: ../core-api
+      args:
+        NPM_RUN_SCRIPT: ${CORE_RUN_SCRIPT}
     volumes:
       - .:/srv/node-scripts/:cached
       - /srv/node-scripts/node_modules
@@ -37,4 +39,5 @@ services:
       DASHBOARD_TEST_PASS: ${CORE_DASHBOARD_TEST_PASS}
       PARSE_SERVER_URL: ${PARSE_SERVER_URL}
       FACEBOOK_APP_ID: ${FACEBOOK_APP_ID}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       GOOGLE_MAPS_DISTANCE_MATRIX_API_KEY: ${GOOGLE_MAPS_DISTANCE_MATRIX_API_KEY}

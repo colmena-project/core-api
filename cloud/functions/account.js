@@ -19,7 +19,19 @@ const registerSimpleAccount = async (request) => {
   const account = new Account();
   account.set('user', user);
   await account.save();
-
+  try {
+    await getMailAdapter().sendMail({
+      to: user.get("email"), 
+      subject: "New Colmena Account created",
+      text: "Usted ha creado una nueva cuenta en Colmena App.",
+      html: `<div>
+        <h3>Usted ha creado una nueva cuenta en Colmena App.</h3>
+        <br>Username:</br> ${user.get("username")}
+      </div>`,
+    });
+  } catch (error) {
+    throw new Parse.Error(500, `Cannot send mail to ${to}`);
+  }
   return {
     account,
   };
