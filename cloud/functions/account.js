@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 const { Parse } = global;
+const { getMailAdapter } = require('../utils/core');
 
 const checkUser = async (user) => {
   if (!user) {
