@@ -28,7 +28,6 @@ const registerSimpleAccount = async (request) => {
       subject: "New Colmena Account created",
       templateId: 'd-496bcadd14964012b70b8be0eaf9f8c2',
       dynamic_template_data: {
-        subject: "New Colmena Account created",
         name: `${account.get("firstName")} ${account.get("lastName")}`,
         username: user.get("username")
       },
