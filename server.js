@@ -1,7 +1,8 @@
 const express = require('express');
+const http = require('http');
 const { ParseServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
-const SimpleSendGridAdapter = require('./adapters/SendGridAdapter')
+const SimpleSendGridAdapter = require('./adapters/SendGridAdapter');
 
 const masterKey = process.env.MASTER_KEY;
 const readOnlyMasterKey = process.env.READ_ONLY_MASTER_KEY;
@@ -37,42 +38,39 @@ const api = new ParseServer({
   emailAdapter: SimpleSendGridAdapter({
     apiKey: sendgridApiKey,
     fromAddress: 'notifications@colmenaapp.com',
-  })
-  // protectedFields: {
-  //   Device: {
-  //     "*": ["key"],
-  //   }
-  // }
+  }),
 });
 
 const options = { allowInsecureHTTP: Boolean(process.env.ALLOW_INSECURE_HTTP) || false };
 
-const dashboard = new ParseDashboard({
-  apps: [
-    {
-      appName: 'Colmena Core Api',
-      serverURL,
-      appId,
-      masterKey,
-      readOnlyMasterKey,
-    },
-  ],
-  users: [
-    {
-      user: 'admin',
-      pass: process.env.DASHBOARD_PASS,
-    },
-    {
-      user: 'test',
-      pass: process.env.DASHBOARD_TEST_PASS,
-      readOnly: true,
-    },
-  ],
-  useEncryptedPasswords: true,
-}, options);
+const dashboard = new ParseDashboard(
+  {
+    apps: [
+      {
+        appName: 'Colmena Core Api',
+        serverURL,
+        appId,
+        masterKey,
+        readOnlyMasterKey,
+      },
+    ],
+    users: [
+      {
+        user: 'admin',
+        pass: process.env.DASHBOARD_PASS,
+      },
+      {
+        user: 'test',
+        pass: process.env.DASHBOARD_TEST_PASS,
+        readOnly: true,
+      },
+    ],
+    useEncryptedPasswords: true,
+  },
+  options,
+);
 
 const app = express();
-
 
 // make the Parse Server available at /parse
 app.use('/parse', api);
@@ -82,8 +80,7 @@ app.use('/dashboard', dashboard);
 // TODO: REMOVE THIS LINE BELOW
 // app.use(express.static('client-example'));
 
-
-const httpServer = require('http').createServer(app);
+const httpServer = http.createServer(app);
 
 httpServer.listen(port, () => console.log(`Server running on ${serverURL}`));
 ParseServer.createLiveQueryServer(httpServer, {

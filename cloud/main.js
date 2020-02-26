@@ -1,6 +1,7 @@
 const { Parse } = global;
 const { registerClasses, loadTriggers } = require('./utils/core');
 const { common, maps, account } = require('./functions');
+const { Account } = require('./classes');
 
 Parse.Cloud.beforeLogin(async (request) => {
   const { object: user } = request;
@@ -9,7 +10,7 @@ Parse.Cloud.beforeLogin(async (request) => {
   }
 });
 
-registerClasses();
+registerClasses(Account);
 
 // Load triggers for each registered class
 loadTriggers();
