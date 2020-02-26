@@ -17,6 +17,7 @@ const api = new ParseServer({
   databaseURI: mongoDSN, // Connection string for your MongoDB database
   cloud: './cloud/main.js', // Absolute path to your Cloud Code
   allowClientClassCreation: false,
+  enableSingleSchemaCache: true,
   appId,
   masterKey,
   readOnlyMasterKey,
