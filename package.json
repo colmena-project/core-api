@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -L . --ignore './logs/*'",
-    "inspect": "node --inspect .",
+    "inspect": "nodemon --inspect=0.0.0.0 -L . --ignore './logs/*'",
     "start": "node .",
     "eslint": "eslint --debug --ext .js cloud",
     "seed": "for filename in ./seeds/*; do mongoimport --mode=upsert --uri ${MONGO_DSN} --file $filename;  done",
