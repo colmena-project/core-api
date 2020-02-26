@@ -28,6 +28,7 @@ services:
       - /srv/node-scripts/node_modules
     ports:
       - ${CORE_PUBLIC_PORT}:4444
+      - 9230:9229
     environment:
       PORT:  4444
       MASTER_KEY: ${CORE_MASTER_KEY}
