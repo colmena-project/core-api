@@ -16,7 +16,7 @@ const checkUser = async (user) => {
 const findUserAccount = async (user) => {
   const query = new Parse.Query('Account');
   query.equalTo('user', user);
-  const account = await query.first({ sessionToken: user.getSessionToken() });
+  const account = await query.first({ useMasterKey: true });
   return account;
 };
 
