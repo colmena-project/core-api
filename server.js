@@ -13,6 +13,7 @@ const port = process.env.PORT;
 const serverURL = process.env.PARSE_SERVER_URL || `http://localhost:${port}/parse`;
 const facebookAppId = process.env.FACEBOOK_APP_ID;
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
+const publicServerURL = process.env.PUBLIC_SERVER_URL;
 
 const api = new ParseServer({
   databaseURI: mongoDSN, // Connection string for your MongoDB database
@@ -36,7 +37,7 @@ const api = new ParseServer({
     },
   },
   appName: 'Colmena',
-  publicServerURL: 'http://vps262678.vps.ovh.ca/',
+  publicServerURL,
   emailAdapter: SimpleSendGridAdapter({
     apiKey: sendgridApiKey,
     fromAddress: 'notifications@colmenaapp.com',
