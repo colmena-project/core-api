@@ -35,6 +35,8 @@ const api = new ParseServer({
       appIds: facebookAppId,
     },
   },
+  appName: 'Colmena',
+  publicServerURL: 'http://vps262678.vps.ovh.ca/',
   emailAdapter: SimpleSendGridAdapter({
     apiKey: sendgridApiKey,
     fromAddress: 'notifications@colmenaapp.com',
