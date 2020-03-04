@@ -9,6 +9,21 @@ const clearSessionsFromUser = async (user) => {
   return { sessions: sessionsCleared };
 };
 
+/**
+ * Decorator function to apply to all functions that needs to check for user authentication
+ * @param {*} callback
+ */
+function secure(callback) {
+  return (request) => {
+    const { master: isMaster, user } = request;
+    if (!isMaster && !user) {
+      throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User needs to be authenticated');
+    }
+    return callback.call(this, request);
+  };
+}
+
 module.exports = {
   clearSessionsFromUser,
+  secure,
 };

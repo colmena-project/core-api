@@ -2,6 +2,7 @@ const { Parse } = global;
 const { registerClasses, loadTriggers } = require('./utils/core');
 const { common, maps, account } = require('./functions');
 const { Account } = require('./classes');
+const { secure } = require('./utils');
 
 Parse.Cloud.beforeLogin(async (request) => {
   const { object: user } = request;
@@ -19,7 +20,7 @@ loadTriggers();
 Parse.Cloud.define('ping', common.ping);
 Parse.Cloud.define('testMail', common.testMail);
 Parse.Cloud.define('distanceCalculate', maps.distanceCalculate);
-Parse.Cloud.define('createAccount', account.createAccount);
-Parse.Cloud.define('getMyAccount', account.getMyAccount);
+Parse.Cloud.define('createAccount', secure(account.createAccount));
+Parse.Cloud.define('getMyAccount', secure(account.getMyAccount));
 
 // Parse.Cloud.Run('registerSimpleAccount', { params: {} });
