@@ -15,8 +15,6 @@ class Base extends Parse.Object {
       const acl = new Parse.ACL();
       acl.setPublicReadAccess(false);
       acl.setPublicWriteAccess(false);
-      acl.setRoleWriteAccess('ROLE_SUPER_ADMIN', true);
-      acl.setRoleReadAccess('ROLE_SUPER_ADMIN', true);
       if (!master) {
         acl.setWriteAccess(user, true);
         acl.setReadAccess(user, true);
