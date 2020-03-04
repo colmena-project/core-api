@@ -23,13 +23,17 @@ const findUserAccount = async (user) => {
 const createAccount = async (request) => {
   const { params, user } = request;
   await checkUser(user);
-  const { firstName, lastName } = params;
+  const { firstName, middleName, lastName, nickname, facebook, facebookProfilePhotoUrl } = params;
   const account = await findUserAccount(user);
   if (!account) {
     const Account = Parse.Object.extend('Account');
     const newAccount = new Account();
     newAccount.set('firstName', firstName);
+    newAccount.set('middleName', middleName);
     newAccount.set('lastName', lastName);
+    newAccount.set('nickname', nickname);
+    newAccount.set('facebook', facebook);
+    newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
     newAccount.set('user', user);
     await newAccount.save(null, { sessionToken: user.getSessionToken() });
     try {

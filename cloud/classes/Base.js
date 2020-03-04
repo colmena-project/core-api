@@ -2,7 +2,7 @@ const { Parse } = global;
 
 class Base extends Parse.Object {
   static async beforeSave(request) {
-    const { user } = request;
+    const { user, master } = request;
     Object.keys(request.object.attributes).forEach((attribute) => {
       const value = request.object.get(attribute);
       if (typeof value === 'string') {
@@ -12,6 +12,16 @@ class Base extends Parse.Object {
     // Save blameable information
     if (request.object.isNew()) {
       if (user) request.object.set('createdBy', user);
+      const acl = new Parse.ACL();
+      acl.setPublicReadAccess(false);
+      acl.setPublicWriteAccess(false);
+      acl.setRoleWriteAccess('ROLE_SUPER_ADMIN', true);
+      acl.setRoleReadAccess('ROLE_SUPER_ADMIN', true);
+      if (!master) {
+        acl.setWriteAccess(user, true);
+        acl.setReadAccess(user, true);
+      }
+      request.object.setACL(acl);
     } else if (user) request.object.set('updatedBy', user);
   }
 
