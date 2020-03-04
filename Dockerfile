@@ -16,6 +16,7 @@ ENV NPM_CONFIG_LOGLEVEL warn
 RUN npm install
 
 COPY server.js server.js
+COPY config.js config.js
 COPY cloud ./cloud
 COPY adapters ./adapters
 COPY seeds ./seeds
