@@ -2,17 +2,6 @@
 const { Parse } = global;
 const { getMailAdapter } = require('../utils/core');
 
-const checkUser = async (user) => {
-  if (!user) {
-    throw new Parse.Error(
-      Parse.Error.INVALID_SESSION_TOKEN,
-      'Invalid User. The user must login again.',
-    );
-  }
-
-  return Promise.resolve();
-};
-
 const findUserAccount = async (user) => {
   const query = new Parse.Query('Account');
   query.equalTo('user', user);
@@ -22,9 +11,8 @@ const findUserAccount = async (user) => {
 
 const createAccount = async (request) => {
   const { params, user } = request;
-  await checkUser(user);
   const { firstName, middleName, lastName, nickname, facebook, facebookProfilePhotoUrl } = params;
-  const account = await findUserAccount(user);
+  let account = await findUserAccount(user);
   if (!account) {
     const Account = Parse.Object.extend('Account');
     const newAccount = new Account();
@@ -46,7 +34,7 @@ const createAccount = async (request) => {
           username: user.get('username'),
         },
       });
-      return { account: newAccount };
+      account = newAccount;
     } catch (error) {
       throw new Parse.Error(500, `Cannot send mail to ${user.get('email')}`);
     }
