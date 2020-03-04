@@ -11,9 +11,11 @@ RUN wget -qO - http://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add - 
 
 # Bundle APP files
 COPY package.json package.json
+COPY package-lock.json package-lock.json
+
 # Install app dependencies
 ENV NPM_CONFIG_LOGLEVEL warn
-RUN npm install
+RUN npm ci
 
 COPY server.js server.js
 COPY config.js config.js
