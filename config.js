@@ -39,4 +39,6 @@ module.exports = {
     apiKey: sendgridApiKey,
     fromAddress: 'notifications@colmenaapp.com',
   }),
+  verifyUserEmails: true,
+  emailVerifyTokenValidityDuration: 21600,
 };
