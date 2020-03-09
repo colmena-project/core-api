@@ -23,7 +23,15 @@ function secure(callback) {
   };
 }
 
+const nullParser = (opt) => {
+  if (opt === 'null') {
+    return null;
+  }
+  return opt;
+};
+
 module.exports = {
   clearSessionsFromUser,
   secure,
+  nullParser,
 };

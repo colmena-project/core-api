@@ -1,4 +1,5 @@
 const SimpleSendGridAdapter = require('./adapters/SendGridAdapter');
+const { nullParser } = require('./cloud/utils');
 
 const masterKey = process.env.MASTER_KEY;
 const readOnlyMasterKey = process.env.READ_ONLY_MASTER_KEY;
@@ -20,7 +21,7 @@ module.exports = {
   appId,
   masterKey,
   readOnlyMasterKey,
-  logsFolder: null,
+  logsFolder: nullParser(process.env.PARSE_SERVER_LOGS_FOLDER),
   verbose: false,
   silent: false,
   serverURL, // Don't forget to change to https if needed
