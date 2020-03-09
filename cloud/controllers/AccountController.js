@@ -47,12 +47,27 @@ const createAccount = async (request) => {
 
 const getMyAccount = async (request) => {
   const { user } = request;
-  await checkUser(user);
   const account = await findUserAccount(user);
   return { account };
+};
+
+const getAccountOf = async (request) => {
+  const { user, params } = request;
+  const { accountId } = params;
+  if (!accountId) throw new Parse.Error(404, 'Account Not Found');
+  const accountQuery = new Parse.Query('Account');
+  const account = await accountQuery.get(accountId, { sessionToken: user.getSessionToken() });
+  // TODO: clean private account data.
+  // Resume data to send to client
+  return {
+    account,
+    activityFeed: [],
+    rewards: [],
+  };
 };
 
 module.exports = {
   createAccount,
   getMyAccount,
+  getAccountOf,
 };

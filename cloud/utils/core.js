@@ -1,14 +1,14 @@
 const { Parse } = global;
 const Config = require('parse-server/lib/Config');
+const { secure } = require('./index');
+const routes = require('../routes');
+const classes = require('../classes');
 
-const classes = [];
+function loadClassHooks() {
+  // Register Classes to load hooks
+  const classesArray = Object.keys(classes).map((key) => classes[key]);
 
-function registerClasses(...args) {
-  args.forEach((c) => classes.push(c));
-}
-
-function loadTriggers() {
-  classes.forEach((c) => {
+  classesArray.forEach((c) => {
     Parse.Cloud.beforeSave(c.name, c.beforeSave);
     Parse.Cloud.afterSave(c.name, c.afterSave);
     Parse.Cloud.beforeDelete(c.name, c.beforeDelete);
@@ -19,18 +19,39 @@ function loadTriggers() {
   });
 }
 
+function loadCloudFunctions(legacy = false) {
+  const cloudFunctions = new Map();
+  Object.keys(routes).forEach((controller) => {
+    Object.keys(routes[controller]).forEach((action) => {
+      const actionPath = legacy ? action : `${controller}_${action}`;
+      if (cloudFunctions.has(actionPath)) {
+        throw new Error(
+          `${actionPath} was already defined. Please check your routes definitions in your route directory.`,
+        );
+      }
+      cloudFunctions.set(actionPath, routes[controller][action]);
+    });
+  });
+
+  cloudFunctions.forEach((cloudFnDefinition, path) => {
+    const { action, secure: isSecure } = cloudFnDefinition;
+    if (isSecure) {
+      Parse.Cloud.define(path, secure(action));
+    } else {
+      Parse.Cloud.define(path, action);
+    }
+    console.info('Loaded ', path);
+  });
+}
+
 function getDatabaseInstance() {
-  const { database } = Config.get(Parse.applicationId).database.adapter;
+  const config = Config.get(Parse.applicationId);
+  const { database } = config.database.adapter;
   return database;
 }
 
-function getMailAdapter() {
-  return Config.get(Parse.applicationId).emailAdapter;
-}
-
 module.exports = {
-  registerClasses,
-  loadTriggers,
+  loadClassHooks,
+  loadCloudFunctions,
   getDatabaseInstance,
-  getMailAdapter,
 };

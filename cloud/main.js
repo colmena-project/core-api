@@ -1,8 +1,11 @@
 const { Parse } = global;
-const { registerClasses, loadTriggers } = require('./utils/core');
-const { common, maps, account } = require('./functions');
-const { Account } = require('./classes');
-const { secure } = require('./utils');
+const { loadCloudFunctions, loadClassHooks } = require('./utils/core');
+
+// Load triggers for each registered class
+loadClassHooks();
+
+const legacyMode = true;
+loadCloudFunctions(legacyMode);
 
 Parse.Cloud.beforeLogin(async (request) => {
   const { object: user } = request;
@@ -10,17 +13,3 @@ Parse.Cloud.beforeLogin(async (request) => {
     throw new Error('Access denied, your account is disabled.');
   }
 });
-
-registerClasses(Account);
-
-// Load triggers for each registered class
-loadTriggers();
-
-// Common Cloud Functions
-Parse.Cloud.define('ping', common.ping);
-Parse.Cloud.define('testMail', common.testMail);
-Parse.Cloud.define('distanceCalculate', maps.distanceCalculate);
-Parse.Cloud.define('createAccount', secure(account.createAccount));
-Parse.Cloud.define('getMyAccount', secure(account.getMyAccount));
-
-// Parse.Cloud.Run('registerSimpleAccount', { params: {} });
