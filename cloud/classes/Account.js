@@ -1,5 +1,6 @@
 const { Parse } = global;
 const Base = require('./Base');
+const { clearSessionsFromUser } = require('../utils');
 
 class Account extends Base {
   constructor() {
@@ -18,6 +19,13 @@ class Account extends Base {
       accountACL.setWriteAccess(user, true);
       object.setACL(accountACL);
     }
+  }
+
+  static async afterDelete(request) {
+    const account = request.object;
+    const user = account.get('user');
+    await clearSessionsFromUser(user);
+    user.destroy({ useMasterKey: true });
   }
 }
 
