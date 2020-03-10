@@ -50,8 +50,13 @@ function getDatabaseInstance() {
   return database;
 }
 
+function getMailAdapter() {
+  return Config.get(Parse.applicationId).emailAdapter;
+}
+
 module.exports = {
   loadClassHooks,
   loadCloudFunctions,
   getDatabaseInstance,
+  getMailAdapter,
 };
