@@ -1,5 +1,5 @@
 const { Parse } = global;
-const { loadCloudFunctions, loadClassHooks } = require('./utils/core');
+const { loadCloudFunctions, loadClassHooks } = require('./utils/loader');
 
 // Load triggers for each registered class
 loadClassHooks();
