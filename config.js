@@ -42,4 +42,5 @@ module.exports = {
   }),
   verifyUserEmails: true,
   emailVerifyTokenValidityDuration: 21600,
+  preventLoginWithUnverifiedEmail: true,
 };
