@@ -45,7 +45,8 @@ const createAccount = async (request) => {
       });
       account = newAccount;
     } catch (error) {
-      throw new Parse.Error(500, `Cannot send mail to ${user.get('email')}`);
+      console.log(error);
+      throw new Parse.Error(500, `Cannot send mail to ${user.get('email')}.`);
     }
   }
 
