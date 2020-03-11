@@ -1,6 +1,6 @@
 const { Parse } = global;
 const Base = require('./Base');
-const { clearSessionsFromUser } = require('../utils');
+const { UserService } = require('../services');
 
 class Account extends Base {
   constructor() {
@@ -24,7 +24,7 @@ class Account extends Base {
   static async afterDelete(request) {
     const account = request.object;
     const user = account.get('user');
-    await clearSessionsFromUser(user);
+    await UserService.clearUserSessions(user);
     user.destroy({ useMasterKey: true });
   }
 }
