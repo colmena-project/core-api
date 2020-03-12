@@ -41,11 +41,9 @@ const createAccount = async (params) => {
   newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
   newAccount.set('aboutMe', aboutMe);
   newAccount.set('user', user);
-  const accountACL = new Parse.ACL();
+  const accountACL = new Parse.ACL(user);
   accountACL.setPublicReadAccess(true);
   accountACL.setPublicWriteAccess(false);
-  accountACL.setReadAccess(user, true);
-  accountACL.setWriteAccess(user, true);
   newAccount.setACL(accountACL);
 
   await newAccount.save();
