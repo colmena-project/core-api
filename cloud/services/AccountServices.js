@@ -27,7 +27,7 @@ const createAccount = async (params) => {
   user.set('username', username);
   user.set('password', password);
   user.set('email', email);
-  await user.signUp();
+  await user.save();
   if (fbAuthData && !user._isLinked('facebook')) {
     await user._linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
   }
@@ -41,15 +41,19 @@ const createAccount = async (params) => {
   newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
   newAccount.set('aboutMe', aboutMe);
   newAccount.set('user', user);
-  const account = await newAccount.save();
-  // ACL Update
-  const accountACL = new Parse.ACL(user);
-  accountACL.setPublicReadAccess(true);
-  accountACL.setPublicWriteAccess(false);
-  account.setACL(accountACL);
-  account.save();
+  newAccount.set('createdBy', user.toPointer());
+  newAccount.set('updatedBy', user.toPointer());
+
+  const acl = new Parse.ACL();
+  acl.setPublicReadAccess(true);
+  acl.setPublicWriteAccess(false);
+  acl.setWriteAccess(user, true);
+  acl.setReadAccess(user, true);
+  newAccount.setACL(acl);
+
+  await newAccount.save();
   const mailParams = {
-    name: `${account.get('firstName')} ${account.get('lastName')}`,
+    name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
     username: user.get('username'),
     to: user.get('email'),
     subject: 'New Colmena Account created',
@@ -57,7 +61,7 @@ const createAccount = async (params) => {
   await MailService.sendNewAccountCreated(mailParams);
 
   return {
-    account,
+    account: newAccount,
   };
 };
 

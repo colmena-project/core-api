@@ -7,6 +7,10 @@ class Account extends Base {
     super(Account.prototype.constructor.name);
   }
 
+  static async beforeSave(request) {
+    return request.object;
+  }
+
   static async afterDelete(request) {
     const account = request.object;
     const user = account.get('user');
