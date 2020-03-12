@@ -29,7 +29,7 @@ const createAccount = async (params) => {
   user.set('email', email);
   await user.signUp();
   if (fbAuthData && !user._isLinked('facebook')) {
-    await user._linkWith('facebook', { authData: fbAuthData });
+    await user._linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
   }
   const Account = Parse.Object.extend('Account');
   const newAccount = new Account();
