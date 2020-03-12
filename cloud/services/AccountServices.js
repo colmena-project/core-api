@@ -41,13 +41,13 @@ const createAccount = async (params) => {
   newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
   newAccount.set('aboutMe', aboutMe);
   newAccount.set('user', user);
-  await newAccount.save();
+  const account = await newAccount.save();
   // ACL Update
   const accountACL = new Parse.ACL(user);
   accountACL.setPublicReadAccess(true);
   accountACL.setPublicWriteAccess(false);
   newAccount.setACL(accountACL);
-  await newAccount.save();
+  account.save();
   const mailParams = {
     name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
     username: user.get('username'),
@@ -57,7 +57,7 @@ const createAccount = async (params) => {
   await MailService.sendNewAccountCreated(mailParams);
 
   return {
-    account: newAccount,
+    account,
   };
 };
 
