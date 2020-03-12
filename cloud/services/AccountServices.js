@@ -25,6 +25,7 @@ const createAccount = async (params) => {
   user.set('username', username);
   user.set('password', password);
   user.set('email', email);
+  user.set('emailVerified', false);
   await user.signUp();
   const Account = Parse.Object.extend('Account');
   const newAccount = new Account();
@@ -37,7 +38,7 @@ const createAccount = async (params) => {
   newAccount.set('aboutMe', aboutMe);
   newAccount.set('user', user);
   const accountACL = new Parse.ACL();
-  accountACL.setPublicReadAccess(true);
+  accountACL.setPublicReadAccess(false);
   accountACL.setPublicWriteAccess(false);
   accountACL.setReadAccess(user, true);
   accountACL.setWriteAccess(user, true);
