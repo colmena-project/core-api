@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const { Parse } = global;
 const MailService = require('./MailService');
 
@@ -20,12 +21,16 @@ const createAccount = async (params) => {
     facebook,
     facebookProfilePhotoUrl,
     aboutMe,
+    fbAuthData,
   } = params;
   const user = new Parse.User();
   user.set('username', username);
   user.set('password', password);
   user.set('email', email);
   await user.signUp();
+  if (fbAuthData && !user._isLinked('facebook')) {
+    await user._linkWith('facebook', { authData: fbAuthData });
+  }
   const Account = Parse.Object.extend('Account');
   const newAccount = new Account();
   newAccount.set('firstName', firstName);
