@@ -3,7 +3,7 @@ const { AccountController } = require('../controllers');
 module.exports = {
   createAccount: {
     action: AccountController.createAccount,
-    secure: true,
+    secure: false,
   },
   getMyAccount: {
     action: AccountController.getMyAccount,

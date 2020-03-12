@@ -8,8 +8,11 @@ const findAccountByUser = async (user) => {
   return account;
 };
 
-const createAccount = async (params, user) => {
+const createAccount = async (params) => {
   const {
+    username,
+    email,
+    password,
     firstName,
     middleName,
     lastName,
@@ -18,31 +21,32 @@ const createAccount = async (params, user) => {
     facebookProfilePhotoUrl,
     aboutMe,
   } = params;
-  let account = await findAccountByUser(user);
-  if (!account) {
-    const Account = Parse.Object.extend('Account');
-    const newAccount = new Account();
-    newAccount.set('firstName', firstName);
-    newAccount.set('middleName', middleName);
-    newAccount.set('lastName', lastName);
-    newAccount.set('nickname', nickname);
-    newAccount.set('facebook', facebook);
-    newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
-    newAccount.set('aboutMe', aboutMe);
-    newAccount.set('user', user);
-    await newAccount.save(null, { sessionToken: user.getSessionToken() });
-    const mailParams = {
-      name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
-      username: user.get('username'),
-      to: user.get('email'),
-      subject: 'New Colmena Account created',
-    };
-    await MailService.sendNewAccountCreated(mailParams);
-    account = newAccount;
-  }
+  const user = new Parse.User();
+  user.set('username', username);
+  user.set('password', password);
+  user.set('email', email);
+  await user.signUp();
+  const Account = Parse.Object.extend('Account');
+  const newAccount = new Account();
+  newAccount.set('firstName', firstName);
+  newAccount.set('middleName', middleName);
+  newAccount.set('lastName', lastName);
+  newAccount.set('nickname', nickname);
+  newAccount.set('facebook', facebook);
+  newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
+  newAccount.set('aboutMe', aboutMe);
+  newAccount.set('user', user);
+  await newAccount.save(null, { sessionToken: user.getSessionToken() });
+  const mailParams = {
+    name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
+    username: user.get('username'),
+    to: user.get('email'),
+    subject: 'New Colmena Account created',
+  };
+  await MailService.sendNewAccountCreated(mailParams);
 
   return {
-    account,
+    account: newAccount,
   };
 };
 
