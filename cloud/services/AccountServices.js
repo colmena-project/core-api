@@ -46,10 +46,10 @@ const createAccount = async (params) => {
   const accountACL = new Parse.ACL(user);
   accountACL.setPublicReadAccess(true);
   accountACL.setPublicWriteAccess(false);
-  newAccount.setACL(accountACL);
+  account.setACL(accountACL);
   account.save();
   const mailParams = {
-    name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
+    name: `${account.get('firstName')} ${account.get('lastName')}`,
     username: user.get('username'),
     to: user.get('email'),
     subject: 'New Colmena Account created',
