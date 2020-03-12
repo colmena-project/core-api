@@ -43,7 +43,7 @@ const createAccount = async (params) => {
   accountACL.setWriteAccess(user, true);
   newAccount.setACL(accountACL);
 
-  await newAccount.save(null, { useMasterKey: true });
+  await newAccount.save();
   const mailParams = {
     name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
     username: user.get('username'),
