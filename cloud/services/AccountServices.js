@@ -36,7 +36,14 @@ const createAccount = async (params) => {
   newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
   newAccount.set('aboutMe', aboutMe);
   newAccount.set('user', user);
-  await newAccount.save(null, { sessionToken: user.getSessionToken() });
+  const accountACL = new Parse.ACL();
+  accountACL.setPublicReadAccess(true);
+  accountACL.setPublicWriteAccess(false);
+  accountACL.setReadAccess(user, true);
+  accountACL.setWriteAccess(user, true);
+  newAccount.setACL(accountACL);
+
+  await newAccount.save(null, { useMasterKey: true });
   const mailParams = {
     name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
     username: user.get('username'),

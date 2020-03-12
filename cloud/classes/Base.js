@@ -15,7 +15,7 @@ class Base extends Parse.Object {
       const acl = new Parse.ACL();
       acl.setPublicReadAccess(false);
       acl.setPublicWriteAccess(false);
-      if (!master) {
+      if (!master && user) {
         acl.setWriteAccess(user, true);
         acl.setReadAccess(user, true);
       }
