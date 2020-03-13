@@ -15,6 +15,7 @@ function loadClassHooks() {
     Parse.Cloud.beforeFind(c.name, c.beforeFind);
     Parse.Cloud.beforeFind(c.name, c.beforeFind);
     Parse.Cloud.afterFind(c.name, c.afterFind);
+    Parse.Object.registerSubclass(c.name, c);
   });
 }
 
