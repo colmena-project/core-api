@@ -6,6 +6,14 @@ class Post extends Base {
     super(Post.name);
   }
 
+  static async beforeSave(request) {
+    const { object: post } = request;
+    super.beforeSave(request);
+    const postACL = post.getACL();
+    postACL.setPublicReadAccess(true);
+    post.setACL(postACL);
+  }
+
   static async afterSave(request) {
     const { object } = request;
     const account = await object.getOwnerAccount();
