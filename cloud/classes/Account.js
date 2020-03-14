@@ -1,5 +1,5 @@
 const Base = require('./Base');
-const { UserService } = require('../services');
+const UserService = require('../services/UserService');
 
 class Account extends Base {
   constructor() {

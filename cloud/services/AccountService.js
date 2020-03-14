@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 const { Parse } = global;
-const { Account } = require('../classes');
+const Account = require('../classes/Account');
 const MailService = require('./MailService');
 
 const findAccountByUser = async (user) => {

@@ -1,4 +1,4 @@
-const { Container } = require('../classes');
+const Container = require('../classes/Container');
 const { getQueryAuthOptions } = require('../utils');
 const { getValueForNextSequence } = require('../utils/db');
 
