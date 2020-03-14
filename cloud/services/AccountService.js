@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 const { Parse } = global;
+const { Account } = require('../classes');
 const MailService = require('./MailService');
 
 const findAccountByUser = async (user) => {
@@ -31,7 +32,6 @@ const createAccount = async (params) => {
   if (fbAuthData && !user._isLinked('facebook')) {
     await user._linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
   }
-  const Account = Parse.Object.extend('Account');
   const newAccount = new Account();
   newAccount.set('firstName', firstName);
   newAccount.set('middleName', middleName);
