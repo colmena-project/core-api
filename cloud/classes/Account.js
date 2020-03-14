@@ -1,4 +1,3 @@
-const { Parse } = global;
 const Base = require('./Base');
 const { UserService } = require('../services');
 

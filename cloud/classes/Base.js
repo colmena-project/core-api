@@ -9,18 +9,28 @@ class Base extends Parse.Object {
         request.object.set(attribute, value.trim());
       }
     });
-    // Save blameable information
+
+    if (user) {
+      if (request.object.isNew()) {
+        request.object.set('createdBy', user);
+      } else {
+        request.object.set('updatedBy', user);
+      }
+    }
+
+    let acl;
     if (request.object.isNew()) {
-      if (user) request.object.set('createdBy', user);
-      const acl = new Parse.ACL();
+      acl = new Parse.ACL();
       acl.setPublicReadAccess(false);
       acl.setPublicWriteAccess(false);
-      if (!master && user) {
-        acl.setWriteAccess(user, true);
-        acl.setReadAccess(user, true);
-      }
-      request.object.setACL(acl);
-    } else if (user) request.object.set('updatedBy', user);
+    } else {
+      acl = request.object.getACL();
+    }
+    if (!master && user) {
+      acl.setWriteAccess(user, true);
+      acl.setReadAccess(user, true);
+    }
+    request.object.setACL(acl);
   }
 
   static afterSave() {}
