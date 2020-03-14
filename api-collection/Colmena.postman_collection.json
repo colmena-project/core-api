@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "http://localhost:4444/parse/login",
+			"name": "http://{{hostname}}/parse/login",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -30,12 +30,12 @@
 					"urlencoded": [
 						{
 							"key": "username",
-							"value": "admin",
+							"value": "santiago.semhan",
 							"type": "text"
 						},
 						{
 							"key": "password",
-							"value": "admin",
+							"value": "soloyo87",
 							"type": "text"
 						}
 					],
@@ -61,7 +61,7 @@
 			"response": []
 		},
 		{
-			"name": "http://localhost:4444/parse/functions/getMyAccount",
+			"name": "http://{{hostname}}/parse/functions/getMyAccount",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -99,6 +99,185 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "http://{{hostname}}/parse/functions/createAccount",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}",
+						"disabled": true
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"santiago.semhan\",\n    \"password\": \"soloyo87\",\n    \"email\": \"santiagosemhan@gmail.com\",\n    \"firstName\": \"Pablo\",\n    \"middleName\": \"Santiago\",\n    \"lastName\": \"Semhan\",\n    \"nickname\":\"santiago\",\n    \"facebook\":\"www.mifacebook.com\",\n    \"facebookProfilePhotoUrl\": \"www.miimagen.com\",\n    \"aboutMe\": \"esto es un about me?\"\n  } ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/createAccount",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"createAccount"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://{{hostname}}/parse/functions/registerRecover",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"containers\": [\n        {\n            \"typeId\": \"GmDcMJa7Nv\",\n            \"qty\": 5\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/registerRecover",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"registerRecover"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://{{hostname}}/parse/functions/findTransactionById",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"containers\": [\n        {\n            \"typeId\": \"GmDcMJa7Nv\",\n            \"qty\": 5\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/registerRecover",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"registerRecover"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://{{hostname}}/parse/users",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "X-Parse-Application-Id",
+						"value": "{{APPLICATION_ID}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\":\"santiagosemhan\",\n\t\"password\":\"soloyo87\",\n\t\"phone\":\"3764331302\",\n\t\"email\": \"santiagosemhan@gmail.com\"\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/users",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"users"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -121,20 +300,6 @@
 					""
 				]
 			}
-		}
-	],
-	"variable": [
-		{
-			"id": "5d87a81b-f27b-4b1f-8865-b4b9ddcd7092",
-			"key": "APPLICATION_ID",
-			"value": "F930d5lx5zXy8LNH1CpLa6AaLfMMFfZY",
-			"type": "string"
-		},
-		{
-			"id": "c7acb931-b0fd-4e84-8273-92338df8bdf1",
-			"key": "SESSION_TOKEN",
-			"value": "r:001dbe156f96a670286a018c243ee8e6",
-			"type": "string"
 		}
 	],
 	"protocolProfileBehavior": {}
