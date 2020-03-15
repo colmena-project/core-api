@@ -29,6 +29,11 @@ module.exports = {
     classNames: ['RecyclingPoint'],
     redisURL: redisDSN,
   },
+  push: {
+    android: {
+      apiKey: process.env.FCM_SERVER_KEY, // The Server API Key of FCM
+    },
+  },
   auth: {
     facebook: {
       appIds: facebookAppId,
