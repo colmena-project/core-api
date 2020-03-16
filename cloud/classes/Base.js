@@ -26,9 +26,14 @@ class Base extends Parse.Object {
     } else {
       acl = request.object.getACL();
     }
-    if (!master && user) {
-      acl.setWriteAccess(user, true);
-      acl.setReadAccess(user, true);
+
+    // ensure read and write permissions to owner
+    if (!master) {
+      const createdBy = request.object.get('createdBy');
+      if (createdBy) {
+        acl.setWriteAccess(createdBy, true);
+        acl.setReadAccess(createdBy, true);
+      }
     }
     request.object.setACL(acl);
   }
