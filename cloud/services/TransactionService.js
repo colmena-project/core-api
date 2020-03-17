@@ -87,8 +87,8 @@ const registerRecover = async (containers = [], user) => {
     const storedTransaction = await findById(transaction.id, user);
     return storedTransaction;
   } catch (error) {
-    // console.log(error);
-    if (transaction) await transaction.destroy();
+    console.log(error);
+    if (transaction) await transaction.destroy({ useMasterKey: true });
     throw new Error('Transaction could not be registered.');
   }
 };
