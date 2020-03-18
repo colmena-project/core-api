@@ -4,7 +4,14 @@ const { ParseServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
 const ParseServerOptions = require('./config');
 
-const { port, redisDSN, serverURL, appId, masterKey, readOnlyMasterKey } = ParseServerOptions;
+const {
+  port,
+  redisDSN,
+  serverURL,
+  appId,
+  masterKey,
+  readOnlyMasterKey,
+} = ParseServerOptions;
 
 const api = new ParseServer(ParseServerOptions);
 const dashboard = new ParseDashboard(
