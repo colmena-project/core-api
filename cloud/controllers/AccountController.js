@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 const { Parse } = global;
-const { AccountService } = require('../services');
+const { AccountService, StockService } = require('../services');
 
 const createAccount = async (request) => {
   const { params, user } = request;
@@ -10,7 +10,12 @@ const createAccount = async (request) => {
 const getMyAccount = async (request) => {
   const { user } = request;
   const account = await AccountService.findAccountByUser(user);
-  return { account };
+  const stock = await StockService.getUserStock(user);
+  account.set(
+    'stock',
+    stock.map((s) => s.toJSON()),
+  );
+  return account.toJSON();
 };
 
 const getAccountOf = async (request) => {

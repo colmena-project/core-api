@@ -1,7 +1,13 @@
 const { Parse } = global;
 const WasteTypeService = require('./WasteTypeService');
 
-const getStock = async (type, user) => {
+const getUserStock = async (user) => {
+  const stockQ = new Parse.Query('UserStock');
+  const stock = await stockQ.find({ sessionToken: user.getSessionToken() });
+  return stock;
+};
+
+const getStockOfType = async (type, user) => {
   const userStockQuery = new Parse.Query('UserStock');
   userStockQuery.equalTo('wasteType', type);
   userStockQuery.equalTo('user', user);
@@ -17,7 +23,7 @@ const getStock = async (type, user) => {
 
 const incrementStock = async (typeId, user, ammount = 1) => {
   const wasteType = await WasteTypeService.findWasteTypeById(typeId);
-  const userStock = await getStock(wasteType, user);
+  const userStock = await getStockOfType(wasteType, user);
   userStock.increment('ammount', ammount);
   const acl = new Parse.ACL(user);
   acl.setPublicReadAccess(false);
@@ -27,7 +33,7 @@ const incrementStock = async (typeId, user, ammount = 1) => {
 
 const decrementStock = async (typeId, user, ammount) => {
   const wasteType = await WasteTypeService.findWasteTypeById(typeId);
-  const userStock = await getStock(wasteType, user);
+  const userStock = await getStockOfType(wasteType, user);
   userStock.decrement('ammount', ammount);
   userStock.save(null, { useMasterKey: true });
 };
@@ -35,4 +41,5 @@ const decrementStock = async (typeId, user, ammount) => {
 module.exports = {
   incrementStock,
   decrementStock,
+  getUserStock,
 };

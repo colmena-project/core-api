@@ -68,7 +68,9 @@ const createAccount = async (params) => {
 const findAccountById = async (accountId, user) => {
   if (!accountId) throw new Parse.Error(404, 'Account Not Found');
   const accountQuery = new Parse.Query('Account');
-  const account = await accountQuery.get(accountId, { sessionToken: user.getSessionToken() });
+  const account = await accountQuery.get(accountId, {
+    sessionToken: user.getSessionToken(),
+  });
   // TODO: clean private account data.
   // Resume data to send to client
   return {
