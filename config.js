@@ -1,4 +1,5 @@
 const SimpleSendGridAdapter = require('./adapters/SendGridAdapter');
+
 const { nullParser } = require('./cloud/utils');
 
 const masterKey = process.env.MASTER_KEY;
@@ -31,7 +32,7 @@ module.exports = {
   },
   push: {
     android: {
-      apiKey: process.env.FCM_SERVER_KEY, // The Server API Key of FCM
+      apiKey: process.env.FCM_SERVER_KEY,
     },
   },
   auth: {
