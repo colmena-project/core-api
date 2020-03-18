@@ -19,6 +19,9 @@ const incrementStock = async (typeId, user, ammount = 1) => {
   const wasteType = await WasteTypeService.findWasteTypeById(typeId);
   const userStock = await getStock(wasteType, user);
   userStock.increment('ammount', ammount);
+  const acl = new Parse.ACL(user);
+  acl.setPublicReadAccess(false);
+  userStock.setACL(acl);
   userStock.save(null, { useMasterKey: true });
 };
 
