@@ -6,13 +6,14 @@ const { Transaction, TransactionDetail } = require('../classes');
 const { getQueryAuthOptions } = require('../utils');
 const { getValueForNextSequence } = require('../utils/db');
 const ContainerService = require('./ContainerService');
+const StockService = require('./StockService');
+const WasteTypeService = require('./WasteTypeService');
 
-const { BAGS_STATUS, MAX_BAGS_QUANTITY_PER_REQUEST, TRANSACTIONS_TYPES } = require('../constants');
-
-const findWasteTypeById = async (id) => {
-  const wasteTypeQuery = new Parse.Query('WasteType');
-  return wasteTypeQuery.get(id, { useMasterKey: true });
-};
+const {
+  CONTAINER_STATUS,
+  MAX_CONTAINERS_QUANTITY_PER_REQUEST,
+  TRANSACTIONS_TYPES,
+} = require('../constants');
 
 const findById = async (id, user, master) => {
   const authOptions = getQueryAuthOptions(user, master);
@@ -33,10 +34,13 @@ const findById = async (id, user, master) => {
   return transaction.toJSON();
 };
 
-const createTransactionDetail = async (transaction, wasteTypeId, user) => {
+const createTransactionDetail = async (transaction, wasteType, user) => {
   const authOptions = getQueryAuthOptions(user);
-  const wasteType = await findWasteTypeById(wasteTypeId);
-  const container = await ContainerService.createContainer(wasteType, BAGS_STATUS.RECOVERED, user);
+  const container = await ContainerService.createContainer(
+    wasteType,
+    CONTAINER_STATUS.RECOVERED,
+    user,
+  );
   try {
     const transactionDetail = new TransactionDetail();
     transactionDetail.set('transaction', transaction);
@@ -51,22 +55,25 @@ const createTransactionDetail = async (transaction, wasteTypeId, user) => {
   }
 };
 
-const createManyTransactionsDetail = async (qty, transaction, typeId, user) => {
+const createManyTransactionsDetail = async (transaction, wasteTypeId, qty, user) => {
+  const wasteType = await WasteTypeService.findWasteTypeById(wasteTypeId);
   const promises = [];
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < qty; i++) {
-    promises.push(createTransactionDetail(transaction, typeId, user));
+    promises.push(createTransactionDetail(transaction, wasteType, user));
   }
   const details = await Promise.all(promises);
+  // await StockService.incrementStock(wasteType, user, qty);
   return details;
+  // await StockService.decrementStock(wasteType, user, qty);
 };
 
 const registerRecover = async (containers = [], user) => {
   let transaction;
   containers.forEach(({ qty }) => {
-    if (qty > MAX_BAGS_QUANTITY_PER_REQUEST) {
+    if (qty > MAX_CONTAINERS_QUANTITY_PER_REQUEST) {
       throw new Error(
-        `Max bags quantity per request exceded. Please check your containers data. Current max: ${MAX_BAGS_QUANTITY_PER_REQUEST}`,
+        `Max container quantity per request exceded. Please check your containers data. Current max: ${MAX_CONTAINERS_QUANTITY_PER_REQUEST}`,
       );
     }
   });
@@ -78,18 +85,29 @@ const registerRecover = async (containers = [], user) => {
     transaction.set('number', number);
     await transaction.save(null, { sessionToken: user.getSessionToken() });
     const promises = containers.map(({ typeId, qty }) =>
-      createManyTransactionsDetail(qty, transaction, typeId, user),
+      createManyTransactionsDetail(transaction, typeId, qty, user),
     );
-    await Promise.all(promises);
 
-    // return transaction;
+    // wait for all promisses are resolved or rejected
+    const transactionDetails = await Promise.allSettled(promises);
+    // if one is rejected throw the first reason
+    if (transactionDetails.some((td) => td.status === 'rejected')) {
+      const { reason } = transactionDetails
+        .filter((td) => td.status === 'rejected')
+        .shift();
+      throw new Error(reason);
+    }
+    const stockPromisses = containers.map(({ typeId, qty }) =>
+      StockService.incrementStock(typeId, user, qty),
+    );
+
+    await Promise.all(stockPromisses);
     // query to server in order to return stored value, NOT in memory value.
     const storedTransaction = await findById(transaction.id, user);
     return storedTransaction;
   } catch (error) {
-    console.log(error);
-    if (transaction) await transaction.destroy({ useMasterKey: true });
-    throw new Error('Transaction could not be registered.');
+    await transaction.destroy({ useMasterKey: true });
+    throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
   }
 };
 
