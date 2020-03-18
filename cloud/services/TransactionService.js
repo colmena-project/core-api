@@ -34,6 +34,15 @@ const findById = async (id, user, master) => {
   return transaction.toJSON();
 };
 
+const createTransaction = async (user) => {
+  const transaction = new Transaction();
+  const number = await getValueForNextSequence(Transaction.name);
+  transaction.set('type', TRANSACTIONS_TYPES.RECOVER);
+  transaction.set('to', user);
+  transaction.set('number', number);
+  return transaction.save(null, { sessionToken: user.getSessionToken() });
+};
+
 const createTransactionDetail = async (transaction, wasteType, user) => {
   const authOptions = getQueryAuthOptions(user);
   const container = await ContainerService.createContainer(
@@ -55,40 +64,52 @@ const createTransactionDetail = async (transaction, wasteType, user) => {
   }
 };
 
-const createManyTransactionsDetail = async (transaction, wasteTypeId, qty, user) => {
-  const wasteType = await WasteTypeService.findWasteTypeById(wasteTypeId);
+const createManyTransactionsDetail = async (transaction, wasteType, qty, user) => {
   const promises = [];
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < qty; i++) {
     promises.push(createTransactionDetail(transaction, wasteType, user));
   }
   const details = await Promise.all(promises);
-  // await StockService.incrementStock(wasteType, user, qty);
   return details;
-  // await StockService.decrementStock(wasteType, user, qty);
 };
 
-const registerRecover = async (containers = [], user) => {
-  let transaction;
-  containers.forEach(({ qty }) => {
+const runRecoverValidations = (containers) => {
+  const typesMap = new Map();
+  containers.forEach(({ typeId, qty }) => {
+    if (typesMap.has(typeId)) {
+      throw new Error(`Waste Type ${typeId} cannot be duplicated on request.`);
+    }
+    typesMap.set(typeId, typeId);
     if (qty > MAX_CONTAINERS_QUANTITY_PER_REQUEST) {
       throw new Error(
         `Max container quantity per request exceded. Please check your containers data. Current max: ${MAX_CONTAINERS_QUANTITY_PER_REQUEST}`,
       );
     }
   });
+};
+
+const retrieveWasteTypes = async (containers) => {
+  const wasteTypes = new Map();
+  const promisses = containers.map((c) => WasteTypeService.findWasteTypeById(c.typeId));
+  const types = await Promise.all(promisses);
+  types.forEach((t) => wasteTypes.set(t.id, t));
+  return wasteTypes;
+};
+
+const registerRecover = async (containers = [], user) => {
+  let transaction;
   try {
-    transaction = new Transaction();
-    const number = await getValueForNextSequence(Transaction.name);
-    transaction.set('type', TRANSACTIONS_TYPES.RECOVER);
-    transaction.set('to', user);
-    transaction.set('number', number);
-    await transaction.save(null, { sessionToken: user.getSessionToken() });
-    const promises = containers.map(({ typeId, qty }) =>
-      createManyTransactionsDetail(transaction, typeId, qty, user),
-    );
+    runRecoverValidations(containers);
+    const wasteTypes = await retrieveWasteTypes(containers);
+    transaction = await createTransaction(user);
+    const promises = containers.map(({ typeId, qty }) => {
+      const wasteType = wasteTypes.get(typeId);
+      createManyTransactionsDetail(transaction, wasteType, qty, user);
+    });
 
     // wait for all promisses are resolved or rejected
+    // const transactionDetails = await Promise.allSettled(promises);
     const transactionDetails = await Promise.allSettled(promises);
     // if one is rejected throw the first reason
     if (transactionDetails.some((td) => td.status === 'rejected')) {
@@ -106,7 +127,7 @@ const registerRecover = async (containers = [], user) => {
     const storedTransaction = await findById(transaction.id, user);
     return storedTransaction;
   } catch (error) {
-    await transaction.destroy({ useMasterKey: true });
+    if (transaction) await transaction.destroy({ useMasterKey: true });
     throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
   }
 };
