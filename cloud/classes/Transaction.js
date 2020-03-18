@@ -1,4 +1,4 @@
-// const { Parse } = global;
+const { Parse } = global;
 const Base = require('./Base');
 // const { getQueryAuthOptions } = require('../utils');
 
@@ -31,6 +31,17 @@ class Transaction extends Base {
 
   //   return transactions;
   // }
+  static async afterDelete(request) {
+    const { object: transaction } = request;
+    const detailsQuery = new Parse.Query('TransactionDetail');
+    detailsQuery.equalTo('transaction', transaction);
+    const details = await detailsQuery.find({ useMasterKey: true });
+    details.forEach((d) => {
+      const container = d.get('container');
+      container.destroy({ useMasterKey: true });
+      d.destroy({ useMasterKey: true });
+    });
+  }
 }
 
 module.exports = Transaction;
