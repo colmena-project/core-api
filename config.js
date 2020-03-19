@@ -22,6 +22,8 @@ module.exports = {
   appId,
   masterKey,
   readOnlyMasterKey,
+  jsonLogs: false,
+  logLevel: process.env.PARSE_SERVER_LOGS_LEVEL,
   logsFolder: nullParser(process.env.PARSE_SERVER_LOGS_FOLDER),
   verbose: false,
   silent: false,
