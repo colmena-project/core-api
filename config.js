@@ -19,6 +19,7 @@ module.exports = {
   cloud: './cloud/main.js', // Absolute path to your Cloud Code
   allowClientClassCreation: false,
   enableSingleSchemaCache: true,
+  preserveFileName: false,
   appId,
   masterKey,
   readOnlyMasterKey,
