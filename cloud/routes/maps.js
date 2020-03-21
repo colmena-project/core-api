@@ -5,4 +5,8 @@ module.exports = {
     action: MapsController.distanceCalculate,
     secure: false,
   },
+  getAddress: {
+    action: MapsController.getAddressFromLatLng,
+    secure: true,
+  },
 };

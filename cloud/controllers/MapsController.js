@@ -1,8 +1,15 @@
 /* eslint-disable no-unused-vars */
-const { GOOGLE_MAPS_DISTANCE_MATRIX_API_KEY } = process.env;
+const { MapService } = require('../services');
 
 const distanceCalculate = (request) => ({ distance: '2km' });
 
+const getAddressFromLatLng = (request) => {
+  const { params } = request;
+  const { lat, lng } = params;
+  return MapService.reverseGeocode(lat, lng);
+};
+
 module.exports = {
   distanceCalculate,
+  getAddressFromLatLng,
 };
