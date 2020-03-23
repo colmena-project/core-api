@@ -24,9 +24,37 @@ const reverseGeocode = async (latitude, longitude) => {
   if (result.data.error_message) {
     throw new Error(result.data.error_message);
   }
+  if (result.data.status === 'ZERO_RESULTS') {
+    throw new Error(`Cannot match any result to ${latitude} ${longitude} LatLng`);
+  }
   return result.data.results[0].formatted_address;
 };
 
+const geocode = async (address) => {
+  if (!address) {
+    throw new Error('Address must be provided');
+  }
+  const client = new Client({});
+  const result = await client.geocode({
+    params: {
+      address,
+      key: GOOGLE_MAPS_API_KEY,
+    },
+    timeout: 1000, // milliseconds
+  });
+  if (result.data.error_message) {
+    throw new Error(result.data.error_message);
+  }
+  if (result.data.status === 'ZERO_RESULTS') {
+    throw new Error(`Cannot match any result to ${address} Address`);
+  }
+  return {
+    formatted_address: result.data.results[0].formatted_address,
+    geocode: result.data.results[0].geometry.location,
+  };
+};
+
 module.exports = {
+  geocode,
   reverseGeocode,
 };

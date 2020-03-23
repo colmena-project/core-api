@@ -9,4 +9,8 @@ module.exports = {
     action: MapsController.getAddressFromLatLng,
     secure: true,
   },
+  geocodeAddress: {
+    action: MapsController.geocodeAddress,
+    secure: true,
+  },
 };

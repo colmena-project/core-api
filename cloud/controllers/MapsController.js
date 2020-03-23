@@ -9,7 +9,14 @@ const getAddressFromLatLng = (request) => {
   return MapService.reverseGeocode(lat, lng);
 };
 
+const geocodeAddress = (request) => {
+  const { params } = request;
+  const { address } = params;
+  return MapService.geocode(address);
+};
+
 module.exports = {
   distanceCalculate,
   getAddressFromLatLng,
+  geocodeAddress,
 };
