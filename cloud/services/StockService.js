@@ -3,6 +3,7 @@ const WasteTypeService = require('./WasteTypeService');
 
 const getUserStock = async (user) => {
   const stockQ = new Parse.Query('UserStock');
+  stockQ.include('wasteType');
   const stock = await stockQ.find({ sessionToken: user.getSessionToken() });
   return stock;
 };
