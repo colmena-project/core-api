@@ -27,7 +27,10 @@ const reverseGeocode = async (latitude, longitude) => {
   if (result.data.status === 'ZERO_RESULTS') {
     throw new Error(`Cannot match any result to ${latitude} ${longitude} LatLng`);
   }
-  return result.data.results[0].formatted_address;
+  return {
+    formatted_address: result.data.results[0].formatted_address,
+    address_components: result.data.results[0].address_components,
+  };
 };
 
 const geocode = async (address) => {
