@@ -15,8 +15,15 @@ const geocodeAddress = (request) => {
   return MapService.geocode(address);
 };
 
+const getAddressList = (request) => {
+  const { params } = request;
+  const { address } = params;
+  return MapService.placeAutocomplete(address);
+};
+
 module.exports = {
   distanceCalculate,
   getAddressFromLatLng,
   geocodeAddress,
+  getAddressList,
 };

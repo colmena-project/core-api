@@ -13,4 +13,8 @@ module.exports = {
     action: MapsController.geocodeAddress,
     secure: true,
   },
+  getAddressList: {
+    action: MapsController.getAddressList,
+    secure: true,
+  },
 };

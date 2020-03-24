@@ -54,7 +54,32 @@ const geocode = async (address) => {
   };
 };
 
+const placeAutocomplete = async (address) => {
+  if (!address) {
+    throw new Error('Address must be provided');
+  }
+  const client = new Client({});
+  const result = await client.placeAutocomplete({
+    params: {
+      input: address,
+      key: GOOGLE_MAPS_API_KEY,
+    },
+    timeout: 1000, // milliseconds
+  });
+
+  if (result.data.error_message) {
+    throw new Error(result.data.error_message);
+  }
+  if (result.data.status === 'ZERO_RESULTS') {
+    throw new Error(`Cannot match any result to ${address} Address`);
+  }
+  return {
+    predictions: result.data.predictions,
+  };
+};
+
 module.exports = {
   geocode,
   reverseGeocode,
+  placeAutocomplete,
 };
