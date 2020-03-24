@@ -13,8 +13,13 @@ const getMyAccount = async (request) => {
   const stock = await StockService.getUserStock(user);
   account.set(
     'stock',
-    stock.map((s) => s.toJSON()),
+    stock.map((s) => {
+      const stockJson = s.toJSON();
+      const wasteType = s.get('wasteType').toJSON();
+      return { ...stockJson, wasteType };
+    }),
   );
+
   return account.toJSON();
 };
 
