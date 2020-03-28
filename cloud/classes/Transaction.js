@@ -1,6 +1,6 @@
 const { Parse } = global;
 const Base = require('./Base');
-// const { getQueryAuthOptions } = require('../utils');
+const { TRANSACTIONS_TYPES } = require('../constants');
 
 class Transaction extends Base {
   constructor() {
@@ -37,8 +37,10 @@ class Transaction extends Base {
     detailsQuery.equalTo('transaction', transaction);
     const details = await detailsQuery.find({ useMasterKey: true });
     details.forEach((d) => {
-      const container = d.get('container');
-      container.destroy({ useMasterKey: true });
+      if (transaction.get('type') === TRANSACTIONS_TYPES.RECOVER) {
+        const container = d.get('container');
+        container.destroy({ useMasterKey: true });
+      }
       d.destroy({ useMasterKey: true });
     });
   }
