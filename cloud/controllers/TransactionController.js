@@ -4,17 +4,25 @@ const registerRecover = async (request) => {
   const { user, params } = request;
   const { containers } = params;
   const transaction = await TransactionService.registerRecover(containers, user);
-  return transaction;
+  return transaction.toJSON();
 };
 
-const findById = async (request) => {
+const registerTransferRequest = async (request) => {
+  const { user, params } = request;
+  const { containers, to } = params;
+  const transaction = await TransactionService.registerTransferRequest(containers, to, user);
+  return transaction.toJSON();
+};
+
+const findTransactionById = async (request) => {
   const { user, params } = request;
   const { objectId } = params;
-  const transaction = await TransactionService.findById(objectId, user);
-  return transaction;
+  const transaction = await TransactionService.findTransactionById(objectId, user);
+  return transaction.toJSON();
 };
 
 module.exports = {
   registerRecover,
-  findById,
+  registerTransferRequest,
+  findTransactionById,
 };

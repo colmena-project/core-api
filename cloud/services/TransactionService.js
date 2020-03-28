@@ -1,13 +1,12 @@
-/* eslint-disable function-paren-newline */
-/* eslint-disable implicit-arrow-linebreak */
 const { Parse } = global;
-const { Transaction, TransactionDetail } = require('../classes');
-
 const { getQueryAuthOptions } = require('../utils');
 const { getValueForNextSequence } = require('../utils/db');
+
+const { Transaction, TransactionDetail } = require('../classes');
+const WasteTypeService = require('./WasteTypeService');
 const ContainerService = require('./ContainerService');
 const StockService = require('./StockService');
-const WasteTypeService = require('./WasteTypeService');
+const UserService = require('./UserService');
 
 const {
   CONTAINER_STATUS,
@@ -15,14 +14,13 @@ const {
   TRANSACTIONS_TYPES,
 } = require('../constants');
 
-const findById = async (id, user, master) => {
+const findTransactionById = async (id, user, master) => {
   const authOptions = getQueryAuthOptions(user, master);
   const transactionQuery = new Parse.Query('Transaction');
   const transaction = await transactionQuery.get(id, authOptions);
 
   const detailQuery = new Parse.Query('TransactionDetail');
   detailQuery.equalTo('transaction', transaction);
-  detailQuery.include('container');
   detailQuery.include('container.type');
   const transactionDetail = await detailQuery.find(authOptions);
 
@@ -31,50 +29,20 @@ const findById = async (id, user, master) => {
     transactionDetail.map((d) => d.toJSON()),
   );
 
-  return transaction.toJSON();
+  return transaction;
 };
 
-const createTransaction = async (user) => {
+const createTransaction = async (from = null, to, type, sessionToken) => {
   const transaction = new Transaction();
   const number = await getValueForNextSequence(Transaction.name);
-  transaction.set('type', TRANSACTIONS_TYPES.RECOVER);
-  transaction.set('to', user);
+  transaction.set('type', type);
+  transaction.set('from', from);
+  transaction.set('to', to);
   transaction.set('number', number);
-  return transaction.save(null, { sessionToken: user.getSessionToken() });
+  return transaction.save(null, { sessionToken });
 };
 
-const createTransactionDetail = async (transaction, wasteType, user) => {
-  const authOptions = getQueryAuthOptions(user);
-  const container = await ContainerService.createContainer(
-    wasteType,
-    CONTAINER_STATUS.RECOVERED,
-    user,
-  );
-  try {
-    const transactionDetail = new TransactionDetail();
-    transactionDetail.set('transaction', transaction);
-    transactionDetail.set('qty', wasteType.get('qty'));
-    transactionDetail.set('unit', wasteType.get('unit'));
-    transactionDetail.set('container', container);
-    await transactionDetail.save(null, authOptions);
-    return transactionDetail;
-  } catch (error) {
-    if (container) container.destroy({ useMasterKey: true });
-    throw error;
-  }
-};
-
-const createManyTransactionsDetail = async (transaction, wasteType, qty, user) => {
-  const promises = [];
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < qty; i++) {
-    promises.push(createTransactionDetail(transaction, wasteType, user));
-  }
-  const details = await Promise.all(promises);
-  return details;
-};
-
-const runRecoverValidations = (containers) => {
+const validateRegisterInput = (containers) => {
   const typesMap = new Map();
   containers.forEach(({ typeId, qty }) => {
     if (typesMap.has(typeId)) {
@@ -89,42 +57,109 @@ const runRecoverValidations = (containers) => {
   });
 };
 
-const retrieveWasteTypes = async (containers) => {
-  const wasteTypes = new Map();
-  const promisses = containers.map((c) => WasteTypeService.findWasteTypeById(c.typeId));
-  const types = await Promise.all(promisses);
-  types.forEach((t) => wasteTypes.set(t.id, t));
-  return wasteTypes;
+/**
+ * Creates one TransactionDetail instance
+ *
+ * @param {*} transaction
+ * @param {*} wasteType
+ * @param {*} user
+ */
+const createTransactionDetail = async (transaction, container, user) => {
+  const authOptions = getQueryAuthOptions(user);
+  const transactionDetail = new TransactionDetail();
+  const wasteType = container.get('type');
+
+  transactionDetail.set('transaction', transaction);
+  transactionDetail.set('qty', wasteType.get('qty'));
+  transactionDetail.set('unit', wasteType.get('unit'));
+  transactionDetail.set('container', container);
+  await transactionDetail.save(null, authOptions);
+  return transactionDetail;
 };
 
-const registerRecover = async (containers = [], user) => {
+/**
+ * Register RECOVER method.
+ * Inital point start of colmena recover proccess. It takes an input, wich contains
+ * waste type and quantity of containers. It will create a transaction, many transaction details
+ * and many container for each input.
+ *
+ * @param {Array} containersInput
+ * @param {*} user
+ */
+const registerRecover = async (containersInput = [], user) => {
   let transaction;
   try {
-    runRecoverValidations(containers);
-    const wasteTypes = await retrieveWasteTypes(containers);
-    transaction = await createTransaction(user);
-    const promises = containers.map(({ typeId, qty }) => {
-      const wasteType = wasteTypes.get(typeId);
-      createManyTransactionsDetail(transaction, wasteType, qty, user);
-    });
-
-    // wait for all promisses are resolved or rejected
-    // const transactionDetails = await Promise.allSettled(promises);
-    const transactionDetails = await Promise.allSettled(promises);
-    // if one is rejected throw the first reason
-    if (transactionDetails.some((td) => td.status === 'rejected')) {
-      const { reason } = transactionDetails
-        .filter((td) => td.status === 'rejected')
-        .shift();
-      throw new Error(reason);
-    }
-    const stockPromisses = containers.map(({ typeId, qty }) =>
-      StockService.incrementStock(typeId, user, qty),
+    validateRegisterInput(containersInput);
+    const wasteTypes = await WasteTypeService.getWasteTypesFromIds(
+      containersInput.map((c) => c.typeId),
+    );
+    transaction = await createTransaction(
+      null,
+      user,
+      TRANSACTIONS_TYPES.RECOVER,
+      user.getSessionToken(),
     );
 
-    await Promise.all(stockPromisses);
+    const containers = await Promise.all(
+      containersInput.map(async ({ typeId, qty }) => {
+        const wasteType = wasteTypes.get(typeId);
+        return ContainerService.createContainersOfType(
+          wasteType,
+          qty,
+          CONTAINER_STATUS.RECOVERED,
+          user,
+        );
+      }),
+    );
+
+    await Promise.all(
+      containers.flat().map((container) => createTransactionDetail(transaction, container, user)),
+    );
+
+    await Promise.all(
+      containersInput.map((input) => StockService.incrementStock(input.typeId, user, input.qty)),
+    );
+
     // query to server in order to return stored value, NOT in memory value.
-    const storedTransaction = await findById(transaction.id, user);
+    const storedTransaction = await findTransactionById(transaction.id, user);
+    return storedTransaction;
+  } catch (error) {
+    if (transaction) await transaction.destroy({ useMasterKey: true });
+    throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
+  }
+};
+
+const registerTransferRequest = async (containersInput, to, user) => {
+  let transaction;
+  try {
+    if (!to) throw new Error("Cannot transfer without a recipient. Please check parameter 'to'");
+    const recipient = await UserService.findUserById(to);
+
+    const containers = await Promise.all(
+      containersInput.map((containerId) => ContainerService.findContainerById(containerId, user)),
+    );
+
+    if (!containers.every((container) => container.get('status') === CONTAINER_STATUS.RECOVERED)) {
+      throw new Error(
+        `Check containers status. To transfer a container to a user It's has to be in ${CONTAINER_STATUS.RECOVERED} status`,
+      );
+    }
+
+    transaction = await createTransaction(
+      user,
+      recipient,
+      TRANSACTIONS_TYPES.TRANSFER_REQUEST,
+      user.getSessionToken(),
+    );
+
+    containers.map((container) => container.set('status', CONTAINER_STATUS.TRANSFER_PENDING));
+
+    await Promise.all(
+      containers.map((container) => createTransactionDetail(transaction, container, user)),
+    );
+
+    // query to server in order to return stored value, NOT in memory value.
+    const storedTransaction = await findTransactionById(transaction.id, user);
     return storedTransaction;
   } catch (error) {
     if (transaction) await transaction.destroy({ useMasterKey: true });
@@ -133,6 +168,7 @@ const registerRecover = async (containers = [], user) => {
 };
 
 module.exports = {
+  findTransactionById,
   registerRecover,
-  findById,
+  registerTransferRequest,
 };

@@ -10,6 +10,15 @@ const findWasteTypeById = async (id) => {
   }
 };
 
+const getWasteTypesFromIds = async (wasteTypesIds = []) => {
+  const wasteTypes = new Map();
+  const promisses = wasteTypesIds.map((id) => findWasteTypeById(id));
+  const types = await Promise.all(promisses);
+  types.forEach((t) => wasteTypes.set(t.id, t));
+  return wasteTypes;
+};
+
 module.exports = {
   findWasteTypeById,
+  getWasteTypesFromIds,
 };

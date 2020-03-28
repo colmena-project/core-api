@@ -5,8 +5,12 @@ module.exports = {
     action: TransactionController.registerRecover,
     secure: true,
   },
+  registerTransferRequest: {
+    action: TransactionController.registerTransferRequest,
+    secure: true,
+  },
   findTransactionById: {
-    action: TransactionController.findById,
+    action: TransactionController.findTransactionById,
     secure: true,
   },
 };

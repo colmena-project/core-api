@@ -14,7 +14,18 @@ const clearUserSessions = async (user) => {
   return { sessions: sessionsCleared.map((s) => s.get('sessionToken')) };
 };
 
+const findUserById = async (id) => {
+  try {
+    const query = new Parse.Query(Parse.User);
+    const container = await query.get(id, { useMasterKey: true });
+    return container;
+  } catch (error) {
+    throw new Error(`User ${id} not found`);
+  }
+};
+
 module.exports = {
+  findUserById,
   findRolesByUser,
   clearUserSessions,
 };
