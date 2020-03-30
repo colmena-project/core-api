@@ -5,6 +5,7 @@ const UserService = require('./UserService');
 const TransactionService = require('./TransactionService');
 const ContainerService = require('./ContainerService');
 const StockService = require('./StockService');
+const SecurityService = require('./SecurityService');
 const WasteTypeService = require('./WasteTypeService');
 
 module.exports = {
@@ -14,6 +15,7 @@ module.exports = {
   MapService,
   TransactionService,
   StockService,
+  SecurityService,
   UserService,
   WasteTypeService,
 };
