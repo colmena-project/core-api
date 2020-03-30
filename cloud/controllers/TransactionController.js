@@ -14,15 +14,23 @@ const registerTransferRequest = async (request) => {
   return transaction.toJSON();
 };
 
+const registerTransferAccept = async (request) => {
+  const { user, params } = request;
+  const { transactionId } = params;
+  const transaction = await TransactionService.registerTransferAccept(transactionId, user);
+  return transaction.toJSON();
+};
+
 const findTransactionById = async (request) => {
   const { user, params } = request;
   const { objectId } = params;
-  const transaction = await TransactionService.findTransactionById(objectId, user);
+  const transaction = await TransactionService.findTransactionWithDetailsById(objectId, user);
   return transaction.toJSON();
 };
 
 module.exports = {
+  findTransactionById,
   registerRecover,
   registerTransferRequest,
-  findTransactionById,
+  registerTransferAccept,
 };

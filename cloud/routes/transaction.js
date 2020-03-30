@@ -9,6 +9,10 @@ module.exports = {
     action: TransactionController.registerTransferRequest,
     secure: true,
   },
+  registerTransferAccept: {
+    action: TransactionController.registerTransferAccept,
+    secure: true,
+  },
   findTransactionById: {
     action: TransactionController.findTransactionById,
     secure: true,

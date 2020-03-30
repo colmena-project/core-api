@@ -1,5 +1,4 @@
 const { Parse } = global;
-const WasteTypeService = require('./WasteTypeService');
 
 const getUserStock = async (user) => {
   const stockQ = new Parse.Query('UserStock');
@@ -22,25 +21,39 @@ const getStockOfType = async (type, user) => {
   return userStock;
 };
 
-const incrementStock = async (typeId, user, ammount = 1) => {
-  const wasteType = await WasteTypeService.findWasteTypeById(typeId);
+const incrementStock = async (wasteType, user, ammount = 1) => {
   const userStock = await getStockOfType(wasteType, user);
   userStock.increment('ammount', ammount);
   const acl = new Parse.ACL(user);
   acl.setPublicReadAccess(false);
   userStock.setACL(acl);
-  userStock.save(null, { useMasterKey: true });
+  await userStock.save(null, { useMasterKey: true });
+  return userStock;
 };
 
-const decrementStock = async (typeId, user, ammount) => {
-  const wasteType = await WasteTypeService.findWasteTypeById(typeId);
+const decrementStock = async (wasteType, user, ammount = 1) => {
   const userStock = await getStockOfType(wasteType, user);
-  userStock.decrement('ammount', ammount);
-  userStock.save(null, { useMasterKey: true });
+  userStock.increment('ammount', -ammount);
+  await userStock.save(null, { useMasterKey: true });
+  return userStock;
+};
+
+const moveStock = async (wasteType, from, to, ammount = 1) => {
+  let fromStock;
+  let toStock;
+  try {
+    fromStock = await decrementStock(wasteType, from, ammount);
+    toStock = await incrementStock(wasteType, to, ammount);
+  } catch (error) {
+    if (fromStock) await incrementStock(wasteType, from, ammount);
+    if (toStock) await decrementStock(wasteType, to, ammount);
+    throw error;
+  }
 };
 
 module.exports = {
   incrementStock,
   decrementStock,
+  moveStock,
   getUserStock,
 };

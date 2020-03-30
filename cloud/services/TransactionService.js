@@ -7,6 +7,7 @@ const WasteTypeService = require('./WasteTypeService');
 const ContainerService = require('./ContainerService');
 const StockService = require('./StockService');
 const UserService = require('./UserService');
+const SecurityService = require('./SecurityService');
 
 const {
   CONTAINER_STATUS,
@@ -14,11 +15,21 @@ const {
   TRANSACTIONS_TYPES,
 } = require('../constants');
 
-const findTransactionById = async (id, user, master) => {
-  const authOptions = getQueryAuthOptions(user, master);
-  const transactionQuery = new Parse.Query('Transaction');
-  const transaction = await transactionQuery.get(id, authOptions);
+const findRawTransaction = async (id, user, master) => {
+  try {
+    const authOptions = getQueryAuthOptions(user, master);
+    const transactionQuery = new Parse.Query('Transaction');
+    const transaction = await transactionQuery.get(id, authOptions);
 
+    return transaction;
+  } catch (error) {
+    throw new Error(`Transaction ${id} not found`);
+  }
+};
+
+const findTransactionWithDetailsById = async (id, user, master) => {
+  const authOptions = getQueryAuthOptions(user, master);
+  const transaction = await findRawTransaction(id, user, master);
   const detailQuery = new Parse.Query('TransactionDetail');
   detailQuery.equalTo('transaction', transaction);
   detailQuery.include('container.type');
@@ -39,7 +50,8 @@ const createTransaction = async (from = null, to, type, sessionToken) => {
   transaction.set('from', from);
   transaction.set('to', to);
   transaction.set('number', number);
-  return transaction.save(null, { sessionToken });
+  await transaction.save(null, { sessionToken });
+  return transaction;
 };
 
 const validateRegisterInput = (containers) => {
@@ -57,6 +69,26 @@ const validateRegisterInput = (containers) => {
   });
 };
 
+const validateTransferAccept = (transferRequestTransaction, user) => {
+  const transactionId = transferRequestTransaction.id;
+  // if (!transactionId) {
+  //   throw new Error('Cannot accept transaction without transactionId parameter');
+  // }
+  if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSFER_REQUEST) {
+    throw new Error(
+      `Transaction ${transactionId} is not in ${TRANSACTIONS_TYPES.TRANSFER_REQUEST} status.`,
+    );
+  }
+  if (transferRequestTransaction.get('expiredAt')) {
+    throw new Error(
+      `Transaction ${transactionId} expired at ${transferRequestTransaction.get('expiredAt')}.`,
+    );
+  }
+  if (!transferRequestTransaction.get('to').equals(user)) {
+    throw new Error('You are not allowed to accept this request.');
+  }
+};
+
 /**
  * Creates one TransactionDetail instance
  *
@@ -65,26 +97,29 @@ const validateRegisterInput = (containers) => {
  * @param {*} user
  */
 const createTransactionDetail = async (transaction, container, user) => {
-  const authOptions = getQueryAuthOptions(user);
-  const transactionDetail = new TransactionDetail();
-  const wasteType = container.get('type');
-
-  transactionDetail.set('transaction', transaction);
-  transactionDetail.set('qty', wasteType.get('qty'));
-  transactionDetail.set('unit', wasteType.get('unit'));
-  transactionDetail.set('container', container);
-  await transactionDetail.save(null, authOptions);
-  return transactionDetail;
+  try {
+    const authOptions = getQueryAuthOptions(user);
+    const transactionDetail = new TransactionDetail();
+    const wasteType = container.get('type');
+    transactionDetail.set('transaction', transaction);
+    transactionDetail.set('qty', wasteType.get('qty'));
+    transactionDetail.set('unit', wasteType.get('unit'));
+    transactionDetail.set('container', container);
+    await transactionDetail.save(null, authOptions);
+    return transactionDetail;
+  } catch (error) {
+    throw new Error(`Transaction Detail could not be saved. ${error.message}`);
+  }
 };
 
 /**
  * Register RECOVER method.
  * Inital point start of colmena recover proccess. It takes an input, wich contains
  * waste type and quantity of containers. It will create a transaction, many transaction details
- * and many container for each input.
+ * and many container in RECOVERED status for each input.
  *
  * @param {Array} containersInput
- * @param {*} user
+ * @param {User} user
  */
 const registerRecover = async (containersInput = [], user) => {
   let transaction;
@@ -107,6 +142,7 @@ const registerRecover = async (containersInput = [], user) => {
           wasteType,
           qty,
           CONTAINER_STATUS.RECOVERED,
+          transaction.get('number'),
           user,
         );
       }),
@@ -117,11 +153,14 @@ const registerRecover = async (containersInput = [], user) => {
     );
 
     await Promise.all(
-      containersInput.map((input) => StockService.incrementStock(input.typeId, user, input.qty)),
+      containersInput.map((input) => {
+        const wasteType = wasteTypes.get(input.typeId);
+        return StockService.incrementStock(wasteType, user, input.qty);
+      }),
     );
 
     // query to server in order to return stored value, NOT in memory value.
-    const storedTransaction = await findTransactionById(transaction.id, user);
+    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
     return storedTransaction;
   } catch (error) {
     if (transaction) await transaction.destroy({ useMasterKey: true });
@@ -129,13 +168,23 @@ const registerRecover = async (containersInput = [], user) => {
   }
 };
 
+/**
+ * Transfer Request method. It accept a container ids array and then generates one Transaction
+ * along with many transactions details for each container. Each container status is changed to
+ * TRANSFER_PENDING status. No stock movements are generated here.
+ *
+ * @param {Array} containersInput
+ * @param {User} to
+ * @param {User} user
+ */
 const registerTransferRequest = async (containersInput, to, user) => {
   let transaction;
+  let containers;
   try {
     if (!to) throw new Error("Cannot transfer without a recipient. Please check parameter 'to'");
     const recipient = await UserService.findUserById(to);
 
-    const containers = await Promise.all(
+    containers = await Promise.all(
       containersInput.map((containerId) => ContainerService.findContainerById(containerId, user)),
     );
 
@@ -152,23 +201,109 @@ const registerTransferRequest = async (containersInput, to, user) => {
       user.getSessionToken(),
     );
 
-    containers.map((container) => container.set('status', CONTAINER_STATUS.TRANSFER_PENDING));
+    await SecurityService.grantReadAndWritePermissionsToUser(
+      'Transaction',
+      transaction.id,
+      recipient,
+    );
 
     await Promise.all(
-      containers.map((container) => createTransactionDetail(transaction, container, user)),
+      containers.map((container) => {
+        container.set('status', CONTAINER_STATUS.TRANSFER_PENDING);
+        return SecurityService.grantReadAndWritePermissionsToUser(
+          'Container',
+          container.id,
+          recipient,
+        ).then(() => createTransactionDetail(transaction, container, user));
+      }),
     );
 
     // query to server in order to return stored value, NOT in memory value.
-    const storedTransaction = await findTransactionById(transaction.id, user);
+    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
     return storedTransaction;
   } catch (error) {
-    if (transaction) await transaction.destroy({ useMasterKey: true });
+    if (transaction) {
+      await transaction.destroy({ useMasterKey: true });
+      await Promise.all(
+        containers.forEach((container) => {
+          container.set('status', CONTAINER_STATUS.RECOVERED);
+          return SecurityService.revokeReadAndWritePermissionsToUser(
+            'Container',
+            container.id,
+            transaction.get('to'),
+          );
+        }),
+      );
+    }
+    throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
+  }
+};
+
+/**
+ * Transfer Accept method. Receive the Transaction Id for a TRASNFER_REQUEST given.
+ * Verifies if transaction is valid and then creates a new Transaction and detail for the operation.
+ * Each container in the request is set to TRANSFERRED status. Also, move the stock from the owner
+ * to the user that request the endpoint.
+ *
+ * @param {Array} containersInput
+ * @param {User} to
+ * @param {User} user
+ */
+const registerTransferAccept = async (transactionId, user) => {
+  let transferRequestTransaction;
+  let transaction;
+  let containers;
+  try {
+    transferRequestTransaction = await findRawTransaction(transactionId, user);
+    validateTransferAccept(transferRequestTransaction, user);
+
+    transaction = await createTransaction(
+      transferRequestTransaction.get('from'),
+      transferRequestTransaction.get('to'),
+      TRANSACTIONS_TYPES.TRANSFER_ACCEPT,
+      user.getSessionToken(),
+    );
+    transaction.set('relatedTo', transferRequestTransaction);
+    transferRequestTransaction.set('expiredAt', new Date());
+
+    containers = await ContainerService.findContainersByTransaction(transferRequestTransaction);
+
+    await Promise.all(
+      containers.map((container) => {
+        container.set('status', CONTAINER_STATUS.TRANSFERRED);
+        return createTransactionDetail(transaction, container, user).then(() => {
+          const from = transferRequestTransaction.get('from');
+          const to = transferRequestTransaction.get('to');
+          return StockService.moveStock(container.get('type'), from, to, 1);
+        });
+      }),
+    );
+
+    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
+    return storedTransaction;
+  } catch (error) {
+    if (transaction) {
+      await transaction.destroy({ useMasterKey: true });
+      if (transferRequestTransaction) {
+        await transferRequestTransaction.unset('expiredAt');
+        if (containers) {
+          await Promise.all(
+            containers.map((container) => {
+              container.set('status', CONTAINER_STATUS.TRANSFER_PENDING);
+              return container.save(null, { useMasterKey: true });
+            }),
+          );
+        }
+        await transferRequestTransaction.save(null, { useMasterKey: true });
+      }
+    }
     throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
   }
 };
 
 module.exports = {
-  findTransactionById,
+  findTransactionWithDetailsById,
   registerRecover,
   registerTransferRequest,
+  registerTransferAccept,
 };

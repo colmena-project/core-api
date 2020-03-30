@@ -6,7 +6,7 @@ const findWasteTypeById = async (id) => {
     const wasteType = await wasteTypeQuery.get(id, { useMasterKey: true });
     return wasteType;
   } catch (error) {
-    throw new Error(`Invalid WasteType ${id} provided`);
+    throw new Error(`WasteType ${id} not found`);
   }
 };
 
