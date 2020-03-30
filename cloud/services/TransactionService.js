@@ -79,6 +79,17 @@ const rollbackContainersToStatus = async (containers, status, applyFnToEach = nu
   return Promise.resolve();
 };
 
+const rollbackUserStockTo = async (currentStock) => {
+  if (currentStock) {
+    await Promise.all(
+      currentStock.map((stock) => {
+        const ammount = stock.get('ammount');
+        stock.save({ ammount }, { useMasterKey: true });
+      }),
+    );
+  }
+};
+
 const validateRegisterInput = (containers) => {
   const typesMap = new Map();
   containers.forEach(({ typeId, qty }) => {
@@ -145,6 +156,7 @@ const createTransactionDetail = async (transaction, container, user) => {
  */
 const registerRecover = async (containersInput = [], user) => {
   let transaction;
+  let currentStock;
   try {
     validateRegisterInput(containersInput);
     const wasteTypes = await WasteTypeService.getWasteTypesFromIds(
@@ -174,18 +186,20 @@ const registerRecover = async (containersInput = [], user) => {
       containers.flat().map((container) => createTransactionDetail(transaction, container, user)),
     );
 
+    currentStock = await StockService.getUserStock(user);
+
     await Promise.all(
       containersInput.map((input) => {
         const wasteType = wasteTypes.get(input.typeId);
         return StockService.incrementStock(wasteType, user, input.qty);
       }),
     );
-
     // query to server in order to return stored value, NOT in memory value.
     const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
     return storedTransaction;
   } catch (error) {
     await destroyTransaction(transaction);
+    await rollbackUserStockTo(currentStock);
     throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
   }
 };
@@ -239,7 +253,6 @@ const registerTransferRequest = async (containersInput, to, user) => {
         ).then(() => createTransactionDetail(transaction, container, user));
       }),
     );
-
     // query to server in order to return stored value, NOT in memory value.
     const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
     return storedTransaction;
