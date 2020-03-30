@@ -13,6 +13,10 @@ module.exports = {
     action: TransactionController.registerTransferAccept,
     secure: true,
   },
+  registerTransferReject: {
+    action: TransactionController.registerTransferReject,
+    secure: true,
+  },
   findTransactionById: {
     action: TransactionController.findTransactionById,
     secure: true,
