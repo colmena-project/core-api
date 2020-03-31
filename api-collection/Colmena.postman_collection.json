@@ -46,12 +46,11 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:4444/parse/login",
+					"raw": "http://{{hostname}}/parse/login",
 					"protocol": "http",
 					"host": [
-						"localhost"
+						"{{hostname}}"
 					],
-					"port": "4444",
 					"path": [
 						"parse",
 						"login"
@@ -61,7 +60,7 @@
 			"response": []
 		},
 		{
-			"name": "http://{{hostname}}/parse/functions/getMyAccount",
+			"name": "functions/getMyAccount",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -101,7 +100,7 @@
 			"response": []
 		},
 		{
-			"name": "http://{{hostname}}/parse/functions/createAccount",
+			"name": "functions/createAccount",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -148,7 +147,7 @@
 			"response": []
 		},
 		{
-			"name": "http://{{hostname}}/parse/functions/registerRecover",
+			"name": "functions/registerRecover",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -171,7 +170,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"containers\": [\n        {\n            \"typeId\": \"GmDcMJa7Nv\",\n            \"qty\": 5\n        }\n    ]\n}",
+					"raw": "{\n    \"containers\": [\n        {\n            \"typeId\": \"GmDcMJa7Nv\",\n            \"qty\": 2\n        }\n    ]\n}\n\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -194,7 +193,7 @@
 			"response": []
 		},
 		{
-			"name": "http://{{hostname}}/parse/functions/findTransactionById",
+			"name": "functions/registerTransferRequest",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -217,7 +216,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"containers\": [\n        {\n            \"typeId\": \"GmDcMJa7Nv\",\n            \"qty\": 5\n        }\n    ]\n}",
+					"raw": "{\n    \"containers\": [\"p6I2KOJWqH\"],\n    \"to\": \"PLWNxb4T7I\"\n}\n\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -225,7 +224,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://{{hostname}}/parse/functions/registerRecover",
+					"raw": "http://{{hostname}}/parse/functions/registerTransferRequest",
 					"protocol": "http",
 					"host": [
 						"{{hostname}}"
@@ -233,7 +232,283 @@
 					"path": [
 						"parse",
 						"functions",
-						"registerRecover"
+						"registerTransferRequest"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/registerTransferAccept",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "r:bcb125e3497f4a2585835801b6b989fb"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"transactionId\": \"88UI2LWCcJ\"\n}\n\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/registerTransferAccept",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"registerTransferAccept"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/registerTransferReject",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "r:bcb125e3497f4a2585835801b6b989fb"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"transactionId\": \"ebN22ZBAzY\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/registerTransferReject",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"registerTransferReject"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/getAddress",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"lat\": \"-27.3909435\",\n    \"lng\": \"-55.90443699999999\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/getAddress",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"getAddress"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/getAddressList",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"address\": \"Rque gonzales 868, posadas, misiones, argentina\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/getAddressList",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"getAddressList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/geocodeAddress",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"address\": \"Rque gonzales 868\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/geocodeAddress",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"geocodeAddress"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/findTransactionById",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"objectId\": \"ynTUEE8qSU\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/findTransactionById",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"findTransactionById"
 					]
 				}
 			},
@@ -274,6 +549,144 @@
 					"path": [
 						"parse",
 						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "classes/Post",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "X-Parse-Application-Id",
+						"value": "{{APPLICATION_ID}}",
+						"type": "text"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"value": "{{SESSION_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"text\":\"prueba\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/classes/Post",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"classes",
+						"Post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/addNewAddress",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"street\":\"prueba\",\n\t\"default\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/addNewAddress",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"addNewAddress"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "functions/editAddress",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "{{SESSION_TOKEN}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"addressId\": \"4Wk3zPWtPJ\",\n\t\"attributes\": {\n\t\t\"street\":\"prueba\",\n\t\t\"default\": true\n\t}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/editAddress",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"editAddress"
 					]
 				}
 			},
