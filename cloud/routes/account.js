@@ -13,4 +13,12 @@ module.exports = {
     action: AccountController.getAccountOf,
     secure: true,
   },
+  addNewAddress: {
+    action: AccountController.addNewAddress,
+    secure: true,
+  },
+  editAddress: {
+    action: AccountController.editAddress,
+    secure: true,
+  },
 };

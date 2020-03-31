@@ -29,8 +29,21 @@ const getAccountOf = async (request) => {
   AccountService.findAccountById(accountId, user);
 };
 
+const addNewAddress = async (request) => {
+  const { params, user } = request;
+  return AccountService.addNewAddress(params, user);
+};
+
+const editAddress = async (request) => {
+  const { params, user } = request;
+  const { addressId, attributes } = params;
+  return AccountService.editAddress(addressId, attributes, user);
+};
+
 module.exports = {
   createAccount,
   getMyAccount,
   getAccountOf,
+  addNewAddress,
+  editAddress,
 };

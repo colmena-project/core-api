@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const { Parse } = global;
 const Account = require('../classes/Account');
+const Address = require('../classes/Address');
 const MailService = require('./MailService');
 
 const findAccountByUser = async (user) => {
@@ -80,8 +81,47 @@ const findAccountById = async (accountId, user) => {
   };
 };
 
+const removeDefaultFromOtherAddresses = async (address, user) => {
+  const query = new Parse.Query('Address');
+  query.notEqualTo('objectId', address.id);
+  const adresses = await query.find({ sessionToken: user.getSessionToken() });
+  Promise.all(
+    adresses.map((a) => {
+      a.set('default', false);
+      return a.save(null, { sessionToken: user.getSessionToken() });
+    }),
+  );
+};
+
+const addNewAddress = async (attributes, user) => {
+  const address = new Address();
+  const account = await findAccountByUser(user);
+  address.set({ ...attributes, account });
+  await address.save(null, { sessionToken: user.getSessionToken() });
+
+  if (address.get('default')) {
+    await removeDefaultFromOtherAddresses(address, user);
+  }
+
+  return address;
+};
+
+const editAddress = async (addresId, attributes, user) => {
+  const query = new Parse.Query('Address');
+  const address = await query.get(addresId, { sessionToken: user.getSessionToken() });
+  address.set({ ...attributes });
+  await address.save(null, { sessionToken: user.getSessionToken() });
+  if (address.get('default')) {
+    await removeDefaultFromOtherAddresses(address, user);
+  }
+
+  return address;
+};
+
 module.exports = {
   findAccountByUser,
   createAccount,
   findAccountById,
+  addNewAddress,
+  editAddress,
 };
