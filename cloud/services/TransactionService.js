@@ -84,7 +84,7 @@ const rollbackUserStockTo = async (currentStock) => {
     await Promise.all(
       currentStock.map((stock) => {
         const ammount = stock.get('ammount');
-        stock.save({ ammount }, { useMasterKey: true });
+        return stock.save({ ammount }, { useMasterKey: true });
       }),
     );
   }
@@ -365,10 +365,77 @@ const registerTransferReject = async (transactionId, user) => {
   }
 };
 
+const registerTransferCancel = async (transactionId, user) => {
+  let transferRequestTransaction;
+  let transaction;
+  let containers = [];
+  try {
+    transferRequestTransaction = await findRawTransaction(transactionId, user);
+    if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSFER_REQUEST) {
+      throw new Error(
+        `Transaction ${transactionId} is not in ${TRANSACTIONS_TYPES.TRANSFER_REQUEST} status.`,
+      );
+    }
+    if (transferRequestTransaction.get('expiredAt')) {
+      throw new Error(
+        `Transaction ${transactionId} expired at ${transferRequestTransaction.get('expiredAt')}.`,
+      );
+    }
+    if (!transferRequestTransaction.get('from').equals(user)) {
+      throw new Error('You are not allowed to cancel this request.');
+    }
+
+    transaction = await createTransaction(
+      transferRequestTransaction.get('from'),
+      transferRequestTransaction.get('to'),
+      TRANSACTIONS_TYPES.TRANSFER_CANCEL,
+      user.getSessionToken(),
+    );
+    transaction.set('relatedTo', transferRequestTransaction);
+    transferRequestTransaction.set('expiredAt', new Date());
+
+    containers = await ContainerService.findContainersByTransaction(transferRequestTransaction);
+    await Promise.all(
+      containers.map((container) => {
+        container.set('status', CONTAINER_STATUS.RECOVERED);
+        return SecurityService.revokeReadAndWritePermissionsToUser(
+          'Container',
+          container.id,
+          transferRequestTransaction.get('to'),
+        ).then(() => createTransactionDetail(transaction, container, user));
+      }),
+    );
+
+    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
+    return storedTransaction;
+  } catch (error) {
+    if (transaction) {
+      await destroyTransaction(transaction);
+      if (transferRequestTransaction) {
+        await rollbackContainersToStatus(
+          containers,
+          CONTAINER_STATUS.TRANSFER_PENDING,
+          (container) => {
+            SecurityService.grantReadAndWritePermissionsToUser(
+              'Container',
+              container.id,
+              transferRequestTransaction.get('to'),
+            );
+          },
+        );
+        await transferRequestTransaction.unset('expiredAt');
+        await transferRequestTransaction.save(null, { useMasterKey: true });
+      }
+    }
+    throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
+  }
+};
+
 module.exports = {
   findTransactionWithDetailsById,
   registerRecover,
   registerTransferRequest,
   registerTransferAccept,
   registerTransferReject,
+  registerTransferCancel,
 };

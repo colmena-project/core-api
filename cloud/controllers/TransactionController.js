@@ -28,6 +28,13 @@ const registerTransferReject = async (request) => {
   return transaction.toJSON();
 };
 
+const registerTransferCancel = async (request) => {
+  const { user, params } = request;
+  const { transactionId } = params;
+  const transaction = await TransactionService.registerTransferCancel(transactionId, user);
+  return transaction.toJSON();
+};
+
 const findTransactionById = async (request) => {
   const { user, params } = request;
   const { objectId } = params;
@@ -41,4 +48,5 @@ module.exports = {
   registerTransferRequest,
   registerTransferAccept,
   registerTransferReject,
+  registerTransferCancel,
 };
