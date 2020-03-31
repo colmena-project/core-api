@@ -331,6 +331,52 @@
 			"response": []
 		},
 		{
+			"name": "functions/registerTransferCancel",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Parse-Application-Id",
+						"type": "text",
+						"value": "{{APPLICATION_ID}}"
+					},
+					{
+						"key": "X-Parse-Session-Token",
+						"type": "text",
+						"value": "r:bcb125e3497f4a2585835801b6b989fb"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"transactionId\": \"ebN22ZBAzY\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{hostname}}/parse/functions/registerTransferCancel",
+					"protocol": "http",
+					"host": [
+						"{{hostname}}"
+					],
+					"path": [
+						"parse",
+						"functions",
+						"registerTransferCancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "functions/getAddress",
 			"request": {
 				"method": "POST",
