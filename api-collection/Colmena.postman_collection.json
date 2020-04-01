@@ -45,7 +45,8 @@
 								"functions",
 								"getMyAccount"
 							]
-						}
+						},
+						"description": "Search and return the session user account."
 					},
 					"response": []
 				},
@@ -74,7 +75,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"santiago.semhan\",\n    \"password\": \"asdasd\",\n    \"email\": \"santiagosemhan@gmail.com\",\n    \"firstName\": \"Pablo\",\n    \"middleName\": \"Santiago\",\n    \"lastName\": \"Semhan\",\n    \"nickname\":\"santiago\",\n    \"facebook\":\"www.mifacebook.com\",\n    \"facebookProfilePhotoUrl\": \"www.miimagen.com\",\n    \"aboutMe\": \"esto es un about me?\"\n  } ",
+							"raw": "{\n    \"username\": \"santiago.semhan\",\n    \"password\": \"asdasd\",\n    \"email\": \"santiagosemhan@colmena.com\",\n    \"firstName\": \"Pablo\",\n    \"middleName\": \"Santiago\",\n    \"lastName\": \"Semhan\",\n    \"nickname\":\"santiago\",\n    \"facebook\":\"www.mifacebook.com\",\n    \"facebookProfilePhotoUrl\": \"www.miimagen.com\",\n    \"aboutMe\": \"esto es un about me?\"\n  } ",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -92,53 +93,8 @@
 								"functions",
 								"createAccount"
 							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "functions/getAddress",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-Parse-Application-Id",
-								"type": "text",
-								"value": "{{APPLICATION_ID}}"
-							},
-							{
-								"key": "X-Parse-Session-Token",
-								"type": "text",
-								"value": "{{SESSION_TOKEN}}"
-							},
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"type": "text",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"lat\": \"-27.3909435\",\n    \"lng\": \"-55.90443699999999\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
 						},
-						"url": {
-							"raw": "http://{{hostname}}/parse/functions/getAddress",
-							"protocol": "http",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"parse",
-								"functions",
-								"getAddress"
-							]
-						}
+						"description": "Create a new user and a new account for this user."
 					},
 					"response": []
 				},
@@ -184,7 +140,8 @@
 								"functions",
 								"addNewAddress"
 							]
-						}
+						},
+						"description": "Adds a new addres to a user account. The account is set automatically from the user that request the function"
 					},
 					"response": []
 				},
@@ -230,11 +187,13 @@
 								"functions",
 								"editAddress"
 							]
-						}
+						},
+						"description": "Edit a previously stored address for a given user."
 					},
 					"response": []
 				}
 			],
+			"description": "Functions related to Colmena user Account. For instance: create one account, get user current account, etc.",
 			"protocolProfileBehavior": {}
 		},
 		{
@@ -282,7 +241,8 @@
 								"functions",
 								"registerRecover"
 							]
-						}
+						},
+						"description": "Add a new recover transaction."
 					},
 					"response": []
 				},
@@ -328,7 +288,8 @@
 								"functions",
 								"registerTransferRequest"
 							]
-						}
+						},
+						"description": "Add a new transfer request transaction."
 					},
 					"response": []
 				},
@@ -374,7 +335,8 @@
 								"functions",
 								"registerTransferAccept"
 							]
-						}
+						},
+						"description": "Accept a transfer request transaction. "
 					},
 					"response": []
 				},
@@ -420,7 +382,8 @@
 								"functions",
 								"registerTransferReject"
 							]
-						}
+						},
+						"description": "Reject a transfer request transaction. "
 					},
 					"response": []
 				},
@@ -466,7 +429,8 @@
 								"functions",
 								"registerTransferCancel"
 							]
-						}
+						},
+						"description": "Cancel a transfer request transaction. "
 					},
 					"response": []
 				},
@@ -512,11 +476,13 @@
 								"functions",
 								"findTransactionById"
 							]
-						}
+						},
+						"description": "Find one transaction by id. Only valid for the session user transactions."
 					},
 					"response": []
 				}
 			],
+			"description": "Functions related to transaction functionalities on colmena such as register, transfer, accept, reject and cancel operations.",
 			"protocolProfileBehavior": {}
 		},
 		{
@@ -564,7 +530,8 @@
 								"functions",
 								"getAddressList"
 							]
-						}
+						},
+						"description": "Return a curated list of address that satisfies the search text provided."
 					},
 					"response": []
 				},
@@ -610,11 +577,60 @@
 								"functions",
 								"geocodeAddress"
 							]
-						}
+						},
+						"description": "Search for a geocode address (latitude, longitude) from a string address provided"
+					},
+					"response": []
+				},
+				{
+					"name": "functions/getAddress",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Parse-Application-Id",
+								"type": "text",
+								"value": "{{APPLICATION_ID}}"
+							},
+							{
+								"key": "X-Parse-Session-Token",
+								"type": "text",
+								"value": "{{SESSION_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"lat\": \"-27.3909435\",\n    \"lng\": \"-55.90443699999999\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{hostname}}/parse/functions/getAddress",
+							"protocol": "http",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"parse",
+								"functions",
+								"getAddress"
+							]
+						},
+						"description": "Return a map address from a geocode (latitude, longitude)"
 					},
 					"response": []
 				}
 			],
+			"description": "Functions related to Map functionalities.",
 			"protocolProfileBehavior": {}
 		},
 		{
@@ -690,7 +706,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"username\":\"santiagosemhan\",\n\t\"password\":\"asdasd\",\n\t\"phone\":\"3764331302\",\n\t\"email\": \"santiagosemhan@gmail.com\"\n\t\n}",
+					"raw": "{\n\t\"username\":\"santiagosemhan\",\n\t\"password\":\"asdasd\",\n\t\"phone\":\"3764331302\",\n\t\"email\": \"santiagosemhan@colmena.com\"\n\t\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -753,7 +769,8 @@
 						"classes",
 						"Post"
 					]
-				}
+				},
+				"description": "Add a new user post"
 			},
 			"response": []
 		}
