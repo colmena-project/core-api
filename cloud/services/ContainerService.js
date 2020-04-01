@@ -53,9 +53,17 @@ const findContainersByTransaction = async (transaction) => {
   return transactionsDetails.map((detail) => detail.get('container'));
 };
 
+const findContainersByUser = async (user, master = false) => {
+  const authOptions = getQueryAuthOptions(user, master);
+  const query = new Parse.Query('Container');
+  const containers = await query.find(authOptions);
+  return containers;
+};
+
 module.exports = {
   createContainer,
   findContainerById,
+  findContainersByUser,
   findContainersByTransaction,
   createContainersOfType,
 };

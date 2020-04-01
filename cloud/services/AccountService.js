@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 const { Parse } = global;
+const { getQueryAuthOptions } = require('../utils');
 const Account = require('../classes/Account');
 const Address = require('../classes/Address');
 const MailService = require('./MailService');
@@ -93,6 +94,13 @@ const removeDefaultFromOtherAddresses = async (address, user) => {
   );
 };
 
+const findAccountAddress = async (user, master) => {
+  const authOptions = getQueryAuthOptions(user, master);
+  const query = new Parse.Query('Address');
+  const addresses = await query.find(authOptions);
+  return addresses;
+};
+
 const addNewAddress = async (attributes, user) => {
   const address = new Address();
   const account = await findAccountByUser(user);
@@ -124,4 +132,5 @@ module.exports = {
   findAccountById,
   addNewAddress,
   editAddress,
+  findAccountAddress,
 };
