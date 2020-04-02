@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-const { Parse } = global;
 const { AccountService, StockService, ContainerService } = require('../services');
 
 const createAccount = async (request) => {

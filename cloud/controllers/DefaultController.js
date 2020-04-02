@@ -1,7 +1,7 @@
 const { Parse } = global;
 const { getMailAdapter } = require('../utils/core');
-// eslint-disable-next-line no-unused-vars
-const ping = (request) => ({
+
+const ping = () => ({
   msg: 'pong',
   time: new Date(),
 });
