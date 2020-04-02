@@ -38,7 +38,7 @@ const createAccount = async (params) => {
   newAccount.set('firstName', firstName);
   newAccount.set('middleName', middleName);
   newAccount.set('lastName', lastName);
-  newAccount.set('nickname', nickname);
+  newAccount.set('nickname', nickname || username);
   newAccount.set('facebook', facebook);
   newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
   newAccount.set('aboutMe', aboutMe);
