@@ -21,6 +21,11 @@ const nullParser = (opt) => {
   return opt;
 };
 
+function replaceInTemplate(template, data) {
+  const pattern = /{\s*(\w+?)\s*}/g; // {property}
+  return template.replace(pattern, (_, token) => data[token] || '');
+}
+
 const getQueryAuthOptions = (user, master = false) => {
   const options = master ? { useMasterKey: true } : { sessionToken: user.getSessionToken() };
   return options;
@@ -29,5 +34,6 @@ const getQueryAuthOptions = (user, master = false) => {
 module.exports = {
   secure,
   nullParser,
+  replaceInTemplate,
   getQueryAuthOptions,
 };

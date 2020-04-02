@@ -4,6 +4,7 @@ const { getValueForNextSequence } = require('../utils/db');
 
 const { Transaction, TransactionDetail } = require('../classes');
 const WasteTypeService = require('./WasteTypeService');
+const NotificationService = require('./NotificationService');
 const ContainerService = require('./ContainerService');
 const StockService = require('./StockService');
 const UserService = require('./UserService');
@@ -253,6 +254,8 @@ const registerTransferRequest = async (containersInput, to, user) => {
         ).then(() => createTransactionDetail(transaction, container, user));
       }),
     );
+
+    await NotificationService.notifyTransferRequest(transaction.id, user, recipient);
     // query to server in order to return stored value, NOT in memory value.
     const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
     return storedTransaction;
