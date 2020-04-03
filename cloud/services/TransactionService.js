@@ -9,6 +9,7 @@ const ContainerService = require('./ContainerService');
 const StockService = require('./StockService');
 const UserService = require('./UserService');
 const SecurityService = require('./SecurityService');
+const RecyclingCenterService = require('./RecyclingCenterService');
 
 const {
   CONTAINER_STATUS,
@@ -44,13 +45,17 @@ const findTransactionWithDetailsById = async (id, user, master) => {
   return transaction;
 };
 
-const createTransaction = async (from = null, to, type, sessionToken) => {
+const createTransaction = async (attributes, sessionToken) => {
+  const { from = null, to, type, recyclingCenter = null, reason } = attributes;
+
   const transaction = new Transaction();
   const number = await getValueForNextSequence(Transaction.name);
   transaction.set('type', type);
   transaction.set('from', from);
   transaction.set('to', to);
   transaction.set('number', number);
+  transaction.set('recyclingCenter', recyclingCenter);
+  transaction.set('reason', reason);
   await transaction.save(null, { sessionToken });
   return transaction;
 };
@@ -164,9 +169,10 @@ const registerRecover = async (containersInput = [], user) => {
       containersInput.map((c) => c.typeId),
     );
     transaction = await createTransaction(
-      null,
-      user,
-      TRANSACTIONS_TYPES.RECOVER,
+      {
+        to: user,
+        type: TRANSACTIONS_TYPES.RECOVER,
+      },
       user.getSessionToken(),
     );
 
@@ -232,9 +238,11 @@ const registerTransferRequest = async (containersInput, to, user) => {
     }
 
     transaction = await createTransaction(
-      user,
-      recipient,
-      TRANSACTIONS_TYPES.TRANSFER_REQUEST,
+      {
+        from: user,
+        to: recipient,
+        type: TRANSACTIONS_TYPES.TRANSFER_REQUEST,
+      },
       user.getSessionToken(),
     );
 
@@ -292,9 +300,11 @@ const registerTransferAccept = async (transactionId, user) => {
     transferRequestTransaction = await findRawTransaction(transactionId, user);
     validateTransferAcceptRejectRequest(transferRequestTransaction, user);
     transaction = await createTransaction(
-      transferRequestTransaction.get('from'),
-      transferRequestTransaction.get('to'),
-      TRANSACTIONS_TYPES.TRANSFER_ACCEPT,
+      {
+        from: transferRequestTransaction.get('from'),
+        to: transferRequestTransaction.get('to'),
+        type: TRANSACTIONS_TYPES.TRANSFER_ACCEPT,
+      },
       user.getSessionToken(),
     );
     transaction.set('relatedTo', transferRequestTransaction);
@@ -328,7 +338,7 @@ const registerTransferAccept = async (transactionId, user) => {
   }
 };
 
-const registerTransferReject = async (transactionId, user) => {
+const registerTransferReject = async (transactionId, reason, user) => {
   let transferRequestTransaction;
   let transaction;
   let containers = [];
@@ -337,9 +347,12 @@ const registerTransferReject = async (transactionId, user) => {
     validateTransferAcceptRejectRequest(transferRequestTransaction, user);
 
     transaction = await createTransaction(
-      transferRequestTransaction.get('from'),
-      transferRequestTransaction.get('to'),
-      TRANSACTIONS_TYPES.TRANSFER_REJECT,
+      {
+        from: transferRequestTransaction.get('from'),
+        to: transferRequestTransaction.get('to'),
+        type: TRANSACTIONS_TYPES.TRANSFER_REJECT,
+        reason,
+      },
       user.getSessionToken(),
     );
     transaction.set('relatedTo', transferRequestTransaction);
@@ -392,6 +405,7 @@ const registerTransferCancel = async (transactionId, user) => {
       transferRequestTransaction.get('from'),
       transferRequestTransaction.get('to'),
       TRANSACTIONS_TYPES.TRANSFER_CANCEL,
+      null,
       user.getSessionToken(),
     );
     transaction.set('relatedTo', transferRequestTransaction);
@@ -434,6 +448,78 @@ const registerTransferCancel = async (transactionId, user) => {
   }
 };
 
+const registerTransport = async (containersInput, to, user) => {
+  let transaction;
+  let containers = [];
+  let recoveredIds = [];
+  let transferredIds = [];
+  try {
+    if (!to) throw new Error("Cannot transfer without a destination. Please check parameter 'to'");
+    const recyclingCenter = await RecyclingCenterService.findRecyclingCenterById(to);
+
+    containers = await Promise.all(
+      containersInput.map((containerId) => ContainerService.findContainerById(containerId, user)),
+    );
+    recoveredIds = containers
+      .filter((c) => c.get('status') === CONTAINER_STATUS.RECOVERED)
+      .map((c) => c.id);
+    transferredIds = containers
+      .filter((c) => c.get('status') === CONTAINER_STATUS.TRANSFERRED)
+      .map((c) => c.id);
+
+    if (
+      !containers.every(
+        (container) =>
+          // eslint-disable-next-line implicit-arrow-linebreak
+          [CONTAINER_STATUS.RECOVERED, CONTAINER_STATUS.TRANSFERRED].includes(
+            container.get('status'),
+          ),
+        // eslint-disable-next-line function-paren-newline
+      )
+    ) {
+      throw new Error(
+        `Check containers status. To transport a container,It's has to be in ${CONTAINER_STATUS.RECOVERED} or ${CONTAINER_STATUS.TRANSFERRED} status`,
+      );
+    }
+
+    transaction = await createTransaction(
+      {
+        from: user,
+        type: TRANSACTIONS_TYPES.TRANSPORT,
+        recyclingCenter,
+      },
+      user.getSessionToken(),
+    );
+
+    await Promise.all(
+      containers.map((container) => {
+        container.set('status', CONTAINER_STATUS.IN_TRANSIT);
+        return createTransactionDetail(transaction, container, user);
+      }),
+    );
+
+    // await NotificationService.notifyTransferRequest(transaction.id, user, recipient);
+    // query to server in order to return stored value, NOT in memory value.
+    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
+    return storedTransaction;
+  } catch (error) {
+    if (transaction) {
+      await destroyTransaction(transaction);
+      if (containers) {
+        await rollbackContainersToStatus(
+          containers.filter((c) => recoveredIds.includes(c.id)),
+          CONTAINER_STATUS.RECOVERED,
+        );
+        await rollbackContainersToStatus(
+          containers.filter((c) => transferredIds.includes(c.id)),
+          CONTAINER_STATUS.TRANSFERRED,
+        );
+      }
+    }
+    throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
+  }
+};
+
 module.exports = {
   findTransactionWithDetailsById,
   registerRecover,
@@ -441,4 +527,5 @@ module.exports = {
   registerTransferAccept,
   registerTransferReject,
   registerTransferCancel,
+  registerTransport,
 };

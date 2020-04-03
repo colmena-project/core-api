@@ -9,6 +9,7 @@ const SecurityService = require('./SecurityService');
 const NotificationService = require('./NotificationService');
 const WasteTypeService = require('./WasteTypeService');
 const PushService = require('./PushService');
+const RecyclingCenterService = require('./RecyclingCenterService');
 
 module.exports = {
   AccountService,
@@ -22,4 +23,5 @@ module.exports = {
   UserService,
   WasteTypeService,
   PushService,
+  RecyclingCenterService,
 };
