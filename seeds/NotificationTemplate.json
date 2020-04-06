@@ -1,0 +1,2 @@
+{"_id":"ZzSSIWERxo","template":"Hola @{to}!\n@{from} quiere transferirte residuos! ","push":true,"email":false,"sms":false,"_created_at":{"$date":"2020-04-02T14:02:41.036Z"},"_updated_at":{"$date":"2020-04-02T15:07:54.687Z"},"language":"es","type":"TRANSFER_REQUEST"}
+{"_id":"DBEmNlYAH2","type":"TRANSPORT","template":"Hola @{user}!\nTus residuos ya están en camino! ","push":true,"email":false,"sms":false,"_created_at":{"$date":"2020-04-04T16:14:57.303Z"},"_updated_at":{"$date":"2020-04-04T16:15:16.634Z"},"language":"es"}
