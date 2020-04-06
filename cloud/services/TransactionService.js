@@ -11,11 +11,7 @@ const UserService = require('./UserService');
 const SecurityService = require('./SecurityService');
 const RecyclingCenterService = require('./RecyclingCenterService');
 
-const {
-  CONTAINER_STATUS,
-  MAX_CONTAINERS_QUANTITY_PER_REQUEST,
-  TRANSACTIONS_TYPES,
-} = require('../constants');
+const { CONTAINER_STATUS, MAX_CONTAINERS_QUANTITY_PER_REQUEST, TRANSACTIONS_TYPES } = require('../constants');
 
 const findRawTransaction = async (id, user, master) => {
   try {
@@ -105,7 +101,8 @@ const validateRegisterInput = (containers) => {
     typesMap.set(typeId, typeId);
     if (qty > MAX_CONTAINERS_QUANTITY_PER_REQUEST) {
       throw new Error(
-        `Max container quantity per request exceded. Please check your containers data. Current max: ${MAX_CONTAINERS_QUANTITY_PER_REQUEST}`,
+        `Max container quantity per request exceded. Please check your containers data.
+        Current max: ${MAX_CONTAINERS_QUANTITY_PER_REQUEST}`,
       );
     }
   });
@@ -114,9 +111,7 @@ const validateRegisterInput = (containers) => {
 const validateTransferAcceptRejectRequest = (transferRequestTransaction, user) => {
   const transactionId = transferRequestTransaction.id;
   if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSFER_REQUEST) {
-    throw new Error(
-      `Transaction ${transactionId} is not in ${TRANSACTIONS_TYPES.TRANSFER_REQUEST} status.`,
-    );
+    throw new Error(`Transaction ${transactionId} is not in ${TRANSACTIONS_TYPES.TRANSFER_REQUEST} status.`);
   }
   if (transferRequestTransaction.get('expiredAt')) {
     throw new Error(
@@ -163,11 +158,15 @@ const createTransactionDetail = async (transaction, container, user) => {
 const registerRecover = async (containersInput = [], user) => {
   let transaction;
   let currentStock;
+  let wasteTypes;
   try {
     validateRegisterInput(containersInput);
-    const wasteTypes = await WasteTypeService.getWasteTypesFromIds(
-      containersInput.map((c) => c.typeId),
-    );
+
+    [wasteTypes, currentStock] = await Promise.all([
+      WasteTypeService.getWasteTypesFromIds(containersInput.map((c) => c.typeId)),
+      StockService.getUserStock(user),
+    ]);
+
     transaction = await createTransaction(
       {
         to: user,
@@ -177,7 +176,7 @@ const registerRecover = async (containersInput = [], user) => {
     );
 
     const containers = await Promise.all(
-      containersInput.map(async ({ typeId, qty }) => {
+      containersInput.map(({ typeId, qty }) => {
         const wasteType = wasteTypes.get(typeId);
         return ContainerService.createContainersOfType(
           wasteType,
@@ -189,11 +188,9 @@ const registerRecover = async (containersInput = [], user) => {
       }),
     );
 
-    await Promise.all(
+    const details = await Promise.all(
       containers.flat().map((container) => createTransactionDetail(transaction, container, user)),
     );
-
-    currentStock = await StockService.getUserStock(user);
 
     await Promise.all(
       containersInput.map((input) => {
@@ -201,9 +198,12 @@ const registerRecover = async (containersInput = [], user) => {
         return StockService.incrementStock(wasteType, user, input.qty);
       }),
     );
-    // query to server in order to return stored value, NOT in memory value.
-    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
-    return storedTransaction;
+
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
   } catch (error) {
     await destroyTransaction(transaction);
     await rollbackUserStockTo(currentStock);
@@ -233,7 +233,8 @@ const registerTransferRequest = async (containersInput, to, user) => {
 
     if (!containers.every((container) => container.get('status') === CONTAINER_STATUS.RECOVERED)) {
       throw new Error(
-        `Check containers status. To transfer a container to a user It's has to be in ${CONTAINER_STATUS.RECOVERED} status`,
+        `Check containers status. To transfer a container to a user 
+        It's has to be in ${CONTAINER_STATUS.RECOVERED} status`,
       );
     }
 
@@ -246,13 +247,9 @@ const registerTransferRequest = async (containersInput, to, user) => {
       user.getSessionToken(),
     );
 
-    await SecurityService.grantReadAndWritePermissionsToUser(
-      'Transaction',
-      transaction.id,
-      recipient,
-    );
+    await SecurityService.grantReadAndWritePermissionsToUser('Transaction', transaction.id, recipient);
 
-    await Promise.all(
+    const details = await Promise.all(
       containers.map((container) => {
         container.set('status', CONTAINER_STATUS.TRANSFER_PENDING);
         return SecurityService.grantReadAndWritePermissionsToUser(
@@ -264,18 +261,16 @@ const registerTransferRequest = async (containersInput, to, user) => {
     );
 
     await NotificationService.notifyTransferRequest(transaction.id, user, recipient);
-    // query to server in order to return stored value, NOT in memory value.
-    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
-    return storedTransaction;
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
   } catch (error) {
     if (transaction) {
       await destroyTransaction(transaction);
       await rollbackContainersToStatus(containers, CONTAINER_STATUS.RECOVERED, (container) => {
-        SecurityService.revokeReadAndWritePermissionsToUser(
-          'Container',
-          container.id,
-          transaction.get('to'),
-        );
+        SecurityService.revokeReadAndWritePermissionsToUser('Container', container.id, transaction.get('to'));
       });
     }
     throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
@@ -298,11 +293,13 @@ const registerTransferAccept = async (transactionId, user) => {
   let containers = [];
   try {
     transferRequestTransaction = await findRawTransaction(transactionId, user);
+    const from = transferRequestTransaction.get('from');
+    const to = transferRequestTransaction.get('to');
     validateTransferAcceptRejectRequest(transferRequestTransaction, user);
     transaction = await createTransaction(
       {
-        from: transferRequestTransaction.get('from'),
-        to: transferRequestTransaction.get('to'),
+        from,
+        to,
         type: TRANSACTIONS_TYPES.TRANSFER_ACCEPT,
       },
       user.getSessionToken(),
@@ -312,25 +309,30 @@ const registerTransferAccept = async (transactionId, user) => {
 
     containers = await ContainerService.findContainersByTransaction(transferRequestTransaction);
 
-    await Promise.all(
+    const details = await Promise.all(
       containers.map((container) => {
         container.set('status', CONTAINER_STATUS.TRANSFERRED);
-        return createTransactionDetail(transaction, container, user).then(() => {
-          const from = transferRequestTransaction.get('from');
-          const to = transferRequestTransaction.get('to');
-          return StockService.moveStock(container.get('type'), from, to, 1);
-        });
+        return StockService.moveStock(container.get('type'), from, to, 1).createTransactionDetail(
+          transaction,
+          container,
+          user,
+        );
       }),
     );
 
-    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
-    return storedTransaction;
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
   } catch (error) {
     if (transaction) {
-      await destroyTransaction(transaction);
-      await rollbackContainersToStatus(containers, CONTAINER_STATUS.TRANSFER_PENDING);
+      await Promise.all([
+        destroyTransaction(transaction),
+        rollbackContainersToStatus(containers, CONTAINER_STATUS.TRANSFER_PENDING),
+      ]);
       if (transferRequestTransaction) {
-        await transferRequestTransaction.unset('expiredAt');
+        transferRequestTransaction.unset('expiredAt');
         await transferRequestTransaction.save(null, { useMasterKey: true });
       }
     }
@@ -359,21 +361,24 @@ const registerTransferReject = async (transactionId, reason, user) => {
     transferRequestTransaction.set('expiredAt', new Date());
 
     containers = await ContainerService.findContainersByTransaction(transferRequestTransaction);
-    await Promise.all(
+    const details = await Promise.all(
       containers.map((container) => {
         container.set('status', CONTAINER_STATUS.RECOVERED);
         return createTransactionDetail(transaction, container, user);
       }),
     );
 
-    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
-    return storedTransaction;
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
   } catch (error) {
     if (transaction) {
       await destroyTransaction(transaction);
       await rollbackContainersToStatus(containers, CONTAINER_STATUS.TRANSFER_PENDING);
       if (transferRequestTransaction) {
-        await transferRequestTransaction.unset('expiredAt');
+        transferRequestTransaction.unset('expiredAt');
         await transferRequestTransaction.save(null, { useMasterKey: true });
       }
     }
@@ -412,7 +417,7 @@ const registerTransferCancel = async (transactionId, user) => {
     transferRequestTransaction.set('expiredAt', new Date());
 
     containers = await ContainerService.findContainersByTransaction(transferRequestTransaction);
-    await Promise.all(
+    const details = await Promise.all(
       containers.map((container) => {
         container.set('status', CONTAINER_STATUS.RECOVERED);
         return SecurityService.revokeReadAndWritePermissionsToUser(
@@ -423,24 +428,23 @@ const registerTransferCancel = async (transactionId, user) => {
       }),
     );
 
-    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
-    return storedTransaction;
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
   } catch (error) {
     if (transaction) {
       await destroyTransaction(transaction);
       if (transferRequestTransaction) {
-        await rollbackContainersToStatus(
-          containers,
-          CONTAINER_STATUS.TRANSFER_PENDING,
-          (container) => {
-            SecurityService.grantReadAndWritePermissionsToUser(
-              'Container',
-              container.id,
-              transferRequestTransaction.get('to'),
-            );
-          },
-        );
-        await transferRequestTransaction.unset('expiredAt');
+        await rollbackContainersToStatus(containers, CONTAINER_STATUS.TRANSFER_PENDING, (container) => {
+          SecurityService.grantReadAndWritePermissionsToUser(
+            'Container',
+            container.id,
+            transferRequestTransaction.get('to'),
+          );
+        });
+        transferRequestTransaction.unset('expiredAt');
         await transferRequestTransaction.save(null, { useMasterKey: true });
       }
     }
@@ -448,6 +452,16 @@ const registerTransferCancel = async (transactionId, user) => {
   }
 };
 
+/**
+ * Register Transport. Receive an array of containers ids.
+ * Verifies if containers are in RECOVERED or TRANSFERRED status and then check if the user can transport it.
+ * Creates one transaction, many details for each container and changes containers status to IN_TRANSIT.
+ * Then notifies to all the user involved except the user that request the endpoint.
+ *
+ * @param {Array} containersInput
+ * @param {User} to
+ * @param {User} user
+ */
 const registerTransport = async (containersInput, to, user) => {
   let transaction;
   let containers = [];
@@ -460,27 +474,24 @@ const registerTransport = async (containersInput, to, user) => {
     containers = await Promise.all(
       containersInput.map((containerId) => ContainerService.findContainerById(containerId, user)),
     );
-    recoveredIds = containers
-      .filter((c) => c.get('status') === CONTAINER_STATUS.RECOVERED)
-      .map((c) => c.id);
+    recoveredIds = containers.filter((c) => c.get('status') === CONTAINER_STATUS.RECOVERED).map((c) => c.id);
     transferredIds = containers
       .filter((c) => c.get('status') === CONTAINER_STATUS.TRANSFERRED)
       .map((c) => c.id);
 
     if (
-      !containers.every(
-        (container) =>
-          // eslint-disable-next-line implicit-arrow-linebreak
-          [CONTAINER_STATUS.RECOVERED, CONTAINER_STATUS.TRANSFERRED].includes(
-            container.get('status'),
-          ),
-        // eslint-disable-next-line function-paren-newline
-      )
+      // eslint-disable-next-line arrow-body-style
+      !containers.every((container) => {
+        return [CONTAINER_STATUS.RECOVERED, CONTAINER_STATUS.TRANSFERRED].includes(container.get('status'));
+      })
     ) {
       throw new Error(
-        `Check containers status. To transport a container,It's has to be in ${CONTAINER_STATUS.RECOVERED} or ${CONTAINER_STATUS.TRANSFERRED} status`,
+        `Check containers status. To transport a container, It's has to be in 
+        ${CONTAINER_STATUS.RECOVERED} or ${CONTAINER_STATUS.TRANSFERRED} status`,
       );
     }
+
+    await Promise.all(containers.map((container) => SecurityService.canTransportContainer(container, user)));
 
     transaction = await createTransaction(
       {
@@ -491,17 +502,21 @@ const registerTransport = async (containersInput, to, user) => {
       user.getSessionToken(),
     );
 
-    await Promise.all(
+    const details = await Promise.all(
       containers.map((container) => {
         container.set('status', CONTAINER_STATUS.IN_TRANSIT);
         return createTransactionDetail(transaction, container, user);
       }),
     );
 
-    // await NotificationService.notifyTransferRequest(transaction.id, user, recipient);
-    // query to server in order to return stored value, NOT in memory value.
-    const storedTransaction = await findTransactionWithDetailsById(transaction.id, user);
-    return storedTransaction;
+    // get containers owners except user that request the endpoint
+    const usersList = containers.map((c) => c.get('createdBy')).filter((u) => !u.equals(user));
+    await NotificationService.notifyTransport(transaction.id, user, usersList);
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
   } catch (error) {
     if (transaction) {
       await destroyTransaction(transaction);
