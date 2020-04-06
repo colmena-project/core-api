@@ -1,3 +1,8 @@
 {
-  "extends": "airbnb-base"
+  "extends": "airbnb-base",
+  "rules": {
+    "operator-linebreak": "off",
+    "object-curly-newline": "warn",
+    "max-len": ["error", 110]
+  }
 }
