@@ -12,7 +12,9 @@
     "seed": "for filename in ./seeds/*; do mongoimport --mode=upsert --uri ${MONGO_DSN} --file $filename;  done",
     "exportCollection": "dump() { mongoexport --uri ${MONGO_DSN} --collection $1 -o \"./seeds/$1.json\"  ; }; dump",
     "exportDB": "mongodump --uri ${MONGO_DSN} -o './backups/'$( date -Iseconds)",
-    "importDB": "mongorestore --uri ${MONGO_DSN}"
+    "importDB": "mongorestore --uri ${MONGO_DSN}",
+    "madge-circular": "madge --circular cloud/main.js",
+    "madge-orphans": "madge --orphans cloud/main.js"
   },
   "author": "",
   "license": "MIT",
@@ -31,6 +33,7 @@
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
+    "madge": "^3.8.0",
     "nodemon": "^2.0.2",
     "prettier": "^1.19.1"
   }
