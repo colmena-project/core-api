@@ -21,8 +21,7 @@ const generateContainerCode = (typeCode, transactionNumber, containerNumber) => 
   return `${typeCode}-${transactionNumber}-${containerNumber}`;
 };
 
-const createContainer = async (type, status, transactionNumber, user) => {
-  const authOptions = getQueryAuthOptions(user);
+const createContainer = async (type, status, transactionNumber) => {
   const number = await getValueForNextSequence(Container.name);
   const code = generateContainerCode(type.get('code'), transactionNumber, number);
   const container = new Container();
@@ -30,8 +29,7 @@ const createContainer = async (type, status, transactionNumber, user) => {
   container.set('number', number);
   container.set('type', type);
   container.set('code', code);
-
-  return container.save(null, authOptions);
+  return container;
 };
 
 const createContainersOfType = async (type, qty, status, transactionNumber, user) => {
@@ -104,6 +102,16 @@ const findTransferAcceptTransactionOfContainer = async (container) => {
   return transaction;
 };
 
+const isRecyclerOfContainer = async (container, user) => {
+  const transaction = await findRecoverTransactionOfContainer(container);
+  return transaction && transaction.get('to').equals(user);
+};
+
+const isCarrierOfContainer = async (container, user) => {
+  const transaction = await findTransferAcceptTransactionOfContainer(container);
+  return transaction && transaction.get('to').equals(user);
+};
+
 module.exports = {
   createContainer,
   findContainerById,
@@ -113,4 +121,6 @@ module.exports = {
   findTransactionsOfContainer,
   findRecoverTransactionOfContainer,
   findTransferAcceptTransactionOfContainer,
+  isRecyclerOfContainer,
+  isCarrierOfContainer,
 };

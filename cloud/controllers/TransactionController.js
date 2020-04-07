@@ -1,47 +1,5 @@
 const { TransactionService } = require('../services');
 
-const registerRecover = async (request) => {
-  const { user, params } = request;
-  const { containers } = params;
-  const transaction = await TransactionService.registerRecover(containers, user);
-  return transaction.toJSON();
-};
-
-const registerTransferRequest = async (request) => {
-  const { user, params } = request;
-  const { containers, to } = params;
-  const transaction = await TransactionService.registerTransferRequest(containers, to, user);
-  return transaction.toJSON();
-};
-
-const registerTransferAccept = async (request) => {
-  const { user, params } = request;
-  const { transactionId } = params;
-  const transaction = await TransactionService.registerTransferAccept(transactionId, user);
-  return transaction.toJSON();
-};
-
-const registerTransferReject = async (request) => {
-  const { user, params } = request;
-  const { transactionId, reason } = params;
-  const transaction = await TransactionService.registerTransferReject(transactionId, reason, user);
-  return transaction.toJSON();
-};
-
-const registerTransferCancel = async (request) => {
-  const { user, params } = request;
-  const { transactionId } = params;
-  const transaction = await TransactionService.registerTransferCancel(transactionId, user);
-  return transaction.toJSON();
-};
-
-const registerTransport = async (request) => {
-  const { user, params } = request;
-  const { containers, to } = params;
-  const transaction = await TransactionService.registerTransport(containers, to, user);
-  return transaction.toJSON();
-};
-
 const findTransactionById = async (request) => {
   const { user, params } = request;
   const { objectId } = params;
@@ -51,10 +9,4 @@ const findTransactionById = async (request) => {
 
 module.exports = {
   findTransactionById,
-  registerRecover,
-  registerTransferRequest,
-  registerTransferAccept,
-  registerTransferReject,
-  registerTransferCancel,
-  registerTransport,
 };
