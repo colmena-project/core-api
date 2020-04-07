@@ -29,6 +29,11 @@ function loadCloudFunctions(legacy = false) {
           `${actionPath} was already defined. Please check your routes definitions in your route directory.`,
         );
       }
+      if (routes[controller][action].action === undefined) {
+        throw new Error(
+          `${actionPath} call to undefined function. Please check your routes definitions in your route directory.`,
+        );
+      }
       cloudFunctions.set(actionPath, routes[controller][action]);
     });
   });
