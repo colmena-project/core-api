@@ -2,7 +2,7 @@ const { Parse } = global;
 const Container = require('../classes/Container');
 const { getQueryAuthOptions } = require('../utils');
 const { getValueForNextSequence } = require('../utils/db');
-const { TRANSACTIONS_TYPES } = require('../constants');
+const TransactionService = require('./TransactionService');
 
 const findContainerById = async (id, user, master) => {
   try {
@@ -58,57 +58,13 @@ const findContainersByUser = async (user, master = false) => {
   return containers;
 };
 
-/**
- * Returns all transactions associated to a container
- *
- * @param {Container} container
- */
-const findTransactionsOfContainer = async (container) => {
-  const query = new Parse.Query('TransactionDetail');
-  query.select('transaction');
-  query.include('transaction');
-  query.equalTo('container', container);
-  const transactionsDetails = await query.find({ useMasterKey: true });
-  return transactionsDetails.map((detail) => detail.get('transaction'));
-};
-
-const findRecoverTransactionOfContainer = async (container) => {
-  const query = new Parse.Query('TransactionDetail');
-  query.select('transaction');
-  query.include('transaction');
-  query.equalTo('container', container);
-  const transactionsDetail = await query.find({ useMasterKey: true });
-  let transaction;
-  transactionsDetail.forEach((detail) => {
-    if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.RECOVER) {
-      transaction = detail.get('transaction');
-    }
-  });
-  return transaction;
-};
-
-const findTransferAcceptTransactionOfContainer = async (container) => {
-  const query = new Parse.Query('TransactionDetail');
-  query.select('transaction');
-  query.include('transaction');
-  query.equalTo('container', container);
-  const transactionsDetail = await query.find({ useMasterKey: true });
-  let transaction;
-  transactionsDetail.forEach((detail) => {
-    if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.TRANSFER_ACCEPT) {
-      transaction = detail.get('transaction');
-    }
-  });
-  return transaction;
-};
-
 const isRecyclerOfContainer = async (container, user) => {
-  const transaction = await findRecoverTransactionOfContainer(container);
+  const transaction = await TransactionService.findRecoverTransactionOfContainer(container);
   return transaction && transaction.get('to').equals(user);
 };
 
 const isCarrierOfContainer = async (container, user) => {
-  const transaction = await findTransferAcceptTransactionOfContainer(container);
+  const transaction = await TransactionService.findTransferAcceptTransactionOfContainer(container);
   return transaction && transaction.get('to').equals(user);
 };
 
@@ -118,9 +74,6 @@ module.exports = {
   findContainersByUser,
   findContainersByTransaction,
   createContainersOfType,
-  findTransactionsOfContainer,
-  findRecoverTransactionOfContainer,
-  findTransferAcceptTransactionOfContainer,
   isRecyclerOfContainer,
   isCarrierOfContainer,
 };

@@ -3,6 +3,7 @@ const { getQueryAuthOptions } = require('../utils');
 const { getValueForNextSequence } = require('../utils/db');
 
 const { Transaction, TransactionDetail } = require('../classes');
+const { TRANSACTIONS_TYPES } = require('../constants');
 
 const findRawTransaction = async (id, user, master) => {
   try {
@@ -101,9 +102,56 @@ const createTransactionDetail = (transaction, container) => {
   }
 };
 
+/**
+ * Returns all transactions associated to a container
+ *
+ * @param {Container} container
+ */
+const findTransactionsOfContainer = async (container) => {
+  const query = new Parse.Query('TransactionDetail');
+  query.select('transaction');
+  query.include('transaction');
+  query.equalTo('container', container);
+  const transactionsDetails = await query.find({ useMasterKey: true });
+  return transactionsDetails.map((detail) => detail.get('transaction'));
+};
+
+const findRecoverTransactionOfContainer = async (container) => {
+  const query = new Parse.Query('TransactionDetail');
+  query.select('transaction');
+  query.include('transaction');
+  query.equalTo('container', container);
+  const transactionsDetail = await query.find({ useMasterKey: true });
+  let transaction;
+  transactionsDetail.forEach((detail) => {
+    if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.RECOVER) {
+      transaction = detail.get('transaction');
+    }
+  });
+  return transaction;
+};
+
+const findTransferAcceptTransactionOfContainer = async (container) => {
+  const query = new Parse.Query('TransactionDetail');
+  query.select('transaction');
+  query.include('transaction');
+  query.equalTo('container', container);
+  const transactionsDetail = await query.find({ useMasterKey: true });
+  let transaction;
+  transactionsDetail.forEach((detail) => {
+    if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.TRANSFER_ACCEPT) {
+      transaction = detail.get('transaction');
+    }
+  });
+  return transaction;
+};
+
 module.exports = {
   findRawTransaction,
   findTransactionWithDetailsById,
+  findTransactionsOfContainer,
+  findRecoverTransactionOfContainer,
+  findTransferAcceptTransactionOfContainer,
   createTransaction,
   createTransactionDetail,
   destroyTransaction,
