@@ -3,6 +3,7 @@
   "rules": {
     "operator-linebreak": "off",
     "object-curly-newline": "warn",
+    "implicit-arrow-linebreak": "off",
     "max-len": ["error", 110]
   }
 }
