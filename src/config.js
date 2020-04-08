@@ -1,4 +1,3 @@
-// @flow
 const SimpleSendGridAdapter = require('./adapters/SendGridAdapter');
 
 const { nullParser } = require('./cloud/utils');
@@ -54,6 +53,3 @@ module.exports = {
   emailVerifyTokenValidityDuration: 21600,
   preventLoginWithUnverifiedEmail: true,
 };
-
-const a: number = 1;
-console.log(a);

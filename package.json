@@ -5,16 +5,19 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon -L . --ignore './logs/*'",
-    "inspect": "nodemon --inspect=0.0.0.0 -L . --ignore './logs/*'",
-    "start": "node .",
-    "eslint": "eslint --debug --ext .js cloud",
+    "dev": "nodemon --ignore '**/logs/.*' --watch 'src/**/*' --exec 'npm run flow && babel-node ./src/server.js'",
+    "inspect": "nodemon --inspect=0.0.0.0 --ignore '**/logs/.*' --watch 'src/**/*' --exec 'npm run flow && babel-node ./src/server.js'",
+    "start": "node ./dist/server.js",
+    "eslint": "eslint --debug --ext .js src/cloud",
     "seed": "for filename in ./seeds/*; do mongoimport --mode=upsert --uri ${MONGO_DSN} --file $filename;  done",
     "exportCollection": "dump() { mongoexport --uri ${MONGO_DSN} --collection $1 -o \"./seeds/$1.json\"  ; }; dump",
     "exportDB": "mongodump --uri ${MONGO_DSN} -o './backups/'$( date -Iseconds)",
     "importDB": "mongorestore --uri ${MONGO_DSN}",
-    "madge-circular": "madge --circular cloud/main.js",
-    "madge-orphans": "madge --orphans cloud/main.js"
+    "madge-circular": "madge --circular ./src/cloud/main.js",
+    "madge-orphans": "madge --orphans ./src/cloud/main.js",
+    "build": "npm run flow && npm run madge-circular && babel src/ -d dist/",
+    "flow": "flow",
+    "prepublish": "npm run build"
   },
   "author": "",
   "license": "MIT",
@@ -30,9 +33,16 @@
     "saslprep": "^1.0.3"
   },
   "devDependencies": {
-    "eslint": "^6.6.0",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-flow": "^7.9.0",
+    "babel-eslint": "^10.1.0",
+    "babel-preset-minify": "^0.5.1",
+    "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
+    "flow-bin": "^0.122.0",
     "madge": "^3.8.0",
     "nodemon": "^2.0.2",
     "prettier": "^1.19.1"

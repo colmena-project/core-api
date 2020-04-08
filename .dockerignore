@@ -1,8 +1,7 @@
 *
-!cloud/*
 !seeds/*
+!src/*
+!.flowconfig
+!.babelrc
 !package.json
 !package-lock.json
-!server.js
-!adapters/*
-!config.js

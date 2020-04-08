@@ -15,13 +15,15 @@ COPY package-lock.json package-lock.json
 
 # Install app dependencies
 ENV NPM_CONFIG_LOGLEVEL warn
-RUN npm ci
 
-COPY server.js server.js
-COPY config.js config.js
-COPY cloud ./cloud
-COPY adapters ./adapters
+# RUN if [ "$NPM_RUN_SCRIPT" = "start" ] ; then npm run ci ; else npm install -D; fi
+RUN npm ci
+COPY .flowconfig .flowconfig
+COPY .babelrc .babelrc
+COPY src ./src
 COPY seeds ./seeds
+
+RUN if [ "$NPM_RUN_SCRIPT" = "start" ] ; then npm run build ; fi 
 
 # Expose the listening port of your app
 EXPOSE ${PORT}

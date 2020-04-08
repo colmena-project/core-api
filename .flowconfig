@@ -1,0 +1,17 @@
+[ignore]
+<PROJECT_ROOT>/seeds/.*
+<PROJECT_ROOT>/backups/.*
+<PROJECT_ROOT>/__tests__/.*
+<PROJECT_ROOT>/node_modules/.*
+
+[declarations]
+
+[include]
+
+[libs]
+
+[lints]
+
+[options]
+
+[strict]
