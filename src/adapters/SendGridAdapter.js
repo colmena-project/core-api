@@ -1,29 +1,27 @@
 const SendGrid = require('@sendgrid/mail');
 
-let SimpleSendGridAdapter = mailOptions => {
+const SimpleSendGridAdapter = (mailOptions) => {
   if (!mailOptions || !mailOptions.apiKey || !mailOptions.fromAddress) {
-    throw 'SimpleSendGridAdapter requires an API Key.';
+    throw new Error('SimpleSendGridAdapter requires an API Key.');
   }
-  
-  let sendgrid = new SendGrid.MailService()
 
-  let sendMail = ({to, subject, text, html, templateId, dynamic_template_data }) => {
+  const sendgrid = new SendGrid.MailService();
 
+  const sendMail = ({ to, subject, text, html, templateId, dynamic_template_data }) => {
     sendgrid.setApiKey(mailOptions.apiKey);
     let msg = {
-      to: to,
+      to,
       from: mailOptions.fromAddress,
-      subject: subject,
-      text: text,
+      subject,
+      text,
       html: html || `<div>${text}</div>`,
     };
 
-    if (templateId && dynamic_template_data ){
-      msg = { ...msg, templateId, dynamic_template_data }
+    if (templateId && dynamic_template_data) {
+      msg = { ...msg, templateId, dynamic_template_data };
     }
 
     return sendgrid.send(msg);
-
 
     // return new Promise((resolve, reject) => {
     //   sendgrid.send({
@@ -38,11 +36,11 @@ let SimpleSendGridAdapter = mailOptions => {
     //     resolve(json);
     //   });
     // });
-  }
+  };
 
   return Object.freeze({
-      sendMail: sendMail
+    sendMail,
   });
-}
+};
 
-module.exports = SimpleSendGridAdapter
+module.exports = SimpleSendGridAdapter;

@@ -1,3 +1,4 @@
+// @flow
 const SimpleSendGridAdapter = require('./adapters/SendGridAdapter');
 
 const { nullParser } = require('./cloud/utils');
@@ -7,7 +8,7 @@ const readOnlyMasterKey = process.env.READ_ONLY_MASTER_KEY;
 const appId = process.env.APP_ID;
 const mongoDSN = process.env.MONGO_DSN;
 const redisDSN = process.env.REDIS_DSN;
-const port = process.env.PORT;
+const port = process.env.PORT || 80;
 const serverURL = process.env.PARSE_SERVER_URL || `http://localhost:${port}/parse`;
 const facebookAppId = process.env.FACEBOOK_APP_ID;
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
@@ -16,7 +17,7 @@ const publicServerURL = process.env.PUBLIC_SERVER_URL;
 module.exports = {
   port,
   databaseURI: mongoDSN, // Connection string for your MongoDB database
-  cloud: './cloud/main.js', // Absolute path to your Cloud Code
+  cloud: `${__dirname}/cloud/main.js`, // Absolute path to your Cloud Code
   allowClientClassCreation: false,
   enableSingleSchemaCache: true,
   preserveFileName: false,
@@ -53,3 +54,6 @@ module.exports = {
   emailVerifyTokenValidityDuration: 21600,
   preventLoginWithUnverifiedEmail: true,
 };
+
+const a: number = 1;
+console.log(a);

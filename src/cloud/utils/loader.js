@@ -31,6 +31,7 @@ function loadCloudFunctions(legacy = false) {
       }
       if (routes[controller][action].action === undefined) {
         throw new Error(
+          // eslint-disable-next-line max-len
           `${actionPath} call to undefined function. Please check your routes definitions in your route directory.`,
         );
       }
