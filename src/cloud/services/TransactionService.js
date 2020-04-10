@@ -98,7 +98,7 @@ const destroyTransaction = async (transaction: ParseObject): Promise<any> => {
  */
 const createTransactionDetail = (transaction: ParseObject, container: ParseObject): ParseObject => {
   try {
-    const transactionDetail = new TransactionDetail();
+    const transactionDetail: ParseObject = new TransactionDetail();
     const wasteType: ParseObject = container.get('type');
     transactionDetail.set('transaction', transaction);
     transactionDetail.set('qty', wasteType.get('qty'));
@@ -130,7 +130,7 @@ const findRecoverTransactionOfContainer = async (container: ParseObject): Promis
   query.include('transaction');
   query.equalTo('container', container);
   const transactionsDetail: ParseObject[] = await query.find({ useMasterKey: true });
-  let transaction = null;
+  let transaction: ?ParseObject;
   transactionsDetail.forEach((detail) => {
     if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.RECOVER) {
       transaction = detail.get('transaction');
