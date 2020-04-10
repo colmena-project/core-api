@@ -71,7 +71,7 @@ const createAccount = async (params: AccountType): Promise<ParseObject> => {
 const findAccountById = async (accountId: string, user: ParseUser): Promise<Object> => {
   if (!accountId) throw new Parse.Error(404, 'Account Not Found');
   const accountQuery = new Parse.Query('Account');
-  const account = await accountQuery.get(accountId, {
+  const account: ParseObject = await accountQuery.get(accountId, {
     sessionToken: user.getSessionToken(),
   });
   // TODO: clean private account data.
@@ -95,18 +95,39 @@ const removeDefaultFromOtherAddresses = async (address: ParseObject, user: Parse
   );
 };
 
-const findAccountAddress = async (user: ParseUser, master?: boolean): Promise<ParseObject[]> => {
-  const authOptions: AuthOptionsType = getQueryAuthOptions(user, master);
+const findAccountAddress = async (user: ParseUser): Promise<ParseObject[]> => {
+  const authOptions: AuthOptionsType = getQueryAuthOptions(user, false);
   const query = new Parse.Query('Address');
   const addresses: ParseObject[] = await query.find(authOptions);
   return addresses;
 };
 
+const findDefaultAddress = async (user: ParseUser): Promise<ParseObject> => {
+  const authOptions: AuthOptionsType = getQueryAuthOptions(user, false);
+  const query = new Parse.Query('Address');
+  query.equalTo('default', true);
+  const address: ParseObject | void = await query.first(authOptions);
+  if (!address) throw new Error(`Cannot find default Address for user ${user.id}`);
+  return address;
+};
+
+const findAccountAddressById = async (addressId: string, user: ParseUser): Promise<ParseObject> => {
+  try {
+    const authOptions: AuthOptionsType = getQueryAuthOptions(user, false);
+    const query = new Parse.Query('Address');
+    const address: ParseObject = await query.get(addressId, authOptions);
+    return address;
+  } catch (error) {
+    throw new Error(`Address id '${addressId}' not found for account`);
+  }
+};
+
 const addNewAddress = async (attributes: AddressType, user: ParseUser): Promise<ParseObject> => {
+  const authOptions: AuthOptionsType = getQueryAuthOptions(user, false);
   const address: ParseObject = new Address();
   const account = await findAccountByUser(user);
   address.set({ ...attributes, account });
-  await address.save(null, { useMasterKey: false, sessionToken: user.getSessionToken() });
+  await address.save(null, authOptions);
   if (address.get('default')) {
     await removeDefaultFromOtherAddresses(address, user);
   }
@@ -114,10 +135,11 @@ const addNewAddress = async (attributes: AddressType, user: ParseUser): Promise<
 };
 
 const editAddress = async (addresId: string, attributes: AddressType, user: ParseUser): Promise<ParseObject> => {
+  const authOptions: AuthOptionsType = getQueryAuthOptions(user, false);
   const query = new Parse.Query('Address');
   const address: ParseObject = await query.get(addresId, { sessionToken: user.getSessionToken() });
   address.set({ ...attributes });
-  await address.save(null, { useMasterKey: false, sessionToken: user.getSessionToken() });
+  await address.save(null, authOptions);
   if (address.get('default')) {
     await removeDefaultFromOtherAddresses(address, user);
   }
@@ -132,4 +154,6 @@ module.exports = {
   addNewAddress,
   editAddress,
   findAccountAddress,
+  findAccountAddressById,
+  findDefaultAddress,
 };

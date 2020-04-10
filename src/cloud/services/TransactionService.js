@@ -1,5 +1,5 @@
 /* @flow */
-import type { ParseObject, ParseUser, TransactionType } from '../../flow-types';
+import type { AuthOptionsType, ParseObject, ParseUser, TransactionType } from '../../flow-types';
 
 const { Parse } = global;
 const { getQueryAuthOptions } = require('../utils');
@@ -10,9 +10,9 @@ const { TRANSACTIONS_TYPES } = require('../constants');
 
 const findRawTransaction = async (id: string, user: ParseUser, master: boolean = false): Promise<ParseObject> => {
   try {
-    const authOptions = getQueryAuthOptions(user, master);
+    const authOptions: AuthOptionsType = getQueryAuthOptions(user, master);
     const transactionQuery = new Parse.Query('Transaction');
-    const transaction = await transactionQuery.get(id, authOptions);
+    const transaction: ParseObject = await transactionQuery.get(id, authOptions);
     return transaction;
   } catch (error) {
     throw new Error(`Transaction ${id} not found`);
@@ -24,12 +24,12 @@ const findTransactionWithDetailsById = async (
   user: ParseUser,
   master?: boolean = false,
 ): Promise<ParseObject> => {
-  const authOptions = getQueryAuthOptions(user, master);
-  const transaction = await findRawTransaction(id, user, master);
+  const authOptions: AuthOptionsType = getQueryAuthOptions(user, master);
+  const transaction: ParseObject = await findRawTransaction(id, user, master);
   const detailQuery = new Parse.Query('TransactionDetail');
   detailQuery.equalTo('transaction', transaction);
   detailQuery.include('container.type');
-  const transactionDetail = await detailQuery.find(authOptions);
+  const transactionDetail: ParseObject[] = await detailQuery.find(authOptions);
 
   transaction.set(
     'details',
@@ -40,16 +40,17 @@ const findTransactionWithDetailsById = async (
 };
 
 const createTransaction = async (attributes: TransactionType): Promise<ParseObject> => {
-  const { from = null, to, type, recyclingCenter = null, reason, address = {} } = attributes;
-  const transaction = new Transaction();
-  const number = await getValueForNextSequence(Transaction.name);
+  const { from = null, to, type, recyclingCenter = null, reason, fromAddress, toAddress } = attributes;
+  const transaction: ParseObject = new Transaction();
+  const number: number = await getValueForNextSequence(Transaction.name);
   transaction.set('type', type);
   transaction.set('from', from);
   transaction.set('to', to);
   transaction.set('number', number);
   transaction.set('recyclingCenter', recyclingCenter);
   transaction.set('reason', reason);
-  transaction.set('address', address);
+  transaction.set('fromAddress', fromAddress);
+  transaction.set('toAddress', toAddress);
   return transaction;
 };
 
@@ -95,10 +96,10 @@ const destroyTransaction = async (transaction: ParseObject): Promise<any> => {
  * @param {*} transaction
  * @param {*} wasteType
  */
-const createTransactionDetail = (transaction: ParseObject, container: ParseObject): Object => {
+const createTransactionDetail = (transaction: ParseObject, container: ParseObject): ParseObject => {
   try {
     const transactionDetail = new TransactionDetail();
-    const wasteType = container.get('type');
+    const wasteType: ParseObject = container.get('type');
     transactionDetail.set('transaction', transaction);
     transactionDetail.set('qty', wasteType.get('qty'));
     transactionDetail.set('unit', wasteType.get('unit'));
@@ -119,7 +120,7 @@ const findTransactionsOfContainer = async (container: ParseObject): Promise<Pars
   query.select('transaction');
   query.include('transaction');
   query.equalTo('container', container);
-  const transactionsDetails = await query.find({ useMasterKey: true });
+  const transactionsDetails: ParseObject[] = await query.find({ useMasterKey: true });
   return transactionsDetails.map((detail) => detail.get('transaction'));
 };
 
@@ -128,7 +129,7 @@ const findRecoverTransactionOfContainer = async (container: ParseObject): Promis
   query.select('transaction');
   query.include('transaction');
   query.equalTo('container', container);
-  const transactionsDetail = await query.find({ useMasterKey: true });
+  const transactionsDetail: ParseObject[] = await query.find({ useMasterKey: true });
   let transaction = null;
   transactionsDetail.forEach((detail) => {
     if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.RECOVER) {
@@ -143,8 +144,8 @@ const findTransferAcceptTransactionOfContainer = async (container: ParseObject):
   query.select('transaction');
   query.include('transaction');
   query.equalTo('container', container);
-  const transactionsDetail = await query.find({ useMasterKey: true });
-  let transaction = null;
+  const transactionsDetail: ParseObject[] = await query.find({ useMasterKey: true });
+  let transaction: ?ParseObject;
   transactionsDetail.forEach((detail) => {
     if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.TRANSFER_ACCEPT) {
       transaction = detail.get('transaction');

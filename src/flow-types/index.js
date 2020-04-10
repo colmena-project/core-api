@@ -87,7 +87,8 @@ export type TransactionType = {
   type: TransactionTypesType,
   number?: number,
   relatedTo: ?TransactionType,
-  address: ?Object,
+  fromAddress: ?Object,
+  toAddress: ?Object,
   reason: ?string,
   recyclingCenter: ?ParseObject,
 };

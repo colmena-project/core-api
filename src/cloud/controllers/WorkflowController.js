@@ -5,8 +5,8 @@ const { WorkflowService } = require('../services');
 
 const registerRecover = async (request: Object): Promise<Object> => {
   const { user, params } = request;
-  const { containers } = params;
-  const transaction: ParseObject = await WorkflowService.registerRecover(containers, user);
+  const { containers, addressId } = params;
+  const transaction: ParseObject = await WorkflowService.registerRecover(containers, addressId, user);
   return transaction.toJSON();
 };
 
