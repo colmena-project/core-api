@@ -5,6 +5,6 @@
     "operator-linebreak": "off",
     "object-curly-newline": "warn",
     "implicit-arrow-linebreak": "off",
-    "max-len": ["error", 110]
+    "max-len": ["error", 120]
   }
 }
