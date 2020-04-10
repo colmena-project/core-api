@@ -15,7 +15,7 @@
     "importDB": "mongorestore --uri ${MONGO_DSN}",
     "madge-circular": "madge --circular ./src/cloud/main.js",
     "madge-orphans": "madge --orphans ./src/cloud/main.js",
-    "build": "npm run flow && npm run madge-circular && babel src/ -d dist/",
+    "build": "npm run flow && npm run madge-circular && BABEL_ENV=production babel src/ -d dist/",
     "flow": "flow",
     "prepublish": "npm run build"
   },
