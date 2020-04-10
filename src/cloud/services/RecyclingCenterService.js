@@ -1,6 +1,9 @@
+/* @flow  */
+import type { ParseObject } from '../../flow-types';
+
 const { Parse } = global;
 
-const findRecyclingCenterById = async (id) => {
+const findRecyclingCenterById = async (id: string): Promise<ParseObject> => {
   try {
     const query = new Parse.Query('RecyclingCenter');
     const recyclingCenter = await query.get(id, { useMasterKey: true });

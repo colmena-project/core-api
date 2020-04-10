@@ -1,8 +1,9 @@
-/* eslint-disable no-underscore-dangle */
+/* @flow */
 const { getDatabaseInstance } = require('./core');
 
-const getValueForNextSequence = async (sequenceOfName) => {
+const getValueForNextSequence = async (sequenceOfName: string): Promise<number> => {
   const db = getDatabaseInstance();
+  // eslint-disable-next-line no-underscore-dangle
   const _sequences = db.collection('_sequences');
   const { value } = await _sequences.findOneAndUpdate(
     { _id: sequenceOfName },

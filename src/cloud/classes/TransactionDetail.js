@@ -1,3 +1,5 @@
+/* @flow */
+
 const Base = require('./Base');
 
 class TransactionDetail extends Base {

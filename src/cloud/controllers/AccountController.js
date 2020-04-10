@@ -1,11 +1,14 @@
+/* @flow */
+import type { ParseObject } from '../../flow-types';
+
 const { AccountService, StockService, ContainerService } = require('../services');
 
-const createAccount = async (request) => {
-  const { params, user } = request;
-  return AccountService.createAccount(params, user);
+const createAccount = async (request: Object): Promise<ParseObject> => {
+  const { params } = request;
+  return AccountService.createAccount(params);
 };
 
-const getMyAccount = async (request) => {
+const getMyAccount = async (request: Object): Promise<Object> => {
   const { user } = request;
   const account = await AccountService.findAccountByUser(user);
   const addresses = await AccountService.findAccountAddress(user);
@@ -32,18 +35,18 @@ const getMyAccount = async (request) => {
   return account.toJSON();
 };
 
-const getAccountOf = async (request) => {
+const getAccountOf = async (request: Object): Promise<Object> => {
   const { params, user } = request;
   const { accountId } = params;
-  AccountService.findAccountById(accountId, user);
+  return AccountService.findAccountById(accountId, user);
 };
 
-const addNewAddress = async (request) => {
+const addNewAddress = async (request: Object): Promise<ParseObject> => {
   const { params, user } = request;
   return AccountService.addNewAddress(params, user);
 };
 
-const editAddress = async (request) => {
+const editAddress = async (request: Object): Promise<ParseObject> => {
   const { params, user } = request;
   const { addressId, attributes } = params;
   return AccountService.editAddress(addressId, attributes, user);

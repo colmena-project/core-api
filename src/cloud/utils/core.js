@@ -1,3 +1,5 @@
+/* @flow */
+
 const { Parse } = global;
 const Config = require('parse-server/lib/Config');
 

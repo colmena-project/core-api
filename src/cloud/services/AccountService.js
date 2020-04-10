@@ -1,3 +1,6 @@
+/* @flow */
+import type { AddressType, AuthOptionsType, AccountType, ParseObject, ParseUser } from '../../flow-types';
+
 /* eslint-disable no-underscore-dangle */
 const { Parse } = global;
 const { getQueryAuthOptions } = require('../utils');
@@ -5,14 +8,14 @@ const Account = require('../classes/Account');
 const Address = require('../classes/Address');
 const MailService = require('./MailService');
 
-const findAccountByUser = async (user) => {
+const findAccountByUser = async (user: ParseUser): Promise<ParseObject> => {
   const query = new Parse.Query('Account');
   query.equalTo('user', user);
   const account = await query.first({ useMasterKey: true });
   return account;
 };
 
-const createAccount = async (params) => {
+const createAccount = async (params: AccountType): Promise<ParseObject> => {
   const {
     username,
     email,
@@ -26,7 +29,7 @@ const createAccount = async (params) => {
     aboutMe,
     fbAuthData,
   } = params;
-  const user = new Parse.User();
+  const user: ParseUser = new Parse.User();
   user.set('username', username);
   user.set('password', password);
   user.set('email', email);
@@ -34,7 +37,7 @@ const createAccount = async (params) => {
   if (fbAuthData && !user._isLinked('facebook')) {
     await user._linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
   }
-  const newAccount = new Account();
+  const newAccount: ParseObject = new Account();
   newAccount.set('firstName', firstName);
   newAccount.set('middleName', middleName);
   newAccount.set('lastName', lastName);
@@ -62,12 +65,10 @@ const createAccount = async (params) => {
   };
   await MailService.sendNewAccountCreated(mailParams);
 
-  return {
-    account: newAccount,
-  };
+  return newAccount;
 };
 
-const findAccountById = async (accountId, user) => {
+const findAccountById = async (accountId: string, user: ParseUser): Promise<Object> => {
   if (!accountId) throw new Parse.Error(404, 'Account Not Found');
   const accountQuery = new Parse.Query('Account');
   const account = await accountQuery.get(accountId, {
@@ -82,43 +83,41 @@ const findAccountById = async (accountId, user) => {
   };
 };
 
-const removeDefaultFromOtherAddresses = async (address, user) => {
+const removeDefaultFromOtherAddresses = async (address: ParseObject, user: ParseUser): Promise<ParseObject[]> => {
   const query = new Parse.Query('Address');
   query.notEqualTo('objectId', address.id);
-  const adresses = await query.find({ sessionToken: user.getSessionToken() });
-  Promise.all(
+  const adresses: ParseObject[] = await query.find({ sessionToken: user.getSessionToken() });
+  return Promise.all(
     adresses.map((a) => {
       a.set('default', false);
-      return a.save(null, { sessionToken: user.getSessionToken() });
+      return a.save(null, { useMasterKey: false, sessionToken: user.getSessionToken() });
     }),
   );
 };
 
-const findAccountAddress = async (user, master) => {
-  const authOptions = getQueryAuthOptions(user, master);
+const findAccountAddress = async (user: ParseUser, master?: boolean): Promise<ParseObject[]> => {
+  const authOptions: AuthOptionsType = getQueryAuthOptions(user, master);
   const query = new Parse.Query('Address');
-  const addresses = await query.find(authOptions);
+  const addresses: ParseObject[] = await query.find(authOptions);
   return addresses;
 };
 
-const addNewAddress = async (attributes, user) => {
-  const address = new Address();
+const addNewAddress = async (attributes: AddressType, user: ParseUser): Promise<ParseObject> => {
+  const address: ParseObject = new Address();
   const account = await findAccountByUser(user);
   address.set({ ...attributes, account });
-  await address.save(null, { sessionToken: user.getSessionToken() });
-
+  await address.save(null, { useMasterKey: false, sessionToken: user.getSessionToken() });
   if (address.get('default')) {
     await removeDefaultFromOtherAddresses(address, user);
   }
-
   return address;
 };
 
-const editAddress = async (addresId, attributes, user) => {
+const editAddress = async (addresId: string, attributes: AddressType, user: ParseUser): Promise<ParseObject> => {
   const query = new Parse.Query('Address');
-  const address = await query.get(addresId, { sessionToken: user.getSessionToken() });
+  const address: ParseObject = await query.get(addresId, { sessionToken: user.getSessionToken() });
   address.set({ ...attributes });
-  await address.save(null, { sessionToken: user.getSessionToken() });
+  await address.save(null, { useMasterKey: false, sessionToken: user.getSessionToken() });
   if (address.get('default')) {
     await removeDefaultFromOtherAddresses(address, user);
   }

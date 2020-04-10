@@ -1,3 +1,5 @@
+/* @flow */
+
 const SimpleSendGridAdapter = require('./adapters/SendGridAdapter');
 
 const { nullParser } = require('./cloud/utils');

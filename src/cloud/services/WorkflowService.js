@@ -1,4 +1,7 @@
+/* @flow  */
 /* eslint-disable function-paren-newline */
+import type { ParseObject, ParseUser, ContainerInputType } from '../../flow-types';
+
 const { Parse } = global;
 
 const ContainerService = require('./ContainerService');
@@ -12,7 +15,7 @@ const WasteTypeService = require('./WasteTypeService');
 
 const { CONTAINER_STATUS, MAX_CONTAINERS_QUANTITY_PER_REQUEST, TRANSACTIONS_TYPES } = require('../constants');
 
-const validateRegisterInput = (containers) => {
+const validateRegisterInput = (containers: ContainerInputType[]) => {
   const typesMap = new Map();
   containers.forEach(({ typeId, qty }) => {
     if (typesMap.has(typeId)) {
@@ -28,37 +31,33 @@ const validateRegisterInput = (containers) => {
   });
 };
 
-const validateTransferAcceptRejectRequest = (transferRequestTransaction, user) => {
+const validateTransferAcceptRejectRequest = (transferRequestTransaction: ParseObject, user: ParseUser): void => {
   const transactionId = transferRequestTransaction.id;
   if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSFER_REQUEST) {
     throw new Error(`Transaction ${transactionId} is not in ${TRANSACTIONS_TYPES.TRANSFER_REQUEST} status.`);
   }
   if (transferRequestTransaction.get('expiredAt')) {
-    throw new Error(
-      `Transaction ${transactionId} expired at ${transferRequestTransaction.get('expiredAt')}.`,
-    );
+    throw new Error(`Transaction ${transactionId} expired at ${transferRequestTransaction.get('expiredAt')}.`);
   }
   if (!transferRequestTransaction.get('to').equals(user)) {
     throw new Error('You are not allowed to accept/reject this request.');
   }
 };
 
-const validateTransferCancel = (transferRequestTransaction, user) => {
+const validateTransferCancel = (transferRequestTransaction: ParseObject, user: ParseUser): void => {
   const transactionId = transferRequestTransaction.id;
   if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSFER_REQUEST) {
     throw new Error(`Transaction ${transactionId} is not in ${TRANSACTIONS_TYPES.TRANSFER_REQUEST} status.`);
   }
   if (transferRequestTransaction.get('expiredAt')) {
-    throw new Error(
-      `Transaction ${transactionId} expired at ${transferRequestTransaction.get('expiredAt')}.`,
-    );
+    throw new Error(`Transaction ${transactionId} expired at ${transferRequestTransaction.get('expiredAt')}.`);
   }
   if (!transferRequestTransaction.get('from').equals(user)) {
     throw new Error('You are not allowed to cancel this request.');
   }
 };
 
-const canTransportContainer = async (container, user) => {
+const canTransportContainer = async (container: ParseObject, user: ParseUser): Promise<boolean> => {
   const [isRecycler, isCarrier] = await Promise.all([
     ContainerService.isRecyclerOfContainer(container, user),
     ContainerService.isCarrierOfContainer(container, user),
@@ -73,7 +72,7 @@ const canTransportContainer = async (container, user) => {
   return true;
 };
 
-const validateTransport = async (containers, user) => {
+const validateTransport = async (containers: ParseObject[], user: ParseUser): Promise<boolean[]> => {
   if (
     // eslint-disable-next-line arrow-body-style
     !containers.every((container) => {
@@ -86,7 +85,7 @@ const validateTransport = async (containers, user) => {
     );
   }
 
-  await Promise.all(containers.map((container) => canTransportContainer(container, user)));
+  return Promise.all(containers.map((container) => canTransportContainer(container, user)));
 };
 
 /**
@@ -98,38 +97,49 @@ const validateTransport = async (containers, user) => {
  * @param {Array} containersInput
  * @param {User} user
  */
-const registerRecover = async (containersInput = [], user) => {
+const registerRecover = async (containersInput: ContainerInputType[] = [], user: ParseUser): Promise<ParseObject> => {
   try {
     validateRegisterInput(containersInput);
-    const wasteTypes = await WasteTypeService.getWasteTypesFromIds(containersInput.map((c) => c.typeId));
+    const wasteTypes: Map<string, ParseObject> = await WasteTypeService.getWasteTypesFromIds(
+      containersInput.map((c) => c.typeId),
+    );
     const transaction = await TransactionService.createTransaction({
+      from: null,
       to: user,
       type: TRANSACTIONS_TYPES.RECOVER,
+      reason: null,
+      address: {},
+      recyclingCenter: null,
+      relatedTo: null,
     });
-    const containers = await Promise.all(
+    const containersSetArray = await Promise.all(
       containersInput.map(({ typeId, qty }) => {
-        const wasteType = wasteTypes.get(typeId);
+        const wasteType: ?ParseObject = wasteTypes.get(typeId);
+        if (!wasteType) throw new Error('Waste Type not found');
         return ContainerService.createContainersOfType(
           wasteType,
           qty,
           CONTAINER_STATUS.RECOVERED,
           transaction.get('number'),
-          user,
         );
       }),
     );
-    const details = containers
-      .flat()
-      .map((container) => TransactionService.createTransactionDetail(transaction, container));
+
+    const containers: ParseObject[] = (containersSetArray.flat(): any[]);
+    const details: ParseObject[] = containers.map((container) =>
+      TransactionService.createTransactionDetail(transaction, container),
+    );
 
     await Parse.Object.saveAll([transaction, ...containers.flat(), ...details], {
       sessionToken: user.getSessionToken(),
     });
 
     await Promise.all(
-      containersInput.map((input) =>
-        StockService.incrementStock(wasteTypes.get(input.typeId), user, input.qty),
-      ),
+      containersInput.map((input) => {
+        const wasteType: ?ParseObject = wasteTypes.get(input.typeId);
+        if (!wasteType) throw new Error('Waste Type not found');
+        return StockService.incrementStock(wasteType, user, input.qty);
+      }),
     );
     transaction.set(
       'details',
@@ -150,7 +160,11 @@ const registerRecover = async (containersInput = [], user) => {
  * @param {User} to
  * @param {User} user
  */
-const registerTransferRequest = async (containersInput, to, user) => {
+const registerTransferRequest = async (
+  containersInput: string[],
+  to: string,
+  user: ParseUser,
+): Promise<ParseObject> => {
   try {
     if (!to) throw new Error("Cannot transfer without a recipient. Please check parameter 'to'");
     const recipient = await UserService.findUserById(to);
@@ -170,6 +184,10 @@ const registerTransferRequest = async (containersInput, to, user) => {
       from: user,
       to: recipient,
       type: TRANSACTIONS_TYPES.TRANSFER_REQUEST,
+      address: {},
+      reason: null,
+      recyclingCenter: null,
+      relatedTo: null,
     });
 
     const details = containers.map((container) => {
@@ -208,7 +226,7 @@ const registerTransferRequest = async (containersInput, to, user) => {
  * @param {User} to
  * @param {User} user
  */
-const registerTransferAccept = async (transactionId, user) => {
+const registerTransferAccept = async (transactionId: string, user: ParseUser): Promise<ParseObject> => {
   try {
     const transferRequestTransaction = await TransactionService.findRawTransaction(transactionId, user);
     const from = transferRequestTransaction.get('from');
@@ -218,6 +236,10 @@ const registerTransferAccept = async (transactionId, user) => {
       from,
       to,
       type: TRANSACTIONS_TYPES.TRANSFER_ACCEPT,
+      address: {},
+      relatedTo: null,
+      reason: null,
+      recyclingCenter: null,
     });
     transaction.set('relatedTo', transferRequestTransaction);
     transferRequestTransaction.set('expiredAt', new Date());
@@ -231,9 +253,7 @@ const registerTransferAccept = async (transactionId, user) => {
     await Parse.Object.saveAll([transaction, ...details], {
       sessionToken: user.getSessionToken(),
     });
-    await Promise.all(
-      containers.map((container) => StockService.moveStock(container.get('type'), from, to, 1)),
-    );
+    await Promise.all(containers.map((container) => StockService.moveStock(container.get('type'), from, to, 1)));
 
     transaction.set(
       'details',
@@ -245,7 +265,7 @@ const registerTransferAccept = async (transactionId, user) => {
   }
 };
 
-const registerTransferReject = async (transactionId, reason, user) => {
+const registerTransferReject = async (transactionId: string, reason: string, user: ParseUser): Promise<ParseObject> => {
   try {
     const transferRequestTransaction = await TransactionService.findRawTransaction(transactionId, user);
     validateTransferAcceptRejectRequest(transferRequestTransaction, user);
@@ -255,6 +275,9 @@ const registerTransferReject = async (transactionId, reason, user) => {
       to: transferRequestTransaction.get('to'),
       type: TRANSACTIONS_TYPES.TRANSFER_REJECT,
       reason,
+      address: {},
+      relatedTo: null,
+      recyclingCenter: null,
     });
     transaction.set('relatedTo', transferRequestTransaction);
     transferRequestTransaction.set('expiredAt', new Date());
@@ -279,7 +302,7 @@ const registerTransferReject = async (transactionId, reason, user) => {
   }
 };
 
-const registerTransferCancel = async (transactionId, user) => {
+const registerTransferCancel = async (transactionId: string, user: ParseUser): Promise<ParseObject> => {
   try {
     const transferRequestTransaction = await TransactionService.findRawTransaction(transactionId, user);
     validateTransferCancel(transferRequestTransaction, user);
@@ -287,6 +310,10 @@ const registerTransferCancel = async (transactionId, user) => {
       from: transferRequestTransaction.get('from'),
       to: transferRequestTransaction.get('to'),
       type: TRANSACTIONS_TYPES.TRANSFER_CANCEL,
+      reason: null,
+      recyclingCenter: null,
+      address: null,
+      relatedTo: null,
     });
     transaction.set('relatedTo', transferRequestTransaction);
     transferRequestTransaction.set('expiredAt', new Date());
@@ -331,7 +358,7 @@ const registerTransferCancel = async (transactionId, user) => {
  * @param {User} to
  * @param {User} user
  */
-const registerTransport = async (containersInput, to, user) => {
+const registerTransport = async (containersInput: string[], to: string, user: ParseUser): Promise<ParseObject> => {
   try {
     if (!to) throw new Error("Cannot transfer without a destination. Please check parameter 'to'");
     const recyclingCenter = await RecyclingCenterService.findRecyclingCenterById(to);
@@ -342,9 +369,13 @@ const registerTransport = async (containersInput, to, user) => {
     await validateTransport(containers, user);
 
     const transaction = await TransactionService.createTransaction({
+      to: null,
       from: user,
       type: TRANSACTIONS_TYPES.TRANSPORT,
       recyclingCenter,
+      reason: null,
+      address: {},
+      relatedTo: null,
     });
 
     const details = containers.map((container) => {

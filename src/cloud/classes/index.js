@@ -1,3 +1,5 @@
+/* @flow */
+
 const Account = require('./Account');
 const Address = require('./Address');
 const Post = require('./Post');

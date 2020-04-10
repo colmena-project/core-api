@@ -1,8 +1,11 @@
+/* @flow */
+import type { NotificationDataType, NotificationTypesType, ParseUser } from '../../flow-types';
+
 const { Parse } = global;
 const { NOTIFICATION_TYPES } = require('../constants');
 
-const send = async (title) => {
-  const push = await Parse.Push.send(
+const send = async (title: string): Promise<any> =>
+  Parse.Push.send(
     {
       channels: ['All'],
       data: {
@@ -13,10 +16,8 @@ const send = async (title) => {
       useMasterKey: true,
     },
   );
-  return push;
-};
 
-const sendToUser = async (data, user) => {
+const sendToUser = async (data: Object, user: ParseUser): Promise<any> => {
   if (!data) throw new Error('Cannot send notificaction. Data is required');
   // Find sessions of the user.
   const query = new Parse.Query(Parse.Session);
@@ -39,7 +40,7 @@ const sendToUser = async (data, user) => {
   );
 };
 
-const prepareNotificationData = (type, message, data = {}) => {
+const prepareNotificationData = (type: NotificationTypesType, message, data: Object = {}): NotificationDataType => {
   if (!Object.keys(NOTIFICATION_TYPES).includes(type)) {
     throw new Error(`Unsoported push notification type ${type}`);
   }
@@ -51,8 +52,13 @@ const prepareNotificationData = (type, message, data = {}) => {
   };
 };
 
-const sendPushNotificationToUser = async (type, message, extraData, user) => {
-  const data = prepareNotificationData(type, message.trim(), extraData);
+const sendPushNotificationToUser = async (
+  type: NotificationTypesType,
+  message: string,
+  extraData: Object,
+  user: ParseUser,
+): Promise<any> => {
+  const data: NotificationDataType = prepareNotificationData(type, message.trim(), extraData);
   return sendToUser(data, user);
 };
 

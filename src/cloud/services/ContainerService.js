@@ -1,10 +1,13 @@
+/* @flow */
+import type { ContainerType, ContainerStatusType, ParseObject, ParseUser } from '../../flow-types';
+
 const { Parse } = global;
 const Container = require('../classes/Container');
 const { getQueryAuthOptions } = require('../utils');
 const { getValueForNextSequence } = require('../utils/db');
 const TransactionService = require('./TransactionService');
 
-const findContainerById = async (id, user, master) => {
+const findContainerById = async (id: string, user: ParseUser, master: boolean = false): Promise<ParseObject> => {
   try {
     const authOptions = getQueryAuthOptions(user, master);
     const query = new Parse.Query('Container');
@@ -16,12 +19,11 @@ const findContainerById = async (id, user, master) => {
   }
 };
 
-// eslint-disable-next-line arrow-body-style
-const generateContainerCode = (typeCode, transactionNumber, containerNumber) => {
-  return `${typeCode}-${transactionNumber}-${containerNumber}`;
-};
+const generateContainerCode = (typeCode: string, transactionNumber: string, containerNumber: number): string =>
+  `${typeCode}-${transactionNumber}-${containerNumber}`;
 
-const createContainer = async (type, status, transactionNumber) => {
+const createContainer = async (transactionNumber: string, attributes: ContainerType): Promise<ParseObject> => {
+  const { type, status } = attributes;
   const number = await getValueForNextSequence(Container.name);
   const code = generateContainerCode(type.get('code'), transactionNumber, number);
   const container = new Container();
@@ -32,17 +34,21 @@ const createContainer = async (type, status, transactionNumber) => {
   return container;
 };
 
-const createContainersOfType = async (type, qty, status, transactionNumber, user) => {
+const createContainersOfType = async (
+  type: ParseObject,
+  qty: number,
+  status: ContainerStatusType,
+  transactionNumber: string,
+): Promise<ParseObject[]> => {
   const promises = [];
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < qty; i++) {
-    promises.push(createContainer(type, status, transactionNumber, user));
+    promises.push(createContainer(transactionNumber, { type, status }));
   }
-  const containers = await Promise.all(promises);
-  return containers;
+  return Promise.all(promises);
 };
 
-const findContainersByTransaction = async (transaction) => {
+const findContainersByTransaction = async (transaction: ParseObject): Promise<ParseObject[]> => {
   const query = new Parse.Query('TransactionDetail');
   query.select('container');
   query.include('container.type');
@@ -51,21 +57,23 @@ const findContainersByTransaction = async (transaction) => {
   return transactionsDetails.map((detail) => detail.get('container'));
 };
 
-const findContainersByUser = async (user, master = false) => {
+const findContainersByUser = async (user: ParseUser, master: boolean = false): Promise<ParseObject[]> => {
   const authOptions = getQueryAuthOptions(user, master);
   const query = new Parse.Query('Container');
   const containers = await query.find(authOptions);
   return containers;
 };
 
-const isRecyclerOfContainer = async (container, user) => {
+const isRecyclerOfContainer = async (container: ParseObject, user: ParseUser): Promise<boolean> => {
   const transaction = await TransactionService.findRecoverTransactionOfContainer(container);
-  return transaction && transaction.get('to').equals(user);
+  if (!transaction) return false;
+  return transaction.get('to').equals(user);
 };
 
-const isCarrierOfContainer = async (container, user) => {
+const isCarrierOfContainer = async (container: ParseObject, user: ParseUser): Promise<boolean> => {
   const transaction = await TransactionService.findTransferAcceptTransactionOfContainer(container);
-  return transaction && transaction.get('to').equals(user);
+  if (!transaction) return false;
+  return transaction.get('to').equals(user);
 };
 
 module.exports = {

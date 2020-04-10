@@ -1,6 +1,9 @@
+/* @flow */
+import type { RouteDefinitions } from '../../flow-types';
+
 const { DefaultController } = require('../controllers');
 
-module.exports = {
+const definitions: RouteDefinitions = {
   ping: {
     action: DefaultController.ping,
     secure: false,
@@ -10,3 +13,5 @@ module.exports = {
     secure: true,
   },
 };
+
+module.exports = definitions;

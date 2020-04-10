@@ -1,9 +1,12 @@
+/* @flow */
+import type { RouteDefinition } from '../../flow-types';
+
 const { Parse } = global;
 const { secure } = require('./index');
 const routes = require('../routes');
 const classes = require('../classes');
 
-function loadClassHooks() {
+function loadClassHooks(): void {
   // Register Classes to load hooks
   const classesArray = Object.keys(classes).map((key) => classes[key]);
 
@@ -19,11 +22,11 @@ function loadClassHooks() {
   });
 }
 
-function loadCloudFunctions(legacy = false) {
-  const cloudFunctions = new Map();
-  Object.keys(routes).forEach((controller) => {
-    Object.keys(routes[controller]).forEach((action) => {
-      const actionPath = legacy ? action : `${controller}_${action}`;
+function loadCloudFunctions(legacy: boolean = false) {
+  const cloudFunctions: Map<string, Function> = new Map();
+  Object.keys(routes).forEach((controller: string) => {
+    Object.keys(routes[controller]).forEach((action: string) => {
+      const actionPath: string = legacy ? action : `${controller}_${action}`;
       if (cloudFunctions.has(actionPath)) {
         throw new Error(
           `${actionPath} was already defined. Please check your routes definitions in your route directory.`,
@@ -39,7 +42,7 @@ function loadCloudFunctions(legacy = false) {
     });
   });
 
-  cloudFunctions.forEach((cloudFnDefinition, path) => {
+  cloudFunctions.forEach((cloudFnDefinition: RouteDefinition, path: string): void => {
     const { action, secure: isSecure } = cloudFnDefinition;
     if (isSecure) {
       Parse.Cloud.define(path, secure(action));

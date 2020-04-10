@@ -1,3 +1,5 @@
+/* @flow */
+
 module.exports = {
   MAX_CONTAINERS_QUANTITY_PER_REQUEST: 20,
   TRANSACTIONS_TYPES: {

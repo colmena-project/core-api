@@ -1,3 +1,5 @@
+/* @flow */
+
 const { Parse } = global;
 const { getMailAdapter } = require('../utils/core');
 
@@ -6,7 +8,7 @@ const ping = () => ({
   time: new Date(),
 });
 
-const testMail = async (request) => {
+const testMail = async (request: Object): Promise<Object> => {
   const { master } = request;
   if (!master) throw new Parse.Error(403, 'You cannot call this cloud function');
   const { to, subject, text } = request.params;

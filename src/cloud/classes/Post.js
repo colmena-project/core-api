@@ -1,3 +1,5 @@
+/* @flow */
+
 const Base = require('./Base');
 const AccountService = require('../services/AccountService');
 
@@ -6,7 +8,7 @@ class Post extends Base {
     super(Post.name);
   }
 
-  static async beforeSave(request) {
+  static async beforeSave(request: Object): Promise<any> {
     const { object: post } = request;
     super.beforeSave(request);
     const postACL = post.getACL();
@@ -14,7 +16,7 @@ class Post extends Base {
     post.setACL(postACL);
   }
 
-  static async afterSave(request) {
+  static async afterSave(request: Object): Promise<any> {
     const { object } = request;
     const account = await object.getOwnerAccount();
     if (account) {
@@ -24,7 +26,7 @@ class Post extends Base {
     return object;
   }
 
-  static async afterFind(request) {
+  static async afterFind(request: Object): Promise<any> {
     const { objects: posts } = request;
     const postPromisses = posts.map((post) => post.getOwnerAccount());
 

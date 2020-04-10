@@ -1,6 +1,13 @@
+/* @flow */
+import type { ParseUser } from '../../flow-types';
+
 const { Parse } = global;
 
-const grantReadAndWritePermissionsToUser = async (className, objectId, user) => {
+const grantReadAndWritePermissionsToUser = async (
+  className: string,
+  objectId: string,
+  user: ParseUser,
+): Object => {
   const query = new Parse.Query(className);
   const object = await query.get(objectId, { useMasterKey: true });
   const acl = object.getACL();
@@ -11,7 +18,11 @@ const grantReadAndWritePermissionsToUser = async (className, objectId, user) => 
   return object;
 };
 
-const revokeReadAndWritePermissionsToUser = async (className, objectId, user) => {
+const revokeReadAndWritePermissionsToUser = async (
+  className: string,
+  objectId: string,
+  user: ParseUser,
+): Object => {
   const query = new Parse.Query(className);
   const object = await query.get(objectId, { useMasterKey: true });
   const acl = object.getACL();

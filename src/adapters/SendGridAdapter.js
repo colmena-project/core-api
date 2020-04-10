@@ -1,13 +1,17 @@
+/* @flow */
+import type { MailType } from '../flow-types';
+
 const SendGrid = require('@sendgrid/mail');
 
-const SimpleSendGridAdapter = (mailOptions) => {
+const SimpleSendGridAdapter = (mailOptions: { apiKey?: string, fromAddress: string }) => {
   if (!mailOptions || !mailOptions.apiKey || !mailOptions.fromAddress) {
     throw new Error('SimpleSendGridAdapter requires an API Key.');
   }
 
   const sendgrid = new SendGrid.MailService();
 
-  const sendMail = ({ to, subject, text, html, templateId, dynamic_template_data }) => {
+  // eslint-disable-next-line camelcase
+  const sendMail = ({ to, subject, text, html, templateId, dynamic_template_data }: MailType): Promise<any> => {
     sendgrid.setApiKey(mailOptions.apiKey);
     let msg = {
       to,
@@ -17,25 +21,12 @@ const SimpleSendGridAdapter = (mailOptions) => {
       html: html || `<div>${text}</div>`,
     };
 
+    // eslint-disable-next-line camelcase
     if (templateId && dynamic_template_data) {
       msg = { ...msg, templateId, dynamic_template_data };
     }
 
     return sendgrid.send(msg);
-
-    // return new Promise((resolve, reject) => {
-    //   sendgrid.send({
-    //     from: mailOptions.fromAddress,
-    //     to: to,
-    //     subject: subject,
-    //     text: text,
-    //   }, function(err, json) {
-    //     if (err) {
-    //        reject(err);
-    //     }
-    //     resolve(json);
-    //   });
-    // });
   };
 
   return Object.freeze({

@@ -1,3 +1,4 @@
+/* @flow */
 const { Parse } = global;
 const { loadCloudFunctions, loadClassHooks } = require('./utils/loader');
 

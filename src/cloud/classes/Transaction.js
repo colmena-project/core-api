@@ -1,3 +1,5 @@
+/* @flow */
+
 const { Parse } = global;
 const Base = require('./Base');
 const { TRANSACTIONS_TYPES } = require('../constants');
@@ -31,7 +33,7 @@ class Transaction extends Base {
 
   //   return transactions;
   // }
-  static async afterDelete(request) {
+  static async afterDelete(request: Object): Promise<any> {
     const { object: transaction } = request;
     const detailsQuery = new Parse.Query('TransactionDetail');
     detailsQuery.equalTo('transaction', transaction);

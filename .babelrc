@@ -1,5 +1,8 @@
 {
-  "presets": ["@babel/preset-flow", ["minify", {
-    "keepFnName": true
-  }]]
+  "presets": [
+    "@babel/preset-flow",
+    ["minify", {
+      "keepFnName": true
+    }]
+  ]
 }

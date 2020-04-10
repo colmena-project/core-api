@@ -1,3 +1,4 @@
+/* @flow */
 const { Client } = require('@googlemaps/google-maps-services-js');
 
 const { GOOGLE_MAPS_API_KEY } = process.env;
@@ -6,7 +7,10 @@ if (!GOOGLE_MAPS_API_KEY) {
   throw new Error('GOOGLE_MAPS_API_KEY cannot be loaded. Please check your .env file');
 }
 
-const reverseGeocode = async (latitude, longitude) => {
+const reverseGeocode = async (
+  latitude: string,
+  longitude: string,
+): Promise<{ formatted_address: string, address_components: [] }> => {
   if (!(latitude && longitude)) {
     throw new Error('Latitude and Longitude must be provided');
   }
@@ -33,7 +37,7 @@ const reverseGeocode = async (latitude, longitude) => {
   };
 };
 
-const geocode = async (address) => {
+const geocode = async (address: string): Promise<{ formatted_address: string, geocode: [] }> => {
   if (!address) {
     throw new Error('Address must be provided');
   }
@@ -57,7 +61,7 @@ const geocode = async (address) => {
   };
 };
 
-const placeAutocomplete = async (address) => {
+const placeAutocomplete = async (address: string): Promise<{ predictions: [] }> => {
   if (!address) {
     throw new Error('Address must be provided');
   }

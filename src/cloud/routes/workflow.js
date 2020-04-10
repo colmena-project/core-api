@@ -1,6 +1,9 @@
+/* @flow */
+import type { RouteDefinitions } from '../../flow-types';
+
 const { WorkflowController } = require('../controllers');
 
-module.exports = {
+const definitions: RouteDefinitions = {
   registerRecover: {
     action: WorkflowController.registerRecover,
     secure: true,
@@ -26,3 +29,5 @@ module.exports = {
     secure: true,
   },
 };
+
+module.exports = definitions;

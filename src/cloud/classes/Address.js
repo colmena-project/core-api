@@ -1,3 +1,4 @@
+/* @flow */
 const Base = require('./Base');
 
 class Address extends Base {

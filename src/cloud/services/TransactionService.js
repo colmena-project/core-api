@@ -1,3 +1,6 @@
+/* @flow */
+import type { ParseObject, ParseUser, TransactionType } from '../../flow-types';
+
 const { Parse } = global;
 const { getQueryAuthOptions } = require('../utils');
 const { getValueForNextSequence } = require('../utils/db');
@@ -5,19 +8,22 @@ const { getValueForNextSequence } = require('../utils/db');
 const { Transaction, TransactionDetail } = require('../classes');
 const { TRANSACTIONS_TYPES } = require('../constants');
 
-const findRawTransaction = async (id, user, master) => {
+const findRawTransaction = async (id: string, user: ParseUser, master: boolean = false): Promise<ParseObject> => {
   try {
     const authOptions = getQueryAuthOptions(user, master);
     const transactionQuery = new Parse.Query('Transaction');
     const transaction = await transactionQuery.get(id, authOptions);
-
     return transaction;
   } catch (error) {
     throw new Error(`Transaction ${id} not found`);
   }
 };
 
-const findTransactionWithDetailsById = async (id, user, master) => {
+const findTransactionWithDetailsById = async (
+  id: string,
+  user: ParseUser,
+  master?: boolean = false,
+): Promise<ParseObject> => {
   const authOptions = getQueryAuthOptions(user, master);
   const transaction = await findRawTransaction(id, user, master);
   const detailQuery = new Parse.Query('TransactionDetail');
@@ -33,8 +39,8 @@ const findTransactionWithDetailsById = async (id, user, master) => {
   return transaction;
 };
 
-const createTransaction = async (attributes) => {
-  const { from = null, to, type, recyclingCenter = null, reason } = attributes;
+const createTransaction = async (attributes: TransactionType): Promise<ParseObject> => {
+  const { from = null, to, type, recyclingCenter = null, reason, address = {} } = attributes;
   const transaction = new Transaction();
   const number = await getValueForNextSequence(Transaction.name);
   transaction.set('type', type);
@@ -43,6 +49,7 @@ const createTransaction = async (attributes) => {
   transaction.set('number', number);
   transaction.set('recyclingCenter', recyclingCenter);
   transaction.set('reason', reason);
+  transaction.set('address', address);
   return transaction;
 };
 
@@ -51,7 +58,7 @@ const createTransaction = async (attributes) => {
  *
  * @param {Transaction} transaction
  */
-const destroyTransaction = async (transaction) => {
+const destroyTransaction = async (transaction: ParseObject): Promise<any> => {
   if (transaction) {
     await transaction.destroy({ useMasterKey: true });
   }
@@ -88,7 +95,7 @@ const destroyTransaction = async (transaction) => {
  * @param {*} transaction
  * @param {*} wasteType
  */
-const createTransactionDetail = (transaction, container) => {
+const createTransactionDetail = (transaction: ParseObject, container: ParseObject): Object => {
   try {
     const transactionDetail = new TransactionDetail();
     const wasteType = container.get('type');
@@ -107,7 +114,7 @@ const createTransactionDetail = (transaction, container) => {
  *
  * @param {Container} container
  */
-const findTransactionsOfContainer = async (container) => {
+const findTransactionsOfContainer = async (container: ParseObject): Promise<ParseObject[]> => {
   const query = new Parse.Query('TransactionDetail');
   query.select('transaction');
   query.include('transaction');
@@ -116,13 +123,13 @@ const findTransactionsOfContainer = async (container) => {
   return transactionsDetails.map((detail) => detail.get('transaction'));
 };
 
-const findRecoverTransactionOfContainer = async (container) => {
+const findRecoverTransactionOfContainer = async (container: ParseObject): Promise<?ParseObject> => {
   const query = new Parse.Query('TransactionDetail');
   query.select('transaction');
   query.include('transaction');
   query.equalTo('container', container);
   const transactionsDetail = await query.find({ useMasterKey: true });
-  let transaction;
+  let transaction = null;
   transactionsDetail.forEach((detail) => {
     if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.RECOVER) {
       transaction = detail.get('transaction');
@@ -131,13 +138,13 @@ const findRecoverTransactionOfContainer = async (container) => {
   return transaction;
 };
 
-const findTransferAcceptTransactionOfContainer = async (container) => {
+const findTransferAcceptTransactionOfContainer = async (container: ParseObject): Promise<?ParseObject> => {
   const query = new Parse.Query('TransactionDetail');
   query.select('transaction');
   query.include('transaction');
   query.equalTo('container', container);
   const transactionsDetail = await query.find({ useMasterKey: true });
-  let transaction;
+  let transaction = null;
   transactionsDetail.forEach((detail) => {
     if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.TRANSFER_ACCEPT) {
       transaction = detail.get('transaction');

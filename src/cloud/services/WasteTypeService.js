@@ -1,6 +1,9 @@
+/* @flow  */
+import type { ParseObject } from '../../flow-types';
+
 const { Parse } = global;
 
-const findWasteTypeById = async (id) => {
+const findWasteTypeById = async (id: string): Promise<ParseObject> => {
   try {
     const wasteTypeQuery = new Parse.Query('WasteType');
     const wasteType = await wasteTypeQuery.get(id, { useMasterKey: true });
@@ -10,8 +13,8 @@ const findWasteTypeById = async (id) => {
   }
 };
 
-const getWasteTypesFromIds = async (wasteTypesIds = []) => {
-  const wasteTypes = new Map();
+const getWasteTypesFromIds = async (wasteTypesIds: string[] = []): Promise<Map<string, ParseObject>> => {
+  const wasteTypes: Map<string, ParseObject> = new Map();
   const promisses = wasteTypesIds.map((id) => findWasteTypeById(id));
   const types = await Promise.all(promisses);
   types.forEach((t) => wasteTypes.set(t.id, t));

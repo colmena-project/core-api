@@ -1,6 +1,9 @@
+/* @flow */
+import type { RouteDefinitions } from '../../flow-types';
+
 const { AccountController } = require('../controllers');
 
-module.exports = {
+const definitions: RouteDefinitions = {
   createAccount: {
     action: AccountController.createAccount,
     secure: false,
@@ -22,3 +25,5 @@ module.exports = {
     secure: true,
   },
 };
+
+module.exports = definitions;

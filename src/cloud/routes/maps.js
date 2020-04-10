@@ -1,6 +1,9 @@
+/* @flow */
+import type { RouteDefinitions } from '../../flow-types';
+
 const { MapsController } = require('../controllers');
 
-module.exports = {
+const definitions: RouteDefinitions = {
   distanceCalculate: {
     action: MapsController.distanceCalculate,
     secure: false,
@@ -18,3 +21,5 @@ module.exports = {
     secure: true,
   },
 };
+
+module.exports = definitions;

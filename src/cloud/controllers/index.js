@@ -1,3 +1,5 @@
+/* @flow */
+
 const DefaultController = require('./DefaultController');
 const MapsController = require('./MapsController');
 const AccountController = require('./AccountController');

@@ -1,10 +1,11 @@
+/* @flow */
 const express = require('express');
 const http = require('http');
 const { ParseServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
 const ParseServerOptions = require('./config');
 
-const { port, redisDSN, serverURL, appId, masterKey, readOnlyMasterKey } = ParseServerOptions;
+const { port, liveQuery, serverURL, appId, masterKey, readOnlyMasterKey } = ParseServerOptions;
 
 const api = new ParseServer(ParseServerOptions);
 const dashboard = new ParseDashboard(
@@ -49,5 +50,5 @@ const httpServer = http.createServer(app);
 // eslint-disable-next-line no-console
 httpServer.listen(port, () => console.log(`Server running on ${serverURL}`));
 ParseServer.createLiveQueryServer(httpServer, {
-  redisURL: redisDSN,
+  redisURL: liveQuery.redisURL,
 });

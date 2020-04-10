@@ -1,7 +1,8 @@
+/* @flow */
 const { Parse } = global;
 
 class Base extends Parse.Object {
-  static async beforeSave(request) {
+  static async beforeSave(request: Object): any {
     const { user, master } = request;
     Object.keys(request.object.attributes).forEach((attribute) => {
       const value = request.object.get(attribute);
@@ -38,18 +39,18 @@ class Base extends Parse.Object {
     request.object.setACL(acl);
   }
 
-  static afterSave() {}
+  static afterSave(): any {}
 
-  static beforeDelete() {}
+  static beforeDelete(): any {}
 
-  static afterDelete() {}
+  static afterDelete(): any {}
 
-  static beforeFind(request) {
+  static beforeFind(request: Object): any {
     const { query, master: isMaster } = request;
     if (!isMaster) query.doesNotExist('deletedAt');
   }
 
-  static afterFind() {}
+  static afterFind(): any {}
 }
 
 module.exports = Base;

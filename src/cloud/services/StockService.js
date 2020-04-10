@@ -1,13 +1,16 @@
+/* @flow */
+import type { ParseObject, ParseUser } from '../../flow-types';
+
 const { Parse } = global;
 
-const getUserStock = async (user) => {
+const getUserStock = async (user: ParseUser): Promise<ParseObject[]> => {
   const stockQ = new Parse.Query('UserStock');
   stockQ.include('wasteType');
   const stock = await stockQ.find({ sessionToken: user.getSessionToken() });
   return stock;
 };
 
-const getStockOfType = async (type, user) => {
+const getStockOfType = async (type: ParseObject, user: ParseUser): Promise<ParseObject> => {
   const userStockQuery = new Parse.Query('UserStock');
   userStockQuery.equalTo('wasteType', type);
   userStockQuery.equalTo('user', user);
@@ -21,7 +24,11 @@ const getStockOfType = async (type, user) => {
   return userStock;
 };
 
-const incrementStock = async (wasteType, user, ammount = 1) => {
+const incrementStock = async (
+  wasteType: ParseObject,
+  user: ParseUser,
+  ammount: number = 1,
+): Promise<ParseObject> => {
   const userStock = await getStockOfType(wasteType, user);
   userStock.increment('ammount', ammount);
   const acl = new Parse.ACL(user);
@@ -31,14 +38,23 @@ const incrementStock = async (wasteType, user, ammount = 1) => {
   return userStock;
 };
 
-const decrementStock = async (wasteType, user, ammount = 1) => {
+const decrementStock = async (
+  wasteType: ParseObject,
+  user: ParseUser,
+  ammount: number = 1,
+): Promise<ParseObject> => {
   const userStock = await getStockOfType(wasteType, user);
   userStock.increment('ammount', -ammount);
   await userStock.save(null, { useMasterKey: true });
   return userStock;
 };
 
-const moveStock = async (wasteType, from, to, ammount = 1) => {
+const moveStock = async (
+  wasteType: ParseObject,
+  from: ParseUser,
+  to: ParseUser,
+  ammount: number = 1,
+): Promise<void> => {
   let fromStock;
   let toStock;
   try {

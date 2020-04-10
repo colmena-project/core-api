@@ -1,44 +1,47 @@
+/* @flow */
+import type { ParseObject } from '../../flow-types';
+
 const { WorkflowService } = require('../services');
 
-const registerRecover = async (request) => {
+const registerRecover = async (request: Object): Promise<Object> => {
   const { user, params } = request;
   const { containers } = params;
-  const transaction = await WorkflowService.registerRecover(containers, user);
+  const transaction: ParseObject = await WorkflowService.registerRecover(containers, user);
   return transaction.toJSON();
 };
 
-const registerTransferRequest = async (request) => {
+const registerTransferRequest = async (request: Object): Promise<Object> => {
   const { user, params } = request;
   const { containers, to } = params;
-  const transaction = await WorkflowService.registerTransferRequest(containers, to, user);
+  const transaction: ParseObject = await WorkflowService.registerTransferRequest(containers, to, user);
   return transaction.toJSON();
 };
 
-const registerTransferAccept = async (request) => {
+const registerTransferAccept = async (request: Object): Promise<Object> => {
   const { user, params } = request;
   const { transactionId } = params;
-  const transaction = await WorkflowService.registerTransferAccept(transactionId, user);
+  const transaction: ParseObject = await WorkflowService.registerTransferAccept(transactionId, user);
   return transaction.toJSON();
 };
 
-const registerTransferReject = async (request) => {
+const registerTransferReject = async (request: Object): Promise<Object> => {
   const { user, params } = request;
   const { transactionId, reason } = params;
-  const transaction = await WorkflowService.registerTransferReject(transactionId, reason, user);
+  const transaction: ParseObject = await WorkflowService.registerTransferReject(transactionId, reason, user);
   return transaction.toJSON();
 };
 
-const registerTransferCancel = async (request) => {
+const registerTransferCancel = async (request: Object): Promise<Object> => {
   const { user, params } = request;
   const { transactionId } = params;
-  const transaction = await WorkflowService.registerTransferCancel(transactionId, user);
+  const transaction: ParseObject = await WorkflowService.registerTransferCancel(transactionId, user);
   return transaction.toJSON();
 };
 
-const registerTransport = async (request) => {
+const registerTransport = async (request: Object): Promise<Object> => {
   const { user, params } = request;
   const { containers, to } = params;
-  const transaction = await WorkflowService.registerTransport(containers, to, user);
+  const transaction: ParseObject = await WorkflowService.registerTransport(containers, to, user);
   return transaction.toJSON();
 };
 

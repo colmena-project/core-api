@@ -1,3 +1,5 @@
+/* @flow */
+
 const AccountService = require('./AccountService');
 const MailService = require('./MailService');
 const MapService = require('./MapService');
