@@ -40,7 +40,7 @@ const findTransactionWithDetailsById = async (
 };
 
 const createTransaction = async (attributes: TransactionType): Promise<ParseObject> => {
-  const { from = null, to, type, recyclingCenter = null, reason, fromAddress, toAddress } = attributes;
+  const { from, to, type, recyclingCenter, reason, fromAddress, toAddress } = attributes;
   const transaction: ParseObject = new Transaction();
   const number: number = await getValueForNextSequence(Transaction.name);
   transaction.set('type', type);

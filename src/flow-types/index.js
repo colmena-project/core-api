@@ -82,15 +82,15 @@ export type UserType = {
 };
 
 export type TransactionType = {
-  from: ?ParseUser,
-  to: ?ParseUser,
+  from: ParseUser | void,
+  to: ParseUser | void,
   type: TransactionTypesType,
   number?: number,
-  relatedTo: ?TransactionType,
-  fromAddress: ?Object,
-  toAddress: ?Object,
-  reason: ?string,
-  recyclingCenter: ?ParseObject,
+  relatedTo: TransactionType | void,
+  fromAddress: Object | void,
+  toAddress: Object | void,
+  reason: string | void,
+  recyclingCenter: ParseObject | void,
 };
 
 export type ContainerInputType = {

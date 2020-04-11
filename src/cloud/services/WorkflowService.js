@@ -113,14 +113,14 @@ const registerRecover = async (
     );
     const address: ParseObject = await AccountService.findAccountAddressById(addressId, user);
     const transaction: ParseObject = await TransactionService.createTransaction({
-      from: null,
+      from: undefined,
       to: user,
       type: TRANSACTIONS_TYPES.RECOVER,
-      reason: null,
-      fromAddress: null,
+      reason: undefined,
+      fromAddress: {},
       toAddress: address.toJSON(),
-      recyclingCenter: null,
-      relatedTo: null,
+      recyclingCenter: undefined,
+      relatedTo: undefined,
     });
     const containersSetArray: Array<ParseObject[]> = await Promise.all(
       containersInput.map(({ typeId, qty }) => {
@@ -140,7 +140,7 @@ const registerRecover = async (
       TransactionService.createTransactionDetail(transaction, container),
     );
 
-    await Parse.Object.saveAll([transaction, ...containers.flat(), ...details], {
+    await Parse.Object.saveAll([transaction, ...containers, ...details], {
       sessionToken: user.getSessionToken(),
     });
 
@@ -198,9 +198,9 @@ const registerTransferRequest = async (
       type: TRANSACTIONS_TYPES.TRANSFER_REQUEST,
       fromAddress: fromAddress.toJSON(),
       toAddress: toAddress.toJSON(),
-      reason: null,
-      recyclingCenter: null,
-      relatedTo: null,
+      reason: undefined,
+      recyclingCenter: undefined,
+      relatedTo: undefined,
     });
 
     const details: ParseObject[] = containers.map((container) => {
@@ -251,9 +251,9 @@ const registerTransferAccept = async (transactionId: string, user: ParseUser): P
       type: TRANSACTIONS_TYPES.TRANSFER_ACCEPT,
       fromAddress: transferRequestTransaction.get('fromAddress'),
       toAddress: transferRequestTransaction.get('toAddress'),
-      relatedTo: null,
-      reason: null,
-      recyclingCenter: null,
+      relatedTo: undefined,
+      reason: undefined,
+      recyclingCenter: undefined,
     });
     transaction.set('relatedTo', transferRequestTransaction);
     transferRequestTransaction.set('expiredAt', new Date());
@@ -291,8 +291,8 @@ const registerTransferReject = async (transactionId: string, reason: string, use
       reason,
       fromAddress: transferRequestTransaction.get('fromAddress'),
       toAddress: transferRequestTransaction.get('toAddress'),
-      relatedTo: null,
-      recyclingCenter: null,
+      relatedTo: undefined,
+      recyclingCenter: undefined,
     });
     transaction.set('relatedTo', transferRequestTransaction);
     transferRequestTransaction.set('expiredAt', new Date());
@@ -325,11 +325,11 @@ const registerTransferCancel = async (transactionId: string, user: ParseUser): P
       from: transferRequestTransaction.get('from'),
       to: transferRequestTransaction.get('to'),
       type: TRANSACTIONS_TYPES.TRANSFER_CANCEL,
-      reason: null,
-      recyclingCenter: null,
+      reason: undefined,
+      recyclingCenter: undefined,
       fromAddress: transferRequestTransaction.get('fromAddress'),
       toAddress: transferRequestTransaction.get('toAddress'),
-      relatedTo: null,
+      relatedTo: undefined,
     });
     transaction.set('relatedTo', transferRequestTransaction);
     transferRequestTransaction.set('expiredAt', new Date());
@@ -386,14 +386,14 @@ const registerTransport = async (containersInput: string[], to: string, user: Pa
     const fromAddress: ParseObject = await AccountService.findDefaultAddress(user);
 
     const transaction: ParseObject = await TransactionService.createTransaction({
-      to: null,
+      to: undefined,
       from: user,
       type: TRANSACTIONS_TYPES.TRANSPORT,
       recyclingCenter,
-      reason: null,
+      reason: undefined,
       fromAddress: fromAddress.toJSON(),
       toAddress: recyclingCenter.get('latLng'),
-      relatedTo: null,
+      relatedTo: undefined,
     });
 
     const details: ParseObject[] = containers.map((container) => {

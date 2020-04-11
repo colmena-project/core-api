@@ -1,7 +1,7 @@
+/* eslint-disable no-underscore-dangle */
 /* @flow */
 import type { AddressType, AuthOptionsType, AccountType, ParseObject, ParseUser } from '../../flow-types';
 
-/* eslint-disable no-underscore-dangle */
 const { Parse } = global;
 const { getQueryAuthOptions } = require('../utils');
 const Account = require('../classes/Account');
