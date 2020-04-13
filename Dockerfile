@@ -18,10 +18,9 @@ ENV NPM_CONFIG_LOGLEVEL warn
 
 # RUN if [ "$NPM_RUN_SCRIPT" = "start" ] ; then npm run ci ; else npm install -D; fi
 RUN npm ci
-COPY .flowconfig .flowconfig
-COPY .babelrc .babelrc
-COPY src ./src
 COPY seeds ./seeds
+COPY tsconfig.json tsconfig.json
+COPY src ./src
 
 RUN if [ "$NPM_RUN_SCRIPT" = "start" ] ; then npm run build ; fi 
 
