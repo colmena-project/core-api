@@ -11,9 +11,16 @@
           "port": 9230,
           "address": "localhost",
           "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/srv/node-scripts/",
+          "remoteRoot": "/srv/node-scripts",
           "protocol": "inspector",
-          "restart": true
-      }
+          "restart": true,
+          "sourceMaps": true,
+          "sourceMapPathOverrides": {
+            "/srv/node-scripts/*": "${workspaceRoot}/*"
+          }
+          // "smartStep": true,
+          // "trace": true,
+          // "outFiles": ["/srv/node-scripts/dist/**/*.js"]
+      },
   ]
 }
