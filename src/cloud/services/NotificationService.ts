@@ -1,4 +1,3 @@
-
 import AccountService from './AccountService';
 import PushService from './PushService';
 import { NOTIFICATION_TYPES } from '../constants';

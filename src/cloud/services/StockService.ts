@@ -1,4 +1,3 @@
-
 const getUserStock = async (user: Parse.User): Promise<Parse.Object[]> => {
   const stockQ: Parse.Query = new Parse.Query('UserStock');
   stockQ.include('wasteType');

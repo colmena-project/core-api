@@ -1,5 +1,3 @@
-import Parse from 'parse/node';
-
 /**
  * Decorator function to apply to all functions that needs to check for user authentication
  * @param {*} callback

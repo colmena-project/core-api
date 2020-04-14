@@ -1,6 +1,5 @@
 import Base from './Base';
-
-const AccountService = require('../services/AccountService');
+import AccountService from '../services/AccountService';
 
 class Post extends Base {
   constructor() {

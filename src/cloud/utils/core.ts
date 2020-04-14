@@ -1,4 +1,3 @@
-
 const Config = require('parse-server/lib/Config');
 
 function getDatabaseInstance() {

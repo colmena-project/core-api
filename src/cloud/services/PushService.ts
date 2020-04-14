@@ -1,4 +1,3 @@
-
 import { NOTIFICATION_TYPES } from '../constants';
 
 const send = async (title: string): Promise<any> =>

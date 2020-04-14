@@ -1,4 +1,3 @@
-
 const findRecyclingCenterById = async (id: string): Promise<Parse.Object> => {
   try {
     const query: Parse.Query = new Parse.Query('RecyclingCenter');

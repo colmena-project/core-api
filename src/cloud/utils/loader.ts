@@ -1,4 +1,3 @@
-//
 import { secure } from './index';
 import * as routes from '../routes';
 import * as classes from '../classes';

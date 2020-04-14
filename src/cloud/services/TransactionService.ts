@@ -1,4 +1,3 @@
-
 import { getQueryAuthOptions } from '../utils';
 import { getValueForNextSequence } from '../utils/db';
 import { Transaction, TransactionDetail } from '../classes';

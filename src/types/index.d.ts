@@ -114,4 +114,3 @@ declare namespace Colmena {
       description: string,
     };
 }
-// }

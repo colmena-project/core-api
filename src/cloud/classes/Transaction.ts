@@ -1,4 +1,3 @@
-
 import Base from './Base';
 
 import { TRANSACTIONS_TYPES } from '../constants';

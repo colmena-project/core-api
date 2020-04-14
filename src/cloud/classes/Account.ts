@@ -1,6 +1,5 @@
 import Base from './Base';
-
-const UserService = require('../services/UserService');
+import UserService from '../services/UserService';
 
 class Account extends Base {
   constructor() {
