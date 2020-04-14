@@ -1,5 +1,4 @@
 import Parse from 'parse/node';
-import { Colmena } from '../../types';
 
 /**
  * Decorator function to apply to all functions that needs to check for user authentication
@@ -9,10 +8,12 @@ function secure(callback: Colmena.CloudFunction): any {
   return (request: Parse.Cloud.FunctionRequest) => {
     const { master: isMaster, user } = request;
     if (!isMaster && !user) {
-      throw new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User needs to be authenticated');
+      const err : Parse.Error = new Parse.Error(Parse.Error.INVALID_SESSION_TOKEN, 'User needs to be authenticated');
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw err;
     }
     // @ts-ignore
-    return callback.call(this,request);
+    return callback.call(this, request);
   };
 }
 
@@ -28,10 +29,10 @@ function replaceInTemplate(template: string, data: {[key: string]: string}): str
   return template.replace(pattern, (_, token) => data[token] || '');
 }
 
-const getQueryAuthOptions = (user: Parse.User | undefined , master: boolean = false): Parse.ScopeOptions => {
+const getQueryAuthOptions = (user: Parse.User | undefined, master: boolean = false): Parse.ScopeOptions => {
   let options: Parse.ScopeOptions = { useMasterKey: master };
   if (user) {
-    options = { ...options, sessionToken: user.getSessionToken()}
+    options = { ...options, sessionToken: user.getSessionToken() };
   }
   return options;
 };

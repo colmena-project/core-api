@@ -1,5 +1,5 @@
 import Parse from 'parse/node';
-import { getMailAdapter } from "../utils/core";
+import { getMailAdapter } from '../utils/core';
 
 const ping = () => ({
   msg: 'pong',
@@ -8,10 +8,10 @@ const ping = () => ({
 
 const testMail = async (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
   const { master, params } = request;
-  if (!master) throw new Parse.Error(403, 'You cannot call this cloud function');
+  if (!master) throw new Error('You cannot call this cloud function');
   const { to, subject, text } = params;
   if (!(to && subject && text)) {
-    throw new Parse.Error(404, 'Invalid Request. See if to, subject and text params are setted.');
+    throw new Error('Invalid Request. See if to, subject and text params are setted.');
   }
 
   // let providerResponse = null;
@@ -23,7 +23,7 @@ const testMail = async (request: Parse.Cloud.FunctionRequest): Promise<Object> =
     });
   } catch (error) {
     // console.error(error);
-    throw new Parse.Error(500, 'Cannot send mail to santiagosemhan@gmail.com');
+    throw new Error('Cannot send mail to santiagosemhan@gmail.com');
   }
   return { msg: `Test mail was sent ok. To: ${to}` };
 };

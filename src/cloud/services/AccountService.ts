@@ -1,9 +1,5 @@
-
-import Parse from '../parse';
-
-import { Colmena } from "../../types";
-import { getQueryAuthOptions } from "../utils";
-import { Account, Address } from "../classes";
+import { getQueryAuthOptions } from '../utils';
+import { Account, Address } from '../classes';
 import MailService from './MailService';
 
 const findAccountByUser = async (user: Parse.User): Promise<Parse.Object> => {
@@ -33,6 +29,7 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
   user.set('password', password);
   user.set('email', email);
   await user.save();
+  // eslint-disable-next-line no-underscore-dangle
   if (fbAuthData && !user._isLinked('facebook')) {
     await user.linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
   }
@@ -68,10 +65,10 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
 };
 
 const findAccountById = async (accountId: string): Promise<Object> => {
-  if (!accountId) throw new Parse.Error(404, 'Account Not Found');
+  if (!accountId) throw new Error('Account Not Found');
   const authOptions: Parse.ScopeOptions = getQueryAuthOptions(undefined, true);
   const accountQuery: Parse.Query = new Parse.Query('Account');
-  const account: Parse.Object = await accountQuery.get(accountId,authOptions);
+  const account: Parse.Object = await accountQuery.get(accountId, authOptions);
   // TODO: clean private account data.
   // Resume data to send to client
   return {

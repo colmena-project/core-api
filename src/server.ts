@@ -1,11 +1,13 @@
-import express from "express";
+import express from 'express';
 import http from 'http';
 import ParseServerOptions from './config';
 
-const ParseServer = require('parse-server').ParseServer
+const { ParseServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
 
-const { port, liveQuery, serverURL, appId, masterKey, readOnlyMasterKey, } = ParseServerOptions;
+const {
+  port, liveQuery, serverURL, appId, masterKey, readOnlyMasterKey,
+} = ParseServerOptions;
 
 const api = new ParseServer(ParseServerOptions);
 const dashboard = new ParseDashboard(

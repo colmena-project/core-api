@@ -1,4 +1,5 @@
-import { MapService } from "../services";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { MapService } from '../services';
 
 const distanceCalculate = (request: Parse.Cloud.FunctionRequest) => ({ distance: '2km' });
 

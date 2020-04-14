@@ -1,5 +1,3 @@
-import Parse from '../parse';
-
 const grantReadAndWritePermissionsToUser = async (
   className: string,
   objectId: string,
@@ -7,8 +5,8 @@ const grantReadAndWritePermissionsToUser = async (
 ): Promise<Parse.Object> => {
   const query: Parse.Query = new Parse.Query(className);
   const object: Parse.Object = await query.get(objectId, { useMasterKey: true });
-  const acl: Parse.ACL | undefined  = object.getACL();
-  if(acl) {
+  const acl: Parse.ACL | undefined = object.getACL();
+  if (acl) {
     acl.setReadAccess(user.id, true);
     acl.setWriteAccess(user.id, true);
     object.setACL(acl);

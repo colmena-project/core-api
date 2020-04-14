@@ -1,4 +1,3 @@
-import Parse from '../parse';
 
 import Base from './Base';
 

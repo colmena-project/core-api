@@ -1,6 +1,3 @@
-import Parse from '../parse';
-
-import { Colmena } from '../../types';
 import TransactionService from './TransactionService';
 import AccountService from './AccountService';
 import ContainerService from './ContainerService';
@@ -134,8 +131,7 @@ const registerRecover = async (
     // TODO replace this line by new array flat() method.
     const containers: Parse.Object[] = ([] as Parse.Object[]).concat(...containersSetArray);
     const details: Parse.Object[] = containers.map((container) =>
-      TransactionService.createTransactionDetail(transaction, container),
-    );
+      TransactionService.createTransactionDetail(transaction, container));
 
 
     await Parse.Object.saveAll([transaction, ...containers, ...details], {
@@ -216,8 +212,7 @@ const registerTransferRequest = async (
     await SecurityService.grantReadAndWritePermissionsToUser('Transaction', transaction.id, recipient);
     await Promise.all(
       containers.map((container) =>
-        SecurityService.grantReadAndWritePermissionsToUser('Container', container.id, recipient),
-      ),
+        SecurityService.grantReadAndWritePermissionsToUser('Container', container.id, recipient)),
     );
     await NotificationService.notifyTransferRequest(transaction.id, user, recipient);
     transaction.set(
@@ -352,8 +347,7 @@ const registerTransferCancel = async (transactionId: string, user: Parse.User): 
           'Container',
           container.id,
           transferRequestTransaction.get('to'),
-        ),
-      ),
+        )),
     );
     transaction.set(
       'details',

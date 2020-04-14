@@ -1,4 +1,3 @@
-import { Colmena } from '../../types';
 import { AccountService, StockService, ContainerService } from '../services';
 
 const createAccount = async (request: Parse.Cloud.FunctionRequest): Promise<Parse.Object> => {
@@ -35,7 +34,7 @@ const getMyAccount = async (request: Parse.Cloud.FunctionRequest): Promise<Parse
 
 const getAccountOf = async (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
   const { params } = <{ params: Parse.Cloud.Params, user: Parse.User }> request;
-  const { accountId }= params;
+  const { accountId } = params;
   return AccountService.findAccountById(accountId);
 };
 

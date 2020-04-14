@@ -1,5 +1,3 @@
-import Parse from '../parse';
-
 const findWasteTypeById = async (id: string): Promise<Parse.Object> => {
   try {
     const wasteTypeQuery: Parse.Query = new Parse.Query('WasteType');
@@ -12,7 +10,7 @@ const findWasteTypeById = async (id: string): Promise<Parse.Object> => {
 
 const getWasteTypesFromIds = async (wasteTypesIds: string[] = []): Promise<Map<string, Parse.Object>> => {
   const wasteTypes: Map<string, Parse.Object> = new Map();
-  const types: Parse.Object[]= await Promise.all(wasteTypesIds.map((id) => findWasteTypeById(id)));
+  const types: Parse.Object[] = await Promise.all(wasteTypesIds.map((id) => findWasteTypeById(id)));
   types.forEach((t) => wasteTypes.set(t.id, t));
   return wasteTypes;
 };

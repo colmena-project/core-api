@@ -1,6 +1,4 @@
-import Parse from '../parse';
 
-import { Colmena } from '../../types';
 import AccountService from './AccountService';
 import PushService from './PushService';
 import { NOTIFICATION_TYPES } from '../constants';
@@ -23,7 +21,7 @@ const notifyTransferRequest = async (transactionId: string, fromUser: Parse.User
     AccountService.findAccountByUser(fromUser),
     AccountService.findAccountByUser(toUser),
   ]);
-  if(!fromAccount || !toAccount ) throw new Error('from or to account not found');
+  if (!fromAccount || !toAccount) throw new Error('from or to account not found');
   const language = toAccount.get('defaultLanguage');
   const notificationTemplate = await getNotificationTemplate(NOTIFICATION_TYPES.TRANSFER_REQUEST, language);
 
@@ -48,7 +46,7 @@ const notifyTransport = async (transactionId: string, from: Parse.User, users: P
   const usersAccount = await Promise.all(users.map((u) => AccountService.findAccountByUser(u)));
 
   const languages = usersAccount.reduce((langs, account) => {
-    if (account){
+    if (account) {
       const language = account.get('defaultLanguage');
       if (!langs.has(language)) {
         langs.set(language, language);
@@ -63,7 +61,7 @@ const notifyTransport = async (transactionId: string, from: Parse.User, users: P
 
   const pushes = await Promise.all(
     usersAccount.map((toAccount) => {
-      if(toAccount){
+      if (toAccount) {
         const language = toAccount.get('defaultLanguage');
         const notificationTemplate = templates.find((t) => t.get('language') === language);
         if (notificationTemplate) {

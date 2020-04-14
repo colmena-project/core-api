@@ -5,4 +5,6 @@ import Container from './Container';
 import Transaction from './Transaction';
 import TransactionDetail from './TransactionDetail';
 
-export { Account, Address, Post, Container, Transaction, TransactionDetail };
+export {
+  Account, Address, Post, Container, Transaction, TransactionDetail,
+};

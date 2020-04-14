@@ -1,4 +1,3 @@
-import Parse from '../parse';
 
 const findRolesByUser = async (user: Parse.User): Promise<Parse.Object[]> => {
   const roles: Parse.Object[] = await new Parse.Query(Parse.Role).equalTo('users', user).find();

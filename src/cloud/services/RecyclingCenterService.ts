@@ -1,4 +1,3 @@
-import Parse from '../parse';
 
 const findRecyclingCenterById = async (id: string): Promise<Parse.Object> => {
   try {

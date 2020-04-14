@@ -1,4 +1,3 @@
-import Parse from './parse';
 import { loadCloudFunctions, loadClassHooks } from './utils/loader';
 
 // Load triggers for each registered class

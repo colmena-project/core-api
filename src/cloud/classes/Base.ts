@@ -1,4 +1,4 @@
-import Parse from '../parse';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 class Base extends Parse.Object {
   static beforeSave(request: Parse.Cloud.BeforeSaveRequest) {
@@ -35,7 +35,7 @@ class Base extends Parse.Object {
         acl.setReadAccess(createdBy.id, true);
       }
     }
-    acl && request.object.setACL(acl);
+    if (acl) request.object.setACL(acl);
   }
 
   static afterSave(request: Parse.Cloud.AfterSaveRequest): any {

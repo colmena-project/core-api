@@ -1,10 +1,8 @@
-import Parse from '../parse';
 
-import { Colmena } from '../../types';
 import { getQueryAuthOptions } from '../utils';
 import { getValueForNextSequence } from '../utils/db';
-import { Transaction, TransactionDetail } from'../classes';
-import { TRANSACTIONS_TYPES } from'../constants';
+import { Transaction, TransactionDetail } from '../classes';
+import { TRANSACTIONS_TYPES } from '../constants';
 
 const findRawTransaction = async (id: string, user: Parse.User, master: boolean = false): Promise<Parse.Object> => {
   try {
@@ -38,7 +36,9 @@ const findTransactionWithDetailsById = async (
 };
 
 const createTransaction = async (attributes: Colmena.TransactionType): Promise<Parse.Object> => {
-  const { from, to, type, recyclingCenter, reason, fromAddress, toAddress } = attributes;
+  const {
+    from, to, type, recyclingCenter, reason, fromAddress, toAddress,
+  } = attributes;
   const transaction: Parse.Object = new Transaction();
   const number: number = await getValueForNextSequence(Transaction.name);
 

@@ -1,4 +1,5 @@
-import Base from './Base'
+import Base from './Base';
+
 const AccountService = require('../services/AccountService');
 
 class Post extends Base {

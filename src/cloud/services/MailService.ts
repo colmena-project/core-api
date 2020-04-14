@@ -1,5 +1,3 @@
-import Parse from '../parse';
-
 import { getMailAdapter } from '../utils/core';
 
 const sendNewAccountCreated = async (params: {
@@ -8,7 +6,9 @@ const sendNewAccountCreated = async (params: {
   to: string,
   subject: string,
 }): Promise<any> => {
-  const { name, username, to, subject } = params;
+  const {
+    name, username, to, subject,
+  } = params;
   try {
     return getMailAdapter().sendMail({
       to,
@@ -20,7 +20,7 @@ const sendNewAccountCreated = async (params: {
       },
     });
   } catch (error) {
-    throw new Parse.Error(500, `Cannot send mail to ${to}.`);
+    throw new Error(`Cannot send mail to ${to}.`);
   }
 };
 

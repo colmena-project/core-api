@@ -1,6 +1,4 @@
-import Parse from '../parse';
 
-import { Colmena } from '../../types';
 import { Container } from '../classes';
 import { getQueryAuthOptions } from '../utils';
 import { getValueForNextSequence } from '../utils/db';
@@ -39,7 +37,7 @@ const createContainersOfType = async (
   status: Colmena.ContainerStatusType,
   transactionNumber: string,
 ): Promise<Parse.Object[]> => {
-  const promises: Promise<Parse.Object>[]= [];
+  const promises: Promise<Parse.Object>[] = [];
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < qty; i++) {
     promises.push(createContainer(transactionNumber, { type, status }));

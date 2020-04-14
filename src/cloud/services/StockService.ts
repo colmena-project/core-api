@@ -1,9 +1,8 @@
-import Parse from '../parse';
 
 const getUserStock = async (user: Parse.User): Promise<Parse.Object[]> => {
   const stockQ: Parse.Query = new Parse.Query('UserStock');
   stockQ.include('wasteType');
-  const stock: Parse.Object[]= await stockQ.find({ sessionToken: user.getSessionToken() });
+  const stock: Parse.Object[] = await stockQ.find({ sessionToken: user.getSessionToken() });
   return stock;
 };
 

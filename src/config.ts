@@ -1,4 +1,5 @@
-import { nullParser } from "./cloud/utils";
+import { nullParser } from './cloud/utils';
+
 const SimpleSendGridAdapter = require('./adapters/SendGridAdapter');
 
 const masterKey = process.env.MASTER_KEY;
@@ -11,11 +12,12 @@ const serverURL = process.env.PARSE_SERVER_URL || `http://localhost:${port}/pars
 const facebookAppId = process.env.FACEBOOK_APP_ID;
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
 const publicServerURL = process.env.PUBLIC_SERVER_URL;
+const cloudMain = process.env.NODE_ENV === 'production' ? 'main.js' : 'main.ts';
 
 export default {
   port,
   databaseURI: mongoDSN, // Connection string for your MongoDB database
-  cloud: `${__dirname}/cloud/main.ts`, // Absolute path to your Cloud Code
+  cloud: `${__dirname}/cloud/${cloudMain}`, // Absolute path to your Cloud Code
   allowClientClassCreation: false,
   enableSingleSchemaCache: true,
   preserveFileName: false,
@@ -25,7 +27,7 @@ export default {
   jsonLogs: false,
   logLevel: process.env.PARSE_SERVER_LOGS_LEVEL,
   logsFolder: nullParser(process.env.PARSE_SERVER_LOGS_FOLDER),
-  verbose: true,
+  verbose: false,
   silent: false,
   serverURL, // Don't forget to change to https if needed
   liveQuery: {

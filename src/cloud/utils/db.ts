@@ -1,4 +1,5 @@
-import { getDatabaseInstance } from './core'
+/* eslint-disable import/prefer-default-export */
+import { getDatabaseInstance } from './core';
 
 const getValueForNextSequence = async (sequenceOfName: string): Promise<number> => {
   const db = getDatabaseInstance();
@@ -11,6 +12,7 @@ const getValueForNextSequence = async (sequenceOfName: string): Promise<number> 
   );
   return !value ? value + 1 : value.sequence_value + 1;
 };
+
 
 export {
   getValueForNextSequence,

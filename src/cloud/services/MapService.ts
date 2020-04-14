@@ -38,7 +38,7 @@ const reverseGeocode = async (
   };
 };
 
-const geocode = async (address: string): Promise<{ formatted_address: string, geocode:  LatLngLiteral }> => {
+const geocode = async (address: string): Promise<{ formatted_address: string, geocode: LatLngLiteral }> => {
   if (!address) {
     throw new Error('Address must be provided');
   }

@@ -1,4 +1,3 @@
-import Parse from '../parse';
 
 const Config = require('parse-server/lib/Config');
 

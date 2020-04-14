@@ -1,4 +1,3 @@
-import { Colmena } from '../../types';
 import { DefaultController } from '../controllers';
 
 const definitions: Colmena.RouteDefinitions = {

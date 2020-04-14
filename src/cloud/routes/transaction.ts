@@ -1,4 +1,3 @@
-import { Colmena } from '../../types';
 import { TransactionController } from '../controllers';
 
 const definitions: Colmena.RouteDefinitions = {
