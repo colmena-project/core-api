@@ -1,10 +1,20 @@
 {
   // "parser": "babel-eslint", 
-  "extends": "airbnb-base",
+  "extends": "airbnb-typescript/base",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
   "rules": {
     "operator-linebreak": "off",
     "object-curly-newline": "warn",
     "implicit-arrow-linebreak": "off",
-    "max-len": ["error", 120]
+    "max-len": ["warn", 120],
+    "import/prefer-default-export": "off",
+    "import/extensions": ["off", "ignorePackages", {
+      "js": "never",
+      "d.ts": "never",
+      "ts": "never",
+      "tsx": "never"
+    }]
   }
 }
