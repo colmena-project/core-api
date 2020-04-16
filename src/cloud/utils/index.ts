@@ -28,8 +28,9 @@ function replaceInTemplate(template: string, data: {[key: string]: string}): str
 }
 
 const getQueryAuthOptions = (user: Parse.User | undefined, master: boolean = false): Parse.ScopeOptions => {
+  if (!user && !master) throw Error('Cannot call auth options without user or master');
   let options: Parse.ScopeOptions = { useMasterKey: master };
-  if (user) {
+  if (!master && user) {
     options = { ...options, sessionToken: user.getSessionToken() };
   }
   return options;
