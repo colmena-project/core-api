@@ -25,5 +25,5 @@ COPY src ./src
 RUN if [ "$NPM_RUN_SCRIPT" = "start" ] ; then npm run build ; fi 
 
 # Expose the listening port of your app
-EXPOSE ${PORT}
+EXPOSE 4444
 CMD ["sh", "-c", "npm run ${NPM_RUN_SCRIPT}"]
