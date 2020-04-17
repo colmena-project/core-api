@@ -34,7 +34,10 @@ const dashboard = new ParseDashboard(
     ],
     useEncryptedPasswords: true,
   },
-  { allowInsecureHTTP: !!process.env.ALLOW_INSECURE_HTTP || false },
+  {
+    trustProxy: 1,
+    allowInsecureHTTP: !!process.env.ALLOW_INSECURE_HTTP || false,
+  },
 );
 
 const app = express();
