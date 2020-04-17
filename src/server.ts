@@ -35,6 +35,7 @@ const dashboard = new ParseDashboard(
     useEncryptedPasswords: true,
   },
   {
+    cookieSessionSecret: process.env.COOKIE_SESSION_SECRET || 'session_secret',
     trustProxy: 1,
     allowInsecureHTTP: !!process.env.ALLOW_INSECURE_HTTP || false,
   },
