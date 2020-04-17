@@ -1,9 +1,11 @@
 import Parse from 'parse/node';
+import * as os from 'os';
 import { getMailAdapter } from '../utils/core';
 
 const ping = () => ({
   msg: 'pong',
   time: new Date(),
+  hostname: os.hostname(),
 });
 
 const testMail = async (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
