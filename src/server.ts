@@ -42,7 +42,7 @@ const app = express();
 // make the Parse Server available at /parse
 app.use('/parse', api);
 // make the Parse Dashboard available at /dashboard
-app.use('/dashboard', dashboard);
+app.use('/', dashboard);
 
 // TODO: REMOVE THIS LINE BELOW
 // app.use(express.static('client-example'));

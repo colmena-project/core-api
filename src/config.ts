@@ -28,7 +28,7 @@ export default {
   logLevel: process.env.PARSE_SERVER_LOGS_LEVEL,
   logsFolder: nullParser(process.env.PARSE_SERVER_LOGS_FOLDER),
   verbose: false,
-  silent: false,
+  silent: true,
   serverURL, // Don't forget to change to https if needed
   liveQuery: {
     classNames: ['RecyclingPoint'],

@@ -8,9 +8,11 @@ const createAccount = async (request: Parse.Cloud.FunctionRequest): Promise<Pars
 const getMyAccount = async (request: Parse.Cloud.FunctionRequest): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
   const { user } = <{ user: Parse.User }> request;
   const account: Parse.Object = await AccountService.findAccountByUser(user);
-  const addresses = await AccountService.findAccountAddress(account);
-  const stock = await StockService.getUserStock(user);
-  const containers = await ContainerService.findContainersByUser(user);
+  const [addresses, stock, containers] = await Promise.all([
+    AccountService.findAccountAddress(account),
+    StockService.getUserStock(user),
+    ContainerService.findContainersByUser(user),
+  ]);
 
   account.set(
     'addresses',
