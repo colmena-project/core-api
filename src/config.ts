@@ -12,12 +12,11 @@ const serverURL = process.env.PARSE_SERVER_URL || `http://localhost:${port}/pars
 const facebookAppId = process.env.FACEBOOK_APP_ID;
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
 const publicServerURL = process.env.PUBLIC_SERVER_URL;
-const cloudMain = process.env.NODE_ENV === 'production' ? 'main.js' : 'main.ts';
 
 export default {
   port,
   databaseURI: mongoDSN, // Connection string for your MongoDB database
-  cloud: `${__dirname}/cloud/${cloudMain}`, // Absolute path to your Cloud Code
+  cloud: `${__dirname}/cloud/`, // Absolute path to your Cloud Code
   allowClientClassCreation: false,
   enableSingleSchemaCache: true,
   preserveFileName: false,
