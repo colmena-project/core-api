@@ -27,10 +27,10 @@ function replaceInTemplate(template: string, data: {[key: string]: string}): str
   return template.replace(pattern, (_, token) => data[token] || '');
 }
 
-const getQueryAuthOptions = (user: Parse.User | undefined, master: boolean = false): Parse.ScopeOptions => {
-  if (user && master) throw Error('Cannot call auth options with both user or master');
+const getQueryAuthOptions = (user: Parse.User | undefined = undefined, master: boolean = false): Parse.ScopeOptions => {
   let options: Parse.ScopeOptions = { useMasterKey: master };
-  if (!master && user) {
+  if (master) return options;
+  if (user) {
     options = { ...options, sessionToken: user.getSessionToken() };
   }
   return options;
