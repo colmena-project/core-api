@@ -1,15 +1,20 @@
+import { getQueryAuthOptions } from '../utils';
+
 const getUserStock = async (user: Parse.User): Promise<Parse.Object[]> => {
+  const authOptions = getQueryAuthOptions(undefined, true);
   const stockQ: Parse.Query = new Parse.Query('UserStock');
   stockQ.include('wasteType');
-  const stock: Parse.Object[] = await stockQ.find({ sessionToken: user.getSessionToken() });
+  stockQ.equalTo('user', user);
+  const stock: Parse.Object[] = await stockQ.find(authOptions);
   return stock;
 };
 
 const getStockOfType = async (type: Parse.Object, user: Parse.User): Promise<Parse.Object> => {
+  const authOptions = getQueryAuthOptions(undefined, true);
   const userStockQuery: Parse.Query = new Parse.Query('UserStock');
   userStockQuery.equalTo('wasteType', type.toPointer());
   userStockQuery.equalTo('user', user.toPointer());
-  let userStock = await userStockQuery.first({ useMasterKey: true });
+  let userStock = await userStockQuery.first(authOptions);
   if (!userStock) {
     userStock = new Parse.Object('UserStock');
     userStock.set('wasteType', type);
@@ -19,7 +24,7 @@ const getStockOfType = async (type: Parse.Object, user: Parse.User): Promise<Par
     acl.setReadAccess(user.id, true);
     acl.setWriteAccess(user.id, true);
     userStock.setACL(acl);
-    await userStock.save(null, { useMasterKey: true });
+    await userStock.save(null, authOptions);
   }
   return userStock;
 };
@@ -29,9 +34,10 @@ const incrementStock = async (
   user: Parse.User,
   ammount: number = 1,
 ): Promise<Parse.Object> => {
+  const authOptions = getQueryAuthOptions(undefined, true);
   const userStock = await getStockOfType(wasteType, user);
   userStock.increment('ammount', ammount);
-  return userStock.save(null, { useMasterKey: true });
+  return userStock.save(null, authOptions);
 };
 
 const decrementStock = async (
@@ -39,9 +45,10 @@ const decrementStock = async (
   user: Parse.User,
   ammount: number = 1,
 ): Promise<Parse.Object> => {
+  const authOptions = getQueryAuthOptions(undefined, true);
   const userStock = await getStockOfType(wasteType, user);
   userStock.increment('ammount', -ammount);
-  return userStock.save(null, { useMasterKey: true });
+  return userStock.save(null, authOptions);
 };
 
 const moveStock = async (
