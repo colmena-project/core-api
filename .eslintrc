@@ -1,8 +1,11 @@
 {
-  // "parser": "babel-eslint", 
+  // "parser": "babel-eslint",
+  "env": {
+    "jest": true
+  },
   "extends": "airbnb-typescript/base",
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": "./tsconfig.eslint.json"
   },
   "rules": {
     "operator-linebreak": "off",
