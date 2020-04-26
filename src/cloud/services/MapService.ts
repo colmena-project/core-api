@@ -1,5 +1,7 @@
-import { Client } from '@googlemaps/google-maps-services-js';
-import { LatLngLiteral, AddressComponent } from '@googlemaps/google-maps-services-js/dist/common';
+import { Client, DistanceMatrixResponse } from '@googlemaps/google-maps-services-js';
+import {
+  LatLngLiteral, AddressComponent, LatLng, DistanceMatrixRow,
+} from '@googlemaps/google-maps-services-js/dist/common';
 import { PlaceAutocompleteResult } from '@googlemaps/google-maps-services-js/dist/places/autocomplete';
 
 const { GOOGLE_MAPS_API_KEY } = process.env;
@@ -86,8 +88,32 @@ const placeAutocomplete = async (address: string): Promise<{ predictions: PlaceA
   };
 };
 
+const distancematrix = async (origin: LatLng, destination: LatLng): Promise<{ distance: DistanceMatrixRow[]}> => {
+  const client = new Client({});
+  const result: DistanceMatrixResponse = await client.distancematrix({
+    params: {
+      origins: [origin],
+      destinations: [destination],
+      mode: 'driving',
+      units: 'metric',
+      key: GOOGLE_MAPS_API_KEY,
+    },
+    timeout: 1000, // milliseconds
+  });
+  if (result.data.error_message) {
+    throw new Error(result.data.error_message);
+  }
+  if (result.data.status === 'ZERO_RESULTS') {
+    throw new Error(`Cannot calculate distances from ${origin} to ${destination} coords`);
+  }
+  return {
+    distance: result.data.rows,
+  };
+};
+
 export default {
   geocode,
   reverseGeocode,
   placeAutocomplete,
+  distancematrix,
 };
