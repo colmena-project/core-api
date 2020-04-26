@@ -10,6 +10,7 @@ import NotificationService from './NotificationService';
 import WasteTypeService from './WasteTypeService';
 import PushService from './PushService';
 import RecyclingCenterService from './RecyclingCenterService';
+import RetributionService from './RetributionService';
 import WorkflowService from './WorkflowService';
 
 export {
@@ -25,5 +26,6 @@ export {
   WasteTypeService,
   PushService,
   RecyclingCenterService,
+  RetributionService,
   WorkflowService,
 };
