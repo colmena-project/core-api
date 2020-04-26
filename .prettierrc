@@ -8,7 +8,7 @@
   "overrides": [
     {
       "files": ".prettierrc",
-      "options": { "parser": "babylon" }
+      "options": { "parser": "typescript" }
     }
   ]
 }
