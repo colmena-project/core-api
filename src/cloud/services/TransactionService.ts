@@ -36,7 +36,7 @@ const findTransactionWithDetailsById = async (
 
 const createTransaction = async (attributes: Colmena.TransactionType): Promise<Parse.Object> => {
   const {
-    from, to, type, recyclingCenter, reason, fromAddress, toAddress,
+    from, to, type, recyclingCenter, reason, fromAddress, toAddress, kms, estimatedDuration, estimatedDistance,
   } = attributes;
   const transaction: Parse.Object = new Transaction();
   const number: number = await getValueForNextSequence(Transaction.name);
@@ -50,6 +50,9 @@ const createTransaction = async (attributes: Colmena.TransactionType): Promise<P
   transaction.set('reason', reason);
   transaction.set('fromAddress', fromAddress);
   transaction.set('toAddress', toAddress);
+  transaction.set('kms', kms);
+  transaction.set('estimatedDuration', estimatedDuration);
+  transaction.set('estimatedDistance', estimatedDistance);
   return transaction;
 };
 
@@ -153,8 +156,18 @@ const findTransferAcceptTransactionOfContainer = async (container: Parse.Object)
   return transaction;
 };
 
+const findTransactionDetails = async (transaction: Parse.Object) : Promise<Parse.Object[]> => {
+  const authOptions = getQueryAuthOptions(undefined, true);
+  const query = new Parse.Query('TransactionDetail');
+  query.equalTo('transaction', transaction);
+  query.include('container.type');
+  const details = query.find(authOptions);
+  return details;
+};
+
 export default {
   findRawTransaction,
+  findTransactionDetails,
   findTransactionWithDetailsById,
   findTransactionsOfContainer,
   findRecoverTransactionOfContainer,

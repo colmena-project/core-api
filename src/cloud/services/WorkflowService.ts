@@ -7,6 +7,8 @@ import SecurityService from './SecurityService';
 import StockService from './StockService';
 import UserService from './UserService';
 import WasteTypeService from './WasteTypeService';
+import RetributionService from './RetributionService';
+import MapService from './MapService';
 
 import { CONTAINER_STATUS, MAX_CONTAINERS_QUANTITY_PER_REQUEST, TRANSACTIONS_TYPES } from '../constants';
 
@@ -145,6 +147,10 @@ const registerRecover = async (
         return StockService.incrementStock(wasteType, user, input.qty);
       }),
     );
+
+    const retribution = await RetributionService.generateRetribution(transaction, user);
+    transaction.set('retribution', retribution.toJSON());
+
     transaction.set(
       'details',
       details.map((d) => d.toJSON()),
@@ -381,7 +387,15 @@ const registerTransport = async (containersInput: string[], to: string, user: Pa
 
     const userAccount = await AccountService.findAccountByUser(user);
     const fromAddress: Parse.Object = await AccountService.findDefaultAddress(userAccount);
+    const toAddress = {
+      latLng: recyclingCenter.get('latLng').toJSON(),
+    };
 
+    const fromLatLng = { latitude: fromAddress.get('latLng').latitude, longitude: fromAddress.get('latLng').longitude };
+    const toLatLng = { latitude: toAddress.latLng.latitude, longitude: toAddress.latLng.longitude };
+    const distanceResult = await MapService.distancematrix(fromLatLng, toLatLng);
+
+    const distanceMatrix = distanceResult.distance[0].elements[0];
     const transaction: Parse.Object = await TransactionService.createTransaction({
       to: undefined,
       from: user,
@@ -389,8 +403,11 @@ const registerTransport = async (containersInput: string[], to: string, user: Pa
       recyclingCenter,
       reason: undefined,
       fromAddress: fromAddress.toJSON(),
-      toAddress: recyclingCenter.get('latLng'),
+      toAddress,
       relatedTo: undefined,
+      kms: distanceMatrix.distance.value / 1000,
+      estimatedDuration: distanceMatrix.duration,
+      estimatedDistance: distanceMatrix.distance,
     });
 
     const details: Parse.Object[] = containers.map((container) => {
@@ -401,6 +418,9 @@ const registerTransport = async (containersInput: string[], to: string, user: Pa
     await Parse.Object.saveAll([transaction, ...details], {
       sessionToken: user.getSessionToken(),
     });
+
+    const retribution = await RetributionService.generateRetribution(transaction, user);
+    transaction.set('retribution', retribution.toJSON());
 
     // get containers owners except user that request the endpoint
     const usersList: Parse.User[] = containers.map((c) => c.get('createdBy')).filter((u) => !u.equals(user));
