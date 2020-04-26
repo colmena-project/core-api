@@ -70,6 +70,9 @@ declare namespace Colmena {
       toAddress: Object | void,
       reason: string | void,
       recyclingCenter: Parse.Object | void,
+      kms?: number | void
+      estimatedDuration?: Object | void
+      estimatedDistance?: Object | void
     };
 
     type ContainerInputType = {
@@ -112,5 +115,16 @@ declare namespace Colmena {
       state: string,
       country: string,
       description: string,
+    };
+
+    // type FlatAddress = {
+    //   latLng: Parse.GeoPoint,
+    //   [key: string]: any,
+    // };
+
+    type Material = {
+      container: Parse.Object,
+      qty: number,
+      unit: string,
     };
 }
