@@ -54,7 +54,7 @@ const findContainersByTransaction = async (transaction: Parse.Object): Promise<P
   return transactionsDetails.map((detail) => detail.get('container'));
 };
 
-const findContainersByUser = async (user: Parse.User, master: boolean = false): Promise<Parse.Object[]> => {
+const findAllowedContainers = async (user: Parse.User, master: boolean = false): Promise<Parse.Object[]> => {
   const authOptions: Parse.ScopeOptions = getQueryAuthOptions(user, master);
   const query: Parse.Query = new Parse.Query('Container');
   const containers: Parse.Object[] = await query.find(authOptions);
@@ -76,7 +76,7 @@ const isCarrierOfContainer = async (container: Parse.Object, user: Parse.User): 
 export default {
   createContainer,
   findContainerById,
-  findContainersByUser,
+  findAllowedContainers,
   findContainersByTransaction,
   createContainersOfType,
   isRecyclerOfContainer,

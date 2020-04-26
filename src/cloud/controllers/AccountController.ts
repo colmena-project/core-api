@@ -11,9 +11,8 @@ const getMyAccount = async (request: Parse.Cloud.FunctionRequest): Promise<Parse
   const [addresses, stock, containers] = await Promise.all([
     AccountService.findAccountAddress(account),
     StockService.getUserStock(user),
-    ContainerService.findContainersByUser(user),
+    ContainerService.findAllowedContainers(user),
   ]);
-
   account.set(
     'addresses',
     addresses.map((a) => a.toJSON()),
