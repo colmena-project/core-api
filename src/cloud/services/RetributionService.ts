@@ -22,7 +22,7 @@ const calculateMaterialRetribution = (qty: number, unit: string, retributionPara
   const retribution = 0;
   let quantity = 0;
   if (retributionParameter.get('qty') === 0) return retribution;
-  switch (unit) {
+  switch (unit.toLowerCase()) {
     case 'gr':
       quantity = qty / 1000;
       break;
@@ -39,7 +39,7 @@ const calculateTransportRetribution = (qty: number, unit: string, retributionPar
   const retribution = 0;
   let quantity = 0;
   if (retributionParameter.get('qty') === 0) return retribution;
-  switch (unit) {
+  switch (unit.toLowerCase()) {
     case 'mts':
       quantity = qty / 1000;
       break;
