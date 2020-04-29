@@ -64,11 +64,11 @@ const getMaterialRetribution = async (materials: Colmena.Material[]): Promise<nu
   return estimatedRetributions.reduce((accumulator, value) => accumulator + value, 0);
 };
 
-const getTransportRetribution = async (transaction: Parse.Object): Promise<number> => {
+const getTransportRetribution = async (kms: number): Promise<number> => {
   const retributionParameters = await getAllRetributionParameters();
   const rp = retributionParameters.find((r) => r.get('type') === RETRIBUTION_TYPES.TRANSPORT);
   if (!rp) throw new Error(`Cannot find retribution parameter type ${RETRIBUTION_TYPES.TRANSPORT}`);
-  return calculateTransportRetribution(transaction.get('kms'), 'kms', rp);
+  return calculateTransportRetribution(kms, 'kms', rp);
 };
 
 const generateRetribution = async (transaction: Parse.Object, user: Parse.User): Promise<Parse.Object> => {
@@ -91,7 +91,7 @@ const generateRetribution = async (transaction: Parse.Object, user: Parse.User):
     }
 
     if (transaction.get('type') === TRANSACTIONS_TYPES.TRANSPORT) {
-      const value = await getTransportRetribution(transaction);
+      const value = await getTransportRetribution(transaction.get('kms'));
       retribution.set('estimated', value);
     }
     retribution.set('createdBy', user);
@@ -109,6 +109,8 @@ const generateRetribution = async (transaction: Parse.Object, user: Parse.User):
 
 
 export default {
+  getMaterialRetribution,
+  getTransportRetribution,
   getAllRetributionParameters,
   getRetributionParametersBy,
   generateRetribution,

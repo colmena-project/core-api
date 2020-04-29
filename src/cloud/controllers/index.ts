@@ -1,6 +1,7 @@
 import DefaultController from './DefaultController';
 import MapsController from './MapsController';
 import AccountController from './AccountController';
+import RetributionController from './RetributionController';
 import TransactionController from './TransactionController';
 import WorkflowController from './WorkflowController';
 
@@ -10,4 +11,5 @@ export {
   AccountController,
   TransactionController,
   WorkflowController,
+  RetributionController,
 };
