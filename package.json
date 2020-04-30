@@ -28,7 +28,6 @@
     "@googlemaps/google-maps-services-js": "^2.3.1",
     "@sendgrid/mail": "^6.5.3",
     "escape-html": "^1.0.3",
-    "expo-server-sdk": "^3.1.0",
     "express": "^4.17.1",
     "hat": "0.0.3",
     "parse": "^2.12.0",
