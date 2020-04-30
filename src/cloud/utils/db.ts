@@ -13,7 +13,4 @@ const getValueForNextSequence = async (sequenceOfName: string): Promise<number> 
   return !value ? value + 1 : value.sequence_value + 1;
 };
 
-
-export {
-  getValueForNextSequence,
-};
+export { getValueForNextSequence };

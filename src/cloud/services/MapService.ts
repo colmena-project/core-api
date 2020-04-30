@@ -1,6 +1,9 @@
 import { Client, DistanceMatrixResponse } from '@googlemaps/google-maps-services-js';
 import {
-  LatLngLiteral, AddressComponent, LatLng, DistanceMatrixRow,
+  LatLngLiteral,
+  AddressComponent,
+  LatLng,
+  DistanceMatrixRow,
 } from '@googlemaps/google-maps-services-js/dist/common';
 import { PlaceAutocompleteResult } from '@googlemaps/google-maps-services-js/dist/places/autocomplete';
 
@@ -13,7 +16,7 @@ if (!GOOGLE_MAPS_API_KEY) {
 const reverseGeocode = async (
   latitude: number,
   longitude: number,
-): Promise<{ formatted_address: string, address_components: AddressComponent[] }> => {
+): Promise<{ formatted_address: string; address_components: AddressComponent[] }> => {
   if (!(latitude && longitude)) {
     throw new Error('Latitude and Longitude must be provided');
   }
@@ -40,7 +43,9 @@ const reverseGeocode = async (
   };
 };
 
-const geocode = async (address: string): Promise<{ formatted_address: string, geocode: LatLngLiteral }> => {
+const geocode = async (
+  address: string,
+): Promise<{ formatted_address: string; geocode: LatLngLiteral }> => {
   if (!address) {
     throw new Error('Address must be provided');
   }
@@ -64,7 +69,9 @@ const geocode = async (address: string): Promise<{ formatted_address: string, ge
   };
 };
 
-const placeAutocomplete = async (address: string): Promise<{ predictions: PlaceAutocompleteResult[] }> => {
+const placeAutocomplete = async (
+  address: string,
+): Promise<{ predictions: PlaceAutocompleteResult[] }> => {
   if (!address) {
     throw new Error('Address must be provided');
   }
@@ -88,7 +95,10 @@ const placeAutocomplete = async (address: string): Promise<{ predictions: PlaceA
   };
 };
 
-const distancematrix = async (origin: LatLng, destination: LatLng): Promise<{ distance: DistanceMatrixRow[]}> => {
+const distancematrix = async (
+  origin: LatLng,
+  destination: LatLng,
+): Promise<{ distance: DistanceMatrixRow[] }> => {
   const client = new Client({});
   const result: DistanceMatrixResponse = await client.distancematrix({
     params: {

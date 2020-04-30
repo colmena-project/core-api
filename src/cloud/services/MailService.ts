@@ -1,14 +1,12 @@
 import { getMailAdapter } from '../utils/core';
 
 const sendNewAccountCreated = async (params: {
-  name: string,
-  username: string,
-  to: string,
-  subject: string,
+  name: string;
+  username: string;
+  to: string;
+  subject: string;
 }): Promise<any> => {
-  const {
-    name, username, to, subject,
-  } = params;
+  const { name, username, to, subject } = params;
   try {
     return getMailAdapter().sendMail({
       to,

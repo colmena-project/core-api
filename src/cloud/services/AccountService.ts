@@ -79,7 +79,10 @@ const findAccountById = async (accountId: string): Promise<Object> => {
   };
 };
 
-const removeDefaultFromOtherAddresses = async (address: Parse.Object, user: Parse.User): Promise<Parse.Object[]> => {
+const removeDefaultFromOtherAddresses = async (
+  address: Parse.Object,
+  user: Parse.User,
+): Promise<Parse.Object[]> => {
   const query = new Parse.Query('Address');
   query.notEqualTo('objectId', address.id);
   const adresses: Parse.Object[] = await query.find({ sessionToken: user.getSessionToken() });
@@ -120,7 +123,10 @@ const findAccountAddressById = async (addressId: string): Promise<Parse.Object> 
   }
 };
 
-const addNewAddress = async (attributes: Colmena.AddressType, user: Parse.User): Promise<Parse.Object> => {
+const addNewAddress = async (
+  attributes: Colmena.AddressType,
+  user: Parse.User,
+): Promise<Parse.Object> => {
   const authOptions: Parse.ScopeOptions = getQueryAuthOptions(user, false);
   const address: Parse.Object = new Address();
   const account = await findAccountByUser(user);
@@ -132,7 +138,11 @@ const addNewAddress = async (attributes: Colmena.AddressType, user: Parse.User):
   return address;
 };
 
-const editAddress = async (addresId: string, attributes: Colmena.AddressType, user: Parse.User): Promise<Parse.Object> => {
+const editAddress = async (
+  addresId: string,
+  attributes: Colmena.AddressType,
+  user: Parse.User,
+): Promise<Parse.Object> => {
   const authOptions: Parse.ScopeOptions = getQueryAuthOptions(user, false);
   const query: Parse.Query = new Parse.Query('Address');
   const address: Parse.Object = await query.get(addresId, { sessionToken: user.getSessionToken() });

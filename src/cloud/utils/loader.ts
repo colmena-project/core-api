@@ -53,7 +53,4 @@ function loadCloudFunctions(legacy: boolean = false) {
   });
 }
 
-export {
-  loadClassHooks,
-  loadCloudFunctions,
-};
+export { loadClassHooks, loadCloudFunctions };

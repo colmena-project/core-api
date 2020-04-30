@@ -3,7 +3,11 @@ import { getValueForNextSequence } from '../utils/db';
 import { Transaction, TransactionDetail } from '../classes';
 import { TRANSACTIONS_TYPES } from '../constants';
 
-const findRawTransaction = async (id: string, user: Parse.User, master: boolean = false): Promise<Parse.Object> => {
+const findRawTransaction = async (
+  id: string,
+  user: Parse.User,
+  master: boolean = false,
+): Promise<Parse.Object> => {
   try {
     const authOptions: Parse.ScopeOptions = getQueryAuthOptions(user, master);
     const transactionQuery: Parse.Query = new Parse.Query('Transaction');
@@ -36,11 +40,19 @@ const findTransactionWithDetailsById = async (
 
 const createTransaction = async (attributes: Colmena.TransactionType): Promise<Parse.Object> => {
   const {
-    from, to, type, recyclingCenter, reason, fromAddress, toAddress, kms, estimatedDuration, estimatedDistance,
+    from,
+    to,
+    type,
+    recyclingCenter,
+    reason,
+    fromAddress,
+    toAddress,
+    kms,
+    estimatedDuration,
+    estimatedDistance,
   } = attributes;
   const transaction: Parse.Object = new Transaction();
   const number: number = await getValueForNextSequence(Transaction.name);
-
 
   transaction.set('type', type);
   transaction.set('from', from);
@@ -98,7 +110,10 @@ const destroyTransaction = async (transaction: Parse.Object): Promise<any> => {
  * @param {*} transaction
  * @param {*} wasteType
  */
-const createTransactionDetail = (transaction: Parse.Object, container: Parse.Object): Parse.Object => {
+const createTransactionDetail = (
+  transaction: Parse.Object,
+  container: Parse.Object,
+): Parse.Object => {
   try {
     const transactionDetail: Parse.Object = new TransactionDetail();
     const wasteType: Parse.Object = container.get('type');
@@ -126,13 +141,15 @@ const findTransactionsOfContainer = async (container: Parse.Object): Promise<Par
   return transactionsDetails.map((detail) => detail.get('transaction'));
 };
 
-const findRecoverTransactionOfContainer = async (container: Parse.Object): Promise<Parse.Object|undefined> => {
+const findRecoverTransactionOfContainer = async (
+  container: Parse.Object,
+): Promise<Parse.Object | undefined> => {
   const query: Parse.Query = new Parse.Query('TransactionDetail');
   query.select('transaction');
   query.include('transaction');
   query.equalTo('container', container.toPointer());
   const transactionsDetail: Parse.Object[] = await query.find({ useMasterKey: true });
-  let transaction: Parse.Object|undefined;
+  let transaction: Parse.Object | undefined;
   transactionsDetail.forEach((detail) => {
     if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.RECOVER) {
       transaction = detail.get('transaction');
@@ -141,13 +158,15 @@ const findRecoverTransactionOfContainer = async (container: Parse.Object): Promi
   return transaction;
 };
 
-const findTransferAcceptTransactionOfContainer = async (container: Parse.Object): Promise<Parse.Object|undefined> => {
+const findTransferAcceptTransactionOfContainer = async (
+  container: Parse.Object,
+): Promise<Parse.Object | undefined> => {
   const query: Parse.Query = new Parse.Query('TransactionDetail');
   query.select('transaction');
   query.include('transaction');
   query.equalTo('container', container.toPointer());
   const transactionsDetail: Parse.Object[] = await query.find({ useMasterKey: true });
-  let transaction: Parse.Object|undefined;
+  let transaction: Parse.Object | undefined;
   transactionsDetail.forEach((detail) => {
     if (detail.get('transaction').get('type') === TRANSACTIONS_TYPES.TRANSFER_ACCEPT) {
       transaction = detail.get('transaction');
@@ -156,7 +175,7 @@ const findTransferAcceptTransactionOfContainer = async (container: Parse.Object)
   return transaction;
 };
 
-const findTransactionDetails = async (transaction: Parse.Object) : Promise<Parse.Object[]> => {
+const findTransactionDetails = async (transaction: Parse.Object): Promise<Parse.Object[]> => {
   const authOptions = getQueryAuthOptions(undefined, true);
   const query = new Parse.Query('TransactionDetail');
   query.equalTo('transaction', transaction);

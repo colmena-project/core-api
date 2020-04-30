@@ -1,10 +1,13 @@
-
 import { Container } from '../classes';
 import { getQueryAuthOptions } from '../utils';
 import { getValueForNextSequence } from '../utils/db';
 import TransactionService from './TransactionService';
 
-const findContainerById = async (id: string, user: Parse.User, master: boolean = false): Promise<Parse.Object> => {
+const findContainerById = async (
+  id: string,
+  user: Parse.User,
+  master: boolean = false,
+): Promise<Parse.Object> => {
   try {
     const authOptions = getQueryAuthOptions(user, master);
     const query: Parse.Query = new Parse.Query('Container');
@@ -16,10 +19,16 @@ const findContainerById = async (id: string, user: Parse.User, master: boolean =
   }
 };
 
-const generateContainerCode = (typeCode: string, transactionNumber: string, containerNumber: number): string =>
-  `${typeCode}-${transactionNumber}-${containerNumber}`;
+const generateContainerCode = (
+  typeCode: string,
+  transactionNumber: string,
+  containerNumber: number,
+): string => `${typeCode}-${transactionNumber}-${containerNumber}`;
 
-const createContainer = async (transactionNumber: string, attributes: Colmena.ContainerType): Promise<Parse.Object> => {
+const createContainer = async (
+  transactionNumber: string,
+  attributes: Colmena.ContainerType,
+): Promise<Parse.Object> => {
   const { type, status } = attributes;
   const number: number = await getValueForNextSequence(Container.name);
   const code: string = generateContainerCode(type.get('code'), transactionNumber, number);
@@ -54,21 +63,30 @@ const findContainersByTransaction = async (transaction: Parse.Object): Promise<P
   return transactionsDetails.map((detail) => detail.get('container'));
 };
 
-const findAllowedContainers = async (user: Parse.User, master: boolean = false): Promise<Parse.Object[]> => {
+const findAllowedContainers = async (
+  user: Parse.User,
+  master: boolean = false,
+): Promise<Parse.Object[]> => {
   const authOptions: Parse.ScopeOptions = getQueryAuthOptions(user, master);
   const query: Parse.Query = new Parse.Query('Container');
   const containers: Parse.Object[] = await query.find(authOptions);
   return containers;
 };
 
-const isRecyclerOfContainer = async (container: Parse.Object, user: Parse.User): Promise<boolean> => {
-  const transaction: Parse.Object|undefined = await TransactionService.findRecoverTransactionOfContainer(container);
+const isRecyclerOfContainer = async (
+  container: Parse.Object,
+  user: Parse.User,
+): Promise<boolean> => {
+  const transaction = await TransactionService.findRecoverTransactionOfContainer(container);
   if (!transaction) return false;
   return transaction.get('to').equals(user);
 };
 
-const isCarrierOfContainer = async (container: Parse.Object, user: Parse.User): Promise<boolean> => {
-  const transaction : Parse.Object|undefined = await TransactionService.findTransferAcceptTransactionOfContainer(container);
+const isCarrierOfContainer = async (
+  container: Parse.Object,
+  user: Parse.User,
+): Promise<boolean> => {
+  const transaction = await TransactionService.findTransferAcceptTransactionOfContainer(container);
   if (!transaction) return false;
   return transaction.get('to').equals(user);
 };

@@ -36,7 +36,11 @@ const sendToUser = async (data: Object, user: Parse.User): Promise<any> => {
   );
 };
 
-const prepareNotificationData = (type: Colmena.NotificationTypesType, message: string, data: Object = {}): Colmena.NotificationDataType => {
+const prepareNotificationData = (
+  type: Colmena.NotificationTypesType,
+  message: string,
+  data: Object = {},
+): Colmena.NotificationDataType => {
   if (!Object.keys(NOTIFICATION_TYPES).includes(type)) {
     throw new Error(`Unsoported push notification type ${type}`);
   }
@@ -54,7 +58,11 @@ const sendPushNotificationToUser = async (
   extraData: Object,
   user: Parse.User,
 ): Promise<any> => {
-  const data: Colmena.NotificationDataType = prepareNotificationData(type, message.trim(), extraData);
+  const data: Colmena.NotificationDataType = prepareNotificationData(
+    type,
+    message.trim(),
+    extraData,
+  );
   return sendToUser(data, user);
 };
 

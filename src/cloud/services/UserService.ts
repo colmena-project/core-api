@@ -15,7 +15,8 @@ const clearUserSessions = async (user: Parse.User): Promise<{ sessions: string[]
 const findUserById = async (id: string): Promise<Parse.User> => {
   try {
     const query: Parse.Query = new Parse.Query(Parse.User);
-    const user: Parse.User = <Parse.User> await query.get(id, { useMasterKey: true });
+    // eslint-disable-next-line keyword-spacing
+    const user = <Parse.User>await query.get(id, { useMasterKey: true });
     return user;
   } catch (error) {
     throw new Error(`User ${id} not found`);

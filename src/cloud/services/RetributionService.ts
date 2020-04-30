@@ -7,7 +7,11 @@ const getRetributionParametersBy = async (type: RETRIBUTION_TYPES, wasteType: Pa
   query.equalTo('wasteType', wasteType);
   query.equalTo('active', true);
   const retributionParameter = query.find({ useMasterKey: true });
-  if (!retributionParameter) throw new Error(`Cannot Find Retribution Parameter for type ${type} and wasteType ${wasteType.id}`);
+  if (!retributionParameter) {
+    throw new Error(
+      `Cannot Find Retribution Parameter for type ${type} and wasteType ${wasteType.id}`,
+    );
+  }
   return retributionParameter;
 };
 
@@ -18,7 +22,11 @@ const getAllRetributionParameters = async (): Promise<Parse.Object[]> => {
   return retributionParameter;
 };
 
-const calculateMaterialRetribution = (qty: number, unit: string, retributionParameter: Parse.Object): number => {
+const calculateMaterialRetribution = (
+  qty: number,
+  unit: string,
+  retributionParameter: Parse.Object,
+): number => {
   const retribution = 0;
   let quantity = 0;
   if (retributionParameter.get('qty') === 0) return retribution;
@@ -35,7 +43,11 @@ const calculateMaterialRetribution = (qty: number, unit: string, retributionPara
   return (quantity * retributionParameter.get('retribution')) / retributionParameter.get('qty');
 };
 
-const calculateTransportRetribution = (qty: number, unit: string, retributionParameter: Parse.Object) : number => {
+const calculateTransportRetribution = (
+  qty: number,
+  unit: string,
+  retributionParameter: Parse.Object,
+): number => {
   const retribution = 0;
   let quantity = 0;
   if (retributionParameter.get('qty') === 0) return retribution;
@@ -56,8 +68,14 @@ const getMaterialRetribution = async (materials: Colmena.Material[]): Promise<nu
   const retributionParameters = await getAllRetributionParameters();
   const estimatedRetributions = materials.map((material) => {
     const wasteType = material.container.get('type');
-    const rp = retributionParameters.find((r) => r.get('type') === RETRIBUTION_TYPES.MATERIAL && r.get('wasteType').id === wasteType.id);
-    if (!rp) throw new Error(`Cannot find retribution parameter to ${wasteType.id} and type ${RETRIBUTION_TYPES.MATERIAL}`);
+    const rp = retributionParameters.find(
+      (r) => r.get('type') === RETRIBUTION_TYPES.MATERIAL && r.get('wasteType').id === wasteType.id,
+    );
+    if (!rp) {
+      throw new Error(
+        `Cannot find retribution parameter to ${wasteType.id} and type ${RETRIBUTION_TYPES.MATERIAL}`,
+      );
+    }
     return calculateMaterialRetribution(material.qty, material.unit, rp);
   });
 
@@ -71,7 +89,10 @@ const getTransportRetribution = async (kms: number): Promise<number> => {
   return calculateTransportRetribution(kms, 'kms', rp);
 };
 
-const generateRetribution = async (transaction: Parse.Object, user: Parse.User): Promise<Parse.Object> => {
+const generateRetribution = async (
+  transaction: Parse.Object,
+  user: Parse.User,
+): Promise<Parse.Object> => {
   try {
     const retribution = new Parse.Object('Retribution');
     retribution.set('user', user);
@@ -80,7 +101,9 @@ const generateRetribution = async (transaction: Parse.Object, user: Parse.User):
       if (transaction.isNew()) {
         throw new Error('Cannot find TransactionDetails from an unsaved Transaction');
       }
-      const transactionDetails: Parse.Object[] = await TransactionService.findTransactionDetails(transaction);
+      const transactionDetails: Parse.Object[] = await TransactionService.findTransactionDetails(
+        transaction,
+      );
       const materials = transactionDetails.map((detail) => ({
         container: detail.get('container'),
         qty: detail.get('qty'),
@@ -106,7 +129,6 @@ const generateRetribution = async (transaction: Parse.Object, user: Parse.User):
     throw new Error(`Cannot generate retribution. Detail: ${error.message}`);
   }
 };
-
 
 export default {
   getMaterialRetribution,
