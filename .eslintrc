@@ -11,7 +11,7 @@
     "operator-linebreak": "off",
     "object-curly-newline": "warn",
     "implicit-arrow-linebreak": "off",
-    "max-len": ["warn", 120],
+    "max-len": ["warn", 100],
     "import/prefer-default-export": "off",
     "import/extensions": ["off", "ignorePackages", {
       "js": "never",
