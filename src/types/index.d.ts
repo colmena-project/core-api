@@ -122,7 +122,7 @@ declare namespace Colmena {
   // };
 
   type Material = {
-    container: Parse.Object;
+    wasteType: String;
     qty: number;
     unit: string;
   };

@@ -67,13 +67,13 @@ const calculateTransportRetribution = (
 const getMaterialRetribution = async (materials: Colmena.Material[]): Promise<number> => {
   const retributionParameters = await getAllRetributionParameters();
   const estimatedRetributions = materials.map((material) => {
-    const wasteType = material.container.get('type');
+    const { wasteType } = material;
     const rp = retributionParameters.find(
-      (r) => r.get('type') === RETRIBUTION_TYPES.MATERIAL && r.get('wasteType').id === wasteType.id,
+      (r) => r.get('type') === RETRIBUTION_TYPES.MATERIAL && r.get('wasteType').id === wasteType,
     );
     if (!rp) {
       throw new Error(
-        `Cannot find retribution parameter to ${wasteType.id} and type ${RETRIBUTION_TYPES.MATERIAL}`,
+        `Cannot find retribution parameter to ${wasteType} and type ${RETRIBUTION_TYPES.MATERIAL}`,
       );
     }
     return calculateMaterialRetribution(material.qty, material.unit, rp);
@@ -105,7 +105,7 @@ const generateRetribution = async (
         transaction,
       );
       const materials = transactionDetails.map((detail) => ({
-        container: detail.get('container'),
+        wasteType: detail.get('container').get('type').id,
         qty: detail.get('qty'),
         unit: detail.get('unit'),
       }));

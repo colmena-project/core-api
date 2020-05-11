@@ -1,32 +1,19 @@
 import { LatLng } from '@googlemaps/google-maps-services-js/dist/common';
 import RetributionService from '../services/RetributionService';
-import ContainerService from '../services/ContainerService';
 import MapService from '../services/MapService';
 
 const processMaterialInput = async (
-  elements: string[],
-  user: Parse.User,
-): Promise<{ total: number; elements: { containerId: string; value: number }[] }> => {
-  // get containers
-  const containers = await Promise.all(
-    elements.map((e) => ContainerService.findContainerById(e, user)),
-  );
-  // get retribution for each one
+  elements: Colmena.Material[],
+): Promise<{ total: number; elements: Object[] }> => {
   const materialsRetributions = await Promise.all(
-    containers.map((c) => {
-      const materials = [
-        {
-          container: c,
-          qty: c.get('type').get('qty'),
-          unit: c.get('type').get('unit'),
-        },
-      ];
-      return RetributionService.getMaterialRetribution(materials);
-    }),
+    elements.map((element) => RetributionService.getMaterialRetribution([element])),
   );
+
   // set material elements response
   const materialDetail = materialsRetributions.map((value, index) => ({
-    containerId: containers[index].id,
+    wasteType: elements[index].wasteType,
+    qty: elements[index].qty,
+    unit: elements[index].unit,
     value,
   }));
   // set result
@@ -51,21 +38,21 @@ const processTransportInput = async (
 };
 
 const estimateRetribution = async (request: Parse.Cloud.FunctionRequest) => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
-  const { type, elements = [] } = <{ type: string; elements: string[] }>params;
+  const { params } = request;
+  const { type, elements = [] } = <{ type: string; elements: string[] | Colmena.Material[] }>params;
   let response;
   let unsoportedType;
   let materialResult;
   let transportResult;
   switch (type) {
     case 'material':
-      materialResult = await processMaterialInput(elements, user);
+      materialResult = await processMaterialInput(<Colmena.Material[]>elements);
       response = {
         material: materialResult,
       };
       break;
     case 'transport':
-      transportResult = await processTransportInput(elements[0], elements[1]);
+      transportResult = await processTransportInput(<LatLng>elements[0], <LatLng>elements[1]);
       response = {
         transport: transportResult,
       };
