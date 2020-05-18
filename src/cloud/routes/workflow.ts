@@ -25,6 +25,10 @@ const definitions: Colmena.RouteDefinitions = {
     action: WorkflowController.registerTransport,
     secure: true,
   },
+  registerTransportCancel: {
+    action: WorkflowController.registerTransportCancel,
+    secure: true,
+  },
 };
 
 export default definitions;

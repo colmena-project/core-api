@@ -76,6 +76,26 @@ const validateTransferCancel = (
   }
 };
 
+const validateTransportCancel = (
+  transportRequestTransaction: Parse.Object,
+  user: Parse.User,
+): void => {
+  const transactionId: string = transportRequestTransaction.id;
+  if (transportRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSPORT) {
+    throw new Error(
+      `Transaction ${transactionId} is not in ${TRANSACTIONS_TYPES.TRANSPORT} status.`,
+    );
+  }
+  if (transportRequestTransaction.get('expiredAt')) {
+    throw new Error(
+      `Transaction ${transactionId} expired at ${transportRequestTransaction.get('expiredAt')}.`,
+    );
+  }
+  if (!transportRequestTransaction.get('from').equals(user)) {
+    throw new Error('You are not allowed to cancel this request.');
+  }
+};
+
 const canTransportContainer = async (
   container: Parse.Object,
   user: Parse.User,
@@ -271,8 +291,7 @@ const registerTransferRequest = async (
  * Each container in the request is set to TRANSFERRED status. Also, move the stock from the owner
  * to the user that request the endpoint.
  *
- * @param {Array} containersInput
- * @param {User} to
+ * @param {Array} transactionId
  * @param {User} user
  */
 const registerTransferAccept = async (
@@ -506,6 +525,57 @@ const registerTransport = async (
   }
 };
 
+const registerTransportCancel = async (
+  transactionId: string,
+  user: Parse.User,
+): Promise<Parse.Object> => {
+  try {
+    const transportRequestTransaction = await TransactionService.findRawTransaction(
+      transactionId,
+      user,
+    );
+    validateTransportCancel(transportRequestTransaction, user);
+    const transaction: Parse.Object = await TransactionService.createTransaction({
+      from: transportRequestTransaction.get('from'),
+      to: transportRequestTransaction.get('to'),
+      type: TRANSACTIONS_TYPES.TRANSPORT_CANCEL,
+      reason: undefined,
+      recyclingCenter: transportRequestTransaction.get('recyclingCenter'),
+      fromAddress: transportRequestTransaction.get('fromAddress'),
+      toAddress: transportRequestTransaction.get('toAddress'),
+      relatedTo: undefined,
+    });
+
+    transaction.set('relatedTo', transportRequestTransaction);
+    transportRequestTransaction.set('expiredAt', new Date());
+
+    const containers: Parse.Object[] = await ContainerService.findContainersByTransaction(
+      transportRequestTransaction,
+    );
+
+    const details: Parse.Object[] = containers.map((container) => {
+      if (container.get('createdBy') === user) {
+        container.set('status', CONTAINER_STATUS.RECOVERED);
+      } else {
+        container.set('status', CONTAINER_STATUS.TRANSFERRED);
+      }
+      return TransactionService.createTransactionDetail(transaction, container);
+    });
+
+    await Parse.Object.saveAll([transaction, ...details], {
+      sessionToken: user.getSessionToken(),
+    });
+
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
+  } catch (error) {
+    throw new Error(`Transaction could not be canceled. Detail: ${error.message}`);
+  }
+};
+
 export default {
   registerRecover,
   registerTransferRequest,
@@ -513,4 +583,5 @@ export default {
   registerTransferReject,
   registerTransferCancel,
   registerTransport,
+  registerTransportCancel,
 };
