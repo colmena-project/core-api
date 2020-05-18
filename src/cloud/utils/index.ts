@@ -2,7 +2,7 @@
  * Decorator function to apply to all functions that needs to check for user authentication
  * @param {*} callback
  */
-function secure(callback: Colmena.CloudFunction): any {
+function secure(callback: Function): any {
   return (request: Parse.Cloud.FunctionRequest) => {
     const { master: isMaster, user } = request;
     if (!isMaster && !user) {

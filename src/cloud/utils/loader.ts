@@ -47,7 +47,7 @@ function loadCloudFunctions(legacy: boolean = false) {
     if (isSecure) {
       Parse.Cloud.define(path, secure(action));
     } else {
-      Parse.Cloud.define(path, action);
+      Parse.Cloud.define(path, <Colmena.CloudFunction>action);
     }
     console.info('Loaded ', path);
   });
