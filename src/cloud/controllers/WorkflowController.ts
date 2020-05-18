@@ -1,9 +1,9 @@
 import { WorkflowService } from '../services';
 
 const registerRecover = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+  const { params, user } = request;
   const { containers, addressId } = params;
   const transaction: Parse.Object = await WorkflowService.registerRecover(
     containers,
@@ -14,9 +14,9 @@ const registerRecover = async (
 };
 
 const registerTransferRequest = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+  const { params, user } = request;
   const { containers, to } = params;
   const transaction: Parse.Object = await WorkflowService.registerTransferRequest(
     containers,
@@ -27,9 +27,9 @@ const registerTransferRequest = async (
 };
 
 const registerTransferAccept = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+  const { params, user } = request;
   const { transactionId } = params;
   const transaction: Parse.Object = await WorkflowService.registerTransferAccept(
     transactionId,
@@ -39,9 +39,9 @@ const registerTransferAccept = async (
 };
 
 const registerTransferReject = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+  const { params, user } = request;
   const { transactionId, reason } = params;
   const transaction: Parse.Object = await WorkflowService.registerTransferReject(
     transactionId,
@@ -52,9 +52,9 @@ const registerTransferReject = async (
 };
 
 const registerTransferCancel = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+  const { params, user } = request;
   const { transactionId } = params;
   const transaction: Parse.Object = await WorkflowService.registerTransferCancel(
     transactionId,
@@ -64,11 +64,20 @@ const registerTransferCancel = async (
 };
 
 const registerTransport = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+  const { params, user } = request;
   const { containers, to } = params;
-  const transaction: Parse.Object = await WorkflowService.registerTransport(containers, to, user);
+  const transaction = await WorkflowService.registerTransport(containers, to, user);
+  return transaction.toJSON();
+};
+
+const registerTransportCancel = async (
+  request: Colmena.SecureFunctionRequest,
+): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
+  const { params, user } = request;
+  const { transactionId } = params;
+  const transaction = await WorkflowService.registerTransportCancel(transactionId, user);
   return transaction.toJSON();
 };
 
@@ -79,4 +88,5 @@ export default {
   registerTransferReject,
   registerTransferCancel,
   registerTransport,
+  registerTransportCancel,
 };

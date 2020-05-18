@@ -6,7 +6,8 @@ declare namespace Colmena {
     | 'TRANSFER_ACCEPT'
     | 'TRANSFER_REJECT'
     | 'TRANSFER_CANCEL'
-    | 'TRANSPORT';
+    | 'TRANSPORT'
+    | 'TRANSPORT_CANCEL';
 
   type ContainerStatusType =
     | 'RECOVERED'
@@ -25,10 +26,16 @@ declare namespace Colmena {
     | 'TRANSFER_CANCEL'
     | 'TRANSPORT';
 
+  interface SecureFunctionRequest extends Parse.Cloud.FunctionRequest {
+    user: Parse.User;
+  }
+
+  type SecureCloudFunction = (request: SecureFunctionRequest) => any;
+
   type CloudFunction = (request: Parse.Cloud.FunctionRequest) => any;
 
   type RouteDefinition = {
-    action: CloudFunction;
+    action: CloudFunction | SecureCloudFunction;
     secure: boolean;
   };
 

@@ -1,9 +1,9 @@
 import { TransactionService } from '../services';
 
 const findTransactionById = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+  const { params, user } = request;
   const { objectId } = params;
   const transaction = await TransactionService.findTransactionWithDetailsById(objectId, user);
   return transaction.toJSON();

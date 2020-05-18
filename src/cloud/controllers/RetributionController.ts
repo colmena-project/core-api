@@ -37,7 +37,7 @@ const processTransportInput = async (
   };
 };
 
-const estimateRetribution = async (request: Parse.Cloud.FunctionRequest) => {
+const estimateRetribution = async (request: Colmena.SecureFunctionRequest) => {
   const { params } = request;
   const { type, elements = [] } = <{ type: string; elements: string[] | Colmena.Material[] }>params;
   let response;

@@ -1,15 +1,15 @@
 import { AccountService, StockService, ContainerService } from '../services';
 
-const createAccount = async (request: Parse.Cloud.FunctionRequest): Promise<Parse.Object> => {
-  const { params } = <{ params: Colmena.AccountType }>request;
-  return AccountService.createAccount(params);
+const createAccount = async (request: Colmena.SecureFunctionRequest): Promise<Parse.Object> => {
+  const { params } = request;
+  return AccountService.createAccount(<Colmena.AccountType>params);
 };
 
 const getMyAccount = async (
-  request: Parse.Cloud.FunctionRequest,
+  request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
-  const { user } = <{ user: Parse.User }>request;
-  const account: Parse.Object = await AccountService.findAccountByUser(user);
+  const { user } = request;
+  const account = await AccountService.findAccountByUser(user);
   const [addresses, stock, containers] = await Promise.all([
     AccountService.findAccountAddress(account),
     StockService.getUserStock(user),
@@ -35,19 +35,19 @@ const getMyAccount = async (
   return account.toJSON();
 };
 
-const getAccountOf = async (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
-  const { params } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+const getAccountOf = async (request: Colmena.SecureFunctionRequest): Promise<Object> => {
+  const { params } = request;
   const { accountId } = params;
   return AccountService.findAccountById(accountId);
 };
 
-const addNewAddress = async (request: Parse.Cloud.FunctionRequest): Promise<Parse.Object> => {
-  const { params, user } = <{ params: Colmena.AddressType; user: Parse.User }>request;
-  return AccountService.addNewAddress(params, user);
+const addNewAddress = async (request: Colmena.SecureFunctionRequest): Promise<Parse.Object> => {
+  const { params, user } = request;
+  return AccountService.addNewAddress(<Colmena.AddressType>params, user);
 };
 
-const editAddress = async (request: Parse.Cloud.FunctionRequest): Promise<Parse.Object> => {
-  const { params, user } = <{ params: Parse.Cloud.Params; user: Parse.User }>request;
+const editAddress = async (request: Colmena.SecureFunctionRequest): Promise<Parse.Object> => {
+  const { params, user } = request;
   const { addressId, attributes } = params;
   return AccountService.editAddress(addressId, attributes, user);
 };
