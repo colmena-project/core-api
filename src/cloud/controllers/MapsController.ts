@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { MapService } from '../services';
 
-const distanceCalculate = (request: Parse.Cloud.FunctionRequest) => ({ distance: '2km' });
+const distanceCalculate = (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
+  const { params } = request;
+  const { lat, lng } = params;
+  return MapService.distancematrix(lat, lng);
+};
 
 const getAddressFromLatLng = (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
   const { params } = request;
