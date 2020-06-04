@@ -3,8 +3,8 @@ import { MapService } from '../services';
 
 const distanceCalculate = (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
   const { params } = request;
-  const { lat, lng } = params;
-  return MapService.distancematrix(lat, lng);
+  const { origin, destination } = params;
+  return MapService.distancematrix(origin, destination);
 };
 
 const getAddressFromLatLng = (request: Parse.Cloud.FunctionRequest): Promise<Object> => {
