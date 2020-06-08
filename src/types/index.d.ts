@@ -1,7 +1,7 @@
 declare namespace Colmena {
   type TransactionTypesType =
     | 'RECOVER'
-    | 'DELETE_RECOVER'
+    | 'DELETE_CONTAINERS'
     | 'TRANSFER_REQUEST'
     | 'TRANSFER_ACCEPT'
     | 'TRANSFER_REJECT'

@@ -137,6 +137,15 @@ const validateTransport = async (
   return Promise.all(containers.map((container) => canTransportContainer(container, user)));
 };
 
+const validateDeleteContainers = (containers: Parse.Object[]): any => {
+  if (!containers.every((container) => CONTAINER_STATUS.RECOVERED === container.get('status'))) {
+    throw new Error(
+      `Check containers status. To delete a container, It's has to be in 
+    ${CONTAINER_STATUS.RECOVERED} status`,
+    );
+  }
+};
+
 /**
  * Register RECOVER method.
  * Inital point start of colmena recover proccess. It takes an input, wich contains
@@ -199,6 +208,50 @@ const registerRecover = async (
 
     const retribution = await RetributionService.generateRetribution(transaction, user);
     transaction.set('retribution', retribution.toJSON());
+
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+    return transaction;
+  } catch (error) {
+    throw new Error(`Transaction could not be registered. Detail: ${error.message}`);
+  }
+};
+
+/**
+ * Delete a et of user containers.
+ *
+ * @param containersInput containers ids to delete
+ * @param user User who request the endpoint.
+ */
+const deleteContainers = async (containersInput: string[], user: Parse.User): Promise<any> => {
+  try {
+    const containers = await new Parse.Query('Container')
+      .containedIn('objectId', containersInput)
+      .find({ sessionToken: user.getSessionToken() });
+
+    validateDeleteContainers(containers);
+    const address = await AccountService.findAccountByUser(user);
+    const transaction = await TransactionService.createTransaction({
+      from: undefined,
+      to: user,
+      type: TRANSACTIONS_TYPES.DELETE_CONTAINERS,
+      reason: undefined,
+      fromAddress: {},
+      toAddress: address.toJSON(),
+      recyclingCenter: undefined,
+      relatedTo: undefined,
+    });
+
+    const details = containers.map((container) => {
+      container.set('status', CONTAINER_STATUS.DELETED);
+      return TransactionService.createTransactionDetail(transaction, container);
+    });
+
+    await Parse.Object.saveAll([transaction, ...containers, ...details], {
+      sessionToken: user.getSessionToken(),
+    });
 
     transaction.set(
       'details',
@@ -584,4 +637,5 @@ export default {
   registerTransferCancel,
   registerTransport,
   registerTransportCancel,
+  deleteContainers,
 };
