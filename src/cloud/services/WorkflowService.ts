@@ -228,6 +228,7 @@ const registerRecover = async (
 const deleteContainers = async (containersInput: string[], user: Parse.User): Promise<any> => {
   try {
     const containers = await new Parse.Query('Container')
+      .include('type')
       .containedIn('objectId', containersInput)
       .find({ sessionToken: user.getSessionToken() });
 
