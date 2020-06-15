@@ -254,6 +254,14 @@ const deleteContainers = async (containersInput: string[], user: Parse.User): Pr
       sessionToken: user.getSessionToken(),
     });
 
+    await Promise.all(
+      containers.map((container) => {
+        const wasteType = container.get('type');
+        if (!wasteType) throw new Error('Waste Type not found');
+        return StockService.decrementStock(wasteType, user, 1);
+      }),
+    );
+
     transaction.set(
       'details',
       details.map((d) => d.toJSON()),
