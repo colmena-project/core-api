@@ -589,6 +589,7 @@ const registerTransport = async (
 
 const registerTransportCancel = async (
   transactionId: string,
+  reason: string,
   user: Parse.User,
 ): Promise<Parse.Object> => {
   try {
@@ -601,7 +602,7 @@ const registerTransportCancel = async (
       from: transportRequestTransaction.get('from'),
       to: transportRequestTransaction.get('to'),
       type: TRANSACTIONS_TYPES.TRANSPORT_CANCEL,
-      reason: undefined,
+      reason,
       recyclingCenter: transportRequestTransaction.get('recyclingCenter'),
       fromAddress: transportRequestTransaction.get('fromAddress'),
       toAddress: transportRequestTransaction.get('toAddress'),

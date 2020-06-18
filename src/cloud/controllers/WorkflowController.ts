@@ -76,8 +76,8 @@ const registerTransportCancel = async (
   request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
   const { params, user } = request;
-  const { transactionId } = params;
-  const transaction = await WorkflowService.registerTransportCancel(transactionId, user);
+  const { transactionId, reason } = params;
+  const transaction = await WorkflowService.registerTransportCancel(transactionId, reason, user);
   return transaction.toJSON();
 };
 
