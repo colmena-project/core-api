@@ -43,7 +43,7 @@ class Post extends Base {
 
   async getOwnerAccount(): Promise<Parse.Object | undefined> {
     const createdBy = this.get('createdBy');
-    if (!createdBy) return;
+    if (!createdBy) return undefined;
     const account = await AccountService.findAccountByUser(createdBy);
     return account;
   }
