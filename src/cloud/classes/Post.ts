@@ -17,7 +17,7 @@ class Post extends Base {
   }
 
   static async afterSave(request: Parse.Cloud.AfterSaveRequest): Promise<Parse.Object> {
-    const { object: post } = <{ object: Post }> <unknown>request;
+    const { object: post } = <{ object: Post }>(<unknown>request);
     const account = await post.getOwnerAccount();
     if (account) {
       const nickname = account.get('nickname');
@@ -27,11 +27,11 @@ class Post extends Base {
   }
 
   static async afterFind(request: Parse.Cloud.AfterFindRequest): Promise<any> {
-    const { objects: posts } = <{ objects: Post[] }> <unknown>request;
+    const { objects: posts } = <{ objects: Post[] }>(<unknown>request);
     const postPromisses = posts.map((post: Post) => post.getOwnerAccount());
 
     const ownersAccount = await Promise.all(postPromisses);
-    ownersAccount.forEach((account: Parse.Object, index: number) => {
+    ownersAccount.forEach((account: Parse.Object | undefined, index: number) => {
       if (account) {
         const nickname: string = account.get('nickname');
         posts[index].set('nickname', nickname);
@@ -41,8 +41,9 @@ class Post extends Base {
     return posts;
   }
 
-  async getOwnerAccount(): Promise<Parse.Object> {
+  async getOwnerAccount(): Promise<Parse.Object | undefined> {
     const createdBy = this.get('createdBy');
+    if (!createdBy) return;
     const account = await AccountService.findAccountByUser(createdBy);
     return account;
   }
