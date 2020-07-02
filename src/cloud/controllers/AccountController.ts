@@ -37,8 +37,9 @@ const getMyAccount = async (
 
 const getAccountOf = async (request: Colmena.SecureFunctionRequest): Promise<Object> => {
   const { params } = request;
-  const { accountId } = params;
-  return AccountService.findAccountById(accountId);
+  const { userId } = params;
+  const user = await new Parse.Query(Parse.User).get(userId, { useMasterKey: true });
+  return AccountService.findAccountByUser(user);
 };
 
 const addNewAddress = async (request: Colmena.SecureFunctionRequest): Promise<Parse.Object> => {

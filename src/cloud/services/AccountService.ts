@@ -6,7 +6,7 @@ import MailService from './MailService';
 const findAccountByUser = async (user: Parse.User): Promise<Parse.Object> => {
   const query = new Parse.Query('Account');
   query.equalTo('user', user);
-  const account: Parse.Object | undefined = await query.first({ useMasterKey: true });
+  const account = await query.first({ useMasterKey: true });
   if (!account) throw new Error(`Account for user ${user.id} not found`);
   return account;
 };
