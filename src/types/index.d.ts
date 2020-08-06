@@ -113,6 +113,7 @@ declare namespace Colmena {
     facebookProfilePhotoUrl: string;
     aboutMe: string;
     fbAuthData: Parse.AuthData | undefined;
+    address?: {};
   };
 
   type AddressType = {
