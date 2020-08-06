@@ -30,7 +30,7 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
   user.set('username', username);
   user.set('password', password);
   user.set('email', email);
-  await user.signUp();
+  await user.save();
   // eslint-disable-next-line no-underscore-dangle
   if (fbAuthData && !user._isLinked('facebook')) {
     await user.linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
@@ -66,11 +66,10 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
     newAddress.set('description', description);
     newAddress.set('latLng', latLng);
     newAddress.set('default', true);
+    newAddress.set('createdBy', user);
     newAddress.set('account', newAccount);
-    const userAcl = new Parse.ACL(user);
-    userAcl.setReadAccess(user.id, true);
-    userAcl.setWriteAccess(user.id, true);
-    newAddress.setACL(userAcl);
+    await newAddress.save(null, { useMasterKey: true });
+    newAddress.setACL(new Parse.ACL(user));
     await newAddress.save(null, { useMasterKey: true });
   }
 
