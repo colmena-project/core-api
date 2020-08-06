@@ -67,7 +67,10 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
     newAddress.set('latLng', latLng);
     newAddress.set('default', true);
     newAddress.set('account', newAccount);
-    newAddress.setACL(new Parse.ACL(user));
+    const userAcl = new Parse.ACL(user);
+    userAcl.setReadAccess(user.id, true);
+    userAcl.setWriteAccess(user.id, true);
+    newAddress.setACL(userAcl);
     await newAddress.save(null, { useMasterKey: true });
   }
 
