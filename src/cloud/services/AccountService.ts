@@ -24,12 +24,13 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
     facebookProfilePhotoUrl,
     aboutMe,
     fbAuthData,
+    address,
   } = params;
   const user: Parse.User = new Parse.User();
   user.set('username', username);
   user.set('password', password);
   user.set('email', email);
-  await user.save();
+  await user.signUp();
   // eslint-disable-next-line no-underscore-dangle
   if (fbAuthData && !user._isLinked('facebook')) {
     await user.linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
@@ -54,6 +55,21 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
   newAccount.setACL(acl);
 
   await newAccount.save();
+
+  if (address) {
+    const { street, city, state, country, description, latLng } = address;
+    const newAddress = new Address();
+    newAddress.set('street', street);
+    newAddress.set('city', city);
+    newAddress.set('state', state);
+    newAddress.set('country', country);
+    newAddress.set('description', description);
+    newAddress.set('latLng', latLng);
+    newAddress.set('account', newAccount);
+    newAddress.setACL(acl);
+    await newAddress.save(null, { useMasterKey: true });
+  }
+
   const mailParams = {
     name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
     username: user.get('username'),
