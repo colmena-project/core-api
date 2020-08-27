@@ -12,7 +12,7 @@ const sendNewAccountCreated = async (params: {
       to,
       subject,
       templateId: 'd-496bcadd14964012b70b8be0eaf9f8c2',
-      dynamic_template_data: {
+      dynamicTemplateData: {
         name,
         username,
       },
