@@ -617,7 +617,7 @@ const registerTransportCancel = async (
     );
 
     const details: Parse.Object[] = containers.map((container) => {
-      if (container.get('createdBy') === user) {
+      if (container.get('createdBy').id === user.id) {
         container.set('status', CONTAINER_STATUS.RECOVERED);
       } else {
         container.set('status', CONTAINER_STATUS.TRANSFERRED);

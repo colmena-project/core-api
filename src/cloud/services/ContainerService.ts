@@ -58,6 +58,7 @@ const findContainersByTransaction = async (transaction: Parse.Object): Promise<P
   const query: Parse.Query = new Parse.Query('TransactionDetail');
   query.select('container');
   query.include('container.type');
+  query.include('createdBy');
   query.equalTo('transaction', transaction);
   const transactionsDetails: Parse.Object[] = await query.find({ useMasterKey: true });
   return transactionsDetails.map((detail) => detail.get('container'));
