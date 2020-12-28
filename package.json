@@ -32,7 +32,7 @@
     "hat": "0.0.3",
     "parse": "^2.12.0",
     "parse-dashboard": "^2.1.0",
-    "parse-server": "^4.3.0",
+    "parse-server": "^4.5.0",
     "saslprep": "^1.0.3"
   },
   "devDependencies": {
