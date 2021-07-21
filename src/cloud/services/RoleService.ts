@@ -37,11 +37,6 @@ const updateRole  = async (params: Colmena.RoleType): Promise<Parse.Object> => {
     users,
     roles,
   } = params;
-
-  console.log(id,
-    name,
-    users,
-    roles);
   
   const query = new Parse.Query(Parse.Role);
   query.equalTo("objectId", id);
@@ -49,8 +44,6 @@ const updateRole  = async (params: Colmena.RoleType): Promise<Parse.Object> => {
   if(role === undefined){
     throw new Error('The Role is not found');
   }else{
-    
-    console.log(role);
 
     let usersRole = await role.getUsers().query().find();
 
@@ -69,20 +62,26 @@ const updateRole  = async (params: Colmena.RoleType): Promise<Parse.Object> => {
     });
     
 
-    console.log(role.getRoles().toJSON);
+    let rolesRole = await role.getRoles().query().find();
     roles !== undefined && roles.map( async (idRole) => {
       const query = new Parse.Query(Parse.Role);
       query.equalTo("objectId", idRole);
       const roleToAddToRole =  await query.first({ useMasterKey: true });
       (roleToAddToRole !== undefined) && role.getRoles().add(roleToAddToRole);
+      
+      rolesRole = rolesRole.filter( (value) => { 
+        return value.id !== idRole;
+      });
+    });
+
+    rolesRole.map((roleRemove) => {
+      role.getRoles().remove(roleRemove)
     });
   
-    console.log(role);
     await role.save({"name":name}, 
       { 
         useMasterKey: true,
       });
-    console.log(role);
     return role;
     
   }

@@ -3,12 +3,12 @@ import { RoleController } from '../controllers';
 const definitions: Colmena.RouteDefinitions = {
   createRole: {
     action: RoleController.createRole,
-    secure: false,
+    secure: true,
   },
 
   editRole:{
     action: RoleController.editRole,
-    secure: false,
+    secure: true,
   }
   
 };
