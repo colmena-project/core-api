@@ -136,4 +136,11 @@ declare namespace Colmena {
     qty: number;
     unit: string;
   };
+
+  type RoleType = {
+    id?: string;
+    name: string;
+    users?: string[];
+    roles?: string[];
+  };
 }

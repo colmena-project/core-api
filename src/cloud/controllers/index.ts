@@ -4,6 +4,7 @@ import AccountController from './AccountController';
 import RetributionController from './RetributionController';
 import TransactionController from './TransactionController';
 import WorkflowController from './WorkflowController';
+import RoleController from './RoleController';
 
 export {
   DefaultController,
@@ -12,4 +13,5 @@ export {
   TransactionController,
   WorkflowController,
   RetributionController,
+  RoleController,
 };

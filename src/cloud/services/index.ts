@@ -12,6 +12,7 @@ import PushService from './PushService';
 import RecyclingCenterService from './RecyclingCenterService';
 import RetributionService from './RetributionService';
 import WorkflowService from './WorkflowService';
+import RoleService from './RoleService';
 
 export {
   AccountService,
@@ -28,4 +29,5 @@ export {
   RecyclingCenterService,
   RetributionService,
   WorkflowService,
+  RoleService
 };
