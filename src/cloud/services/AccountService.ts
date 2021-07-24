@@ -25,6 +25,7 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
     aboutMe,
     fbAuthData,
     address,
+    walletId,
   } = params;
   const user: Parse.User = new Parse.User();
   user.set('username', username);
@@ -46,6 +47,7 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
   newAccount.set('user', user);
   newAccount.set('createdBy', user.toPointer());
   newAccount.set('updatedBy', user.toPointer());
+  newAccount.set('walletId', walletId);
 
   const acl: Parse.ACL = new Parse.ACL();
   acl.setPublicReadAccess(true);
