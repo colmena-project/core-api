@@ -87,8 +87,15 @@ const updateRole  = async (params: Colmena.RoleType): Promise<Parse.Object> => {
   }
 };
 
+const findByName = async(name:string): Promise<Parse.Role | undefined>  =>{
+  const query = new Parse.Query(Parse.Role);
+    query.equalTo("name", name);
+    return  await query.first({ useMasterKey: true });
+}
+
 
 export default {
   createRole,
-  updateRole
+  updateRole,
+  findByName
 };

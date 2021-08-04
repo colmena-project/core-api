@@ -4,7 +4,8 @@ import maps from './maps';
 import retribution from './retribution';
 import transaction from './transaction';
 import workflow from './workflow';
-import role from './role'
+import role from './role';
+import user from './user';
 
 export {
   defaultRoutes,
@@ -13,5 +14,6 @@ export {
   retribution,
   transaction,
   workflow,
-  role
+  role,
+  user,
 };
