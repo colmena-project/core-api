@@ -115,6 +115,7 @@ declare namespace Colmena {
     aboutMe: string;
     fbAuthData: Parse.AuthData | undefined;
     address?: AddressType;
+    walletId: string;
   };
 
   type AddressType = {
