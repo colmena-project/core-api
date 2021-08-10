@@ -1,31 +1,29 @@
 import { UserController } from '../controllers';
 
 const definitions: Colmena.RouteDefinitions = {
-    
-    findUser:{
-        action: UserController.findUserAdmin,
-        secure: true,
-    },
-    findUserBy:{
-        action: UserController.adminFindUserBy,
-        secure: true,
-    },
+  findUser: {
+    action: UserController.adminFindUser,
+    secure: true,
+  },
+  findUserBy: {
+    action: UserController.adminFindUserBy,
+    secure: true,
+  },
 
-    findUserById:{
-        action: UserController.adminFindUserById,
-        secure: true,
-    },
+  findUserById: {
+    action: UserController.adminFindUserById,
+    secure: true,
+  },
 
-    createUserAdmin:{
-        action: UserController.createUserAdmin,
-        secure: true,
-    },
+  createUser: {
+    action: UserController.adminCreateUser,
+    secure: true,
+  },
 
-    udpdateUserAdmin:{
-        action: UserController.udpdateUserAdmin,
-        secure: true,
-    },
-
+  udpdateUser: {
+    action: UserController.adminUdpdateUser,
+    secure: true,
+  },
 };
 
 export default definitions;
