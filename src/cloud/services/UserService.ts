@@ -183,14 +183,13 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
       let recyclingCenters = await recyclingCentersRelation.query().find();
 
       //Add the RecyclingCenter to the user data
-      factory !== undefined &&
+      factory &&
         factory.map(async (idFactory: string) => {
           const query = new Parse.Query('RecyclingCenter');
           query.equalTo('objectId', idFactory);
           const recyclingCenterToAddTo = await query.first({ useMasterKey: true });
 
-          recyclingCenterToAddTo !== undefined &&
-            recyclingCentersRelation.add(recyclingCenterToAddTo);
+          recyclingCenterToAddTo && recyclingCentersRelation.add(recyclingCenterToAddTo);
 
           recyclingCenters = recyclingCenters.filter((value: Parse.Object) => {
             return value.id !== idFactory;
