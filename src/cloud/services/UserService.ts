@@ -169,7 +169,7 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
       aboutMe,
     } = data;
 
-    if (factory !== undefined) {
+    if (factory) {
       //if the Use has a new factory selected, so a role is assign
       const roleFactory = await RoleService.findByName('ROLE_FACTORY');
       if (factory.length > 0) {
