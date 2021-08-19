@@ -1,7 +1,7 @@
 import { getQueryAuthOptions } from '../utils';
 import { getValueForNextSequence } from '../utils/db';
 import { Transaction, TransactionDetail } from '../classes';
-import { TRANSACTIONS_TYPES } from '../constants';
+import { TRACKING_CODE_SEQUENCE, TRANSACTIONS_TYPES } from '../constants';
 
 const findRawTransaction = async (
   id: string,
@@ -53,6 +53,7 @@ const createTransaction = async (attributes: Colmena.TransactionType): Promise<P
   } = attributes;
   const transaction: Parse.Object = new Transaction();
   const number: number = await getValueForNextSequence(Transaction.name);
+  const trackingCode = await getValueForNextSequence(TRACKING_CODE_SEQUENCE);
 
   transaction.set('type', type);
   transaction.set('from', from);
@@ -65,6 +66,7 @@ const createTransaction = async (attributes: Colmena.TransactionType): Promise<P
   transaction.set('kms', kms);
   transaction.set('estimatedDuration', estimatedDuration);
   transaction.set('estimatedDistance', estimatedDistance);
+  transaction.set('trackingCode', trackingCode);
   return transaction;
 };
 
