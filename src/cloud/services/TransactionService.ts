@@ -50,6 +50,7 @@ const createTransaction = async (attributes: Colmena.TransactionType): Promise<P
     kms,
     estimatedDuration,
     estimatedDistance,
+    trackingCode,
   } = attributes;
   const transaction: Parse.Object = new Transaction();
   const number: number = await getValueForNextSequence(Transaction.name);
@@ -65,6 +66,7 @@ const createTransaction = async (attributes: Colmena.TransactionType): Promise<P
   transaction.set('kms', kms);
   transaction.set('estimatedDuration', estimatedDuration);
   transaction.set('estimatedDistance', estimatedDistance);
+  transaction.set('trackingCode', trackingCode);
   return transaction;
 };
 

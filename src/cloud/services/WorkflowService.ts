@@ -10,10 +10,12 @@ import UserService from './UserService';
 import WasteTypeService from './WasteTypeService';
 import RetributionService from './RetributionService';
 import MapService from './MapService';
+import { getValueForNextSequence } from '../utils/db';
 
 import {
   CONTAINER_STATUS,
   MAX_CONTAINERS_QUANTITY_PER_REQUEST,
+  TRACKING_CODE_SEQUENCE,
   TRANSACTIONS_TYPES,
 } from '../constants';
 
@@ -513,6 +515,7 @@ const registerTransferCancel = async (
  * Verifies if containers are in RECOVERED or TRANSFERRED status and then check if the user can transport it.
  * Creates one transaction, many details for each container and changes containers status to IN_TRANSIT.
  * Then notifies to all the user involved except the user that request the endpoint.
+ * A tracking code is generated for the transport to the recycling center.
  *
  * @param {Array} containersInput
  * @param {User} to
@@ -546,6 +549,9 @@ const registerTransport = async (
     const distanceResult = await MapService.distancematrix(fromLatLng, toLatLng);
 
     const distanceMatrix = distanceResult.distance[0].elements[0];
+
+    const trackingCode = await getValueForNextSequence(TRACKING_CODE_SEQUENCE);
+
     const transaction: Parse.Object = await TransactionService.createTransaction({
       to: undefined,
       from: user,
@@ -558,6 +564,7 @@ const registerTransport = async (
       kms: distanceMatrix.distance.value / 1000,
       estimatedDuration: distanceMatrix.duration,
       estimatedDistance: distanceMatrix.distance,
+      trackingCode,
     });
 
     const details: Parse.Object[] = containers.map((container) => {
