@@ -80,6 +80,7 @@ declare namespace Colmena {
     kms?: number | void;
     estimatedDuration?: Object | void;
     estimatedDistance?: Object | void;
+    trackingCode?: number;
   };
 
   type ContainerInputType = {
