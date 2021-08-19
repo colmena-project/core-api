@@ -12,19 +12,19 @@ const createRole = async (
   roleACL.setPublicWriteAccess(true);
   const role: Parse.Role = new Parse.Role(name, roleACL);
 
-  users !== undefined &&
+  users &&
     users.map((idUser) => {
       const usersToAddToRole = new Parse.User();
       usersToAddToRole.id = idUser;
       role.getUsers().add(usersToAddToRole);
     });
 
-  roles !== undefined &&
+  roles &&
     roles.map(async (idRole) => {
       const query = new Parse.Query(Parse.Role);
       query.equalTo('objectId', idRole);
       const roleToAddToRole = await query.first({ useMasterKey: true });
-      roleToAddToRole !== undefined && role.getRoles().add(roleToAddToRole);
+      roleToAddToRole && role.getRoles().add(roleToAddToRole);
     });
 
   await role.save(null, {
@@ -44,7 +44,7 @@ const updateRole = async (
   const query = new Parse.Query(Parse.Role);
   query.equalTo('objectId', id);
   const role = await query.first({ useMasterKey: true });
-  if (role === undefined) {
+  if (!role) {
     throw new Error('The Role is not found');
   } else {
     let usersRole = await role
@@ -52,7 +52,7 @@ const updateRole = async (
       .query()
       .find();
 
-    users !== undefined &&
+    users &&
       users.map((idUser) => {
         const usersToAddToRole = new Parse.User();
         usersToAddToRole.id = idUser;
@@ -71,12 +71,12 @@ const updateRole = async (
       .getRoles()
       .query()
       .find();
-    roles !== undefined &&
+    roles &&
       roles.map(async (idRole) => {
         const query = new Parse.Query(Parse.Role);
         query.equalTo('objectId', idRole);
         const roleToAddToRole = await query.first({ useMasterKey: true });
-        roleToAddToRole !== undefined && role.getRoles().add(roleToAddToRole);
+        roleToAddToRole && role.getRoles().add(roleToAddToRole);
 
         rolesRole = rolesRole.filter((value) => {
           return value.id !== idRole;
