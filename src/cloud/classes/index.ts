@@ -6,6 +6,4 @@ import Transaction from './Transaction';
 import TransactionDetail from './TransactionDetail';
 import RecyclingCenter from './RecyclingCenter';
 
-export {
-  Account, Address, Post, Container, Transaction, TransactionDetail,RecyclingCenter
-};
+export { Account, Address, Post, Container, Transaction, TransactionDetail, RecyclingCenter };
