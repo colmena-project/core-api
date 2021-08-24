@@ -7,7 +7,9 @@ declare namespace Colmena {
     | 'TRANSFER_REJECT'
     | 'TRANSFER_CANCEL'
     | 'TRANSPORT'
-    | 'TRANSPORT_CANCEL';
+    | 'TRANSPORT_CANCEL'
+    | 'TRANSPORT_ACCEPT'
+    | 'TRANSPORT_REJECT';
 
   type ContainerStatusType =
     | 'RECOVERED'
@@ -119,6 +121,20 @@ declare namespace Colmena {
     walletId: string;
   };
 
+  type AccountUserType = {
+    username: string;
+    firstName: string;
+    middleName?: string;
+    lastName: string;
+    nickname?: string;
+    facebook?: string;
+    facebookProfilePhotoUrl?: string;
+    aboutMe: string;
+    fbAuthData?: Parse.AuthData | undefined;
+    walletId?: string;
+    user: Parse.User;
+  };
+
   type AddressType = {
     city: string;
     account: Parse.Object;
@@ -147,5 +163,10 @@ declare namespace Colmena {
     roles?: string[];
   };
 
-
+  type RecyclingCenterType = {
+    id?: string;
+    name: string;
+    description?: string;
+    latLng?: Parse.GeoPoint;
+  };
 }
