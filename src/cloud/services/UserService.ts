@@ -1,5 +1,5 @@
-import Account from '../classes/Account';
-import { RoleService } from '.';
+// import Account from '../classes/Account';
+import { AccountService, RoleService } from '.';
 import RecyclingCenterService from './RecyclingCenterService';
 
 const findRolesByUser = async (user: Parse.User): Promise<Parse.Object[]> => {
@@ -103,6 +103,7 @@ const createUser = async (params: any, currentUser: Parse.User) => {
       nickname,
       aboutMe,
     } = params;
+
     const values = {
       username: username,
       email: email,
@@ -128,17 +129,14 @@ const createUser = async (params: any, currentUser: Parse.User) => {
       }
     }
 
-    const account: Parse.Object = new Account();
-    const valuesAccount = {
-      user: user,
-      firstName: firstName,
-      middleName: middleName,
-      lastName: lastName,
-      nickname: nickname,
-      aboutMe: aboutMe,
-    };
-    account.save(valuesAccount, {
-      useMasterKey: true,
+    const account: Parse.Object = await AccountService.createAccountWithUser({
+      username,
+      firstName,
+      middleName,
+      lastName,
+      nickname,
+      aboutMe,
+      user,
     });
 
     return user;
@@ -154,7 +152,7 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
 
     //get the User to edit
     const query: Parse.Query = new Parse.Query(Parse.User);
-    const user = <Parse.User>await query.get(id, { useMasterKey: true });
+    const user: Parse.User = <Parse.User>await query.get(id, { useMasterKey: true });
 
     const {
       username,
@@ -212,9 +210,9 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
       nickname: nickname,
       aboutMe: aboutMe,
     };
-    const queryAccount = new Parse.Query('Account');
+    const queryAccount: Parse.Query = new Parse.Query('Account');
     queryAccount.equalTo('user', user);
-    const account = await queryAccount.first();
+    const account: Parse.Object | undefined = await queryAccount.first();
 
     // Update the Account Data or create a new
     if (account) {
@@ -222,9 +220,14 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
         useMasterKey: true,
       });
     } else {
-      const newAccount: Parse.Object = new Account();
-      await newAccount.save(accountValues, {
-        useMasterKey: true,
+      const account: Parse.Object = await AccountService.createAccountWithUser({
+        username,
+        firstName,
+        middleName,
+        lastName,
+        nickname,
+        aboutMe,
+        user,
       });
     }
 
