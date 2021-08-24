@@ -1,0 +1,2 @@
+{"_id":"ZDEARPhukA","name":"ROLE_FACTORY","_wperm":["*"],"_rperm":["*"],"_acl":{"*":{"w":true,"r":true}},"_created_at":{"$date":"2019-09-23T16:57:42.586Z"},"_updated_at":{"$date":"2019-09-30T14:27:19.564Z"}}
+{"_id":"yemqHmURjJ","name":"ROLE_ADMIN","_wperm":["*"],"_rperm":["*"],"_acl":{"*":{"w":true,"r":true}},"_created_at":{"$date":"2019-09-23T16:57:42.586Z"},"_updated_at":{"$date":"2019-09-30T14:27:19.564Z"}}

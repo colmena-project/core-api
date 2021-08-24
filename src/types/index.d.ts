@@ -63,6 +63,7 @@ declare namespace Colmena {
   type UserType = {
     username: String;
     email: number;
+    password?: string;
     emailVerified: number;
   };
 
@@ -145,4 +146,6 @@ declare namespace Colmena {
     users?: string[];
     roles?: string[];
   };
+
+
 }
