@@ -36,27 +36,19 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
   if (fbAuthData && !user._isLinked('facebook')) {
     await user.linkWith('facebook', { authData: fbAuthData }, { useMasterKey: true });
   }
-  const newAccount: Parse.Object = new Account();
-  newAccount.set('firstName', firstName);
-  newAccount.set('middleName', middleName);
-  newAccount.set('lastName', lastName);
-  newAccount.set('nickname', nickname || username);
-  newAccount.set('facebook', facebook);
-  newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
-  newAccount.set('aboutMe', aboutMe);
-  newAccount.set('user', user);
-  newAccount.set('createdBy', user.toPointer());
-  newAccount.set('updatedBy', user.toPointer());
-  newAccount.set('walletId', walletId);
 
-  const acl: Parse.ACL = new Parse.ACL();
-  acl.setPublicReadAccess(true);
-  acl.setPublicWriteAccess(false);
-  acl.setWriteAccess(user, true);
-  acl.setReadAccess(user, true);
-  newAccount.setACL(acl);
-
-  await newAccount.save();
+  const newAccount = await createAccountWithUser({
+    username,
+    firstName,
+    middleName,
+    lastName,
+    nickname,
+    facebook,
+    facebookProfilePhotoUrl,
+    aboutMe,
+    walletId,
+    user,
+  });
 
   if (address) {
     const { street, city, state, country, description, latLng } = address;
@@ -82,6 +74,44 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
     subject: 'New Colmena Account created',
   };
   await MailService.sendNewAccountCreated(mailParams);
+
+  return newAccount;
+};
+
+const createAccountWithUser = async (params: Colmena.AccountUserType): Promise<Parse.Object> => {
+  const {
+    username,
+    firstName,
+    middleName,
+    lastName,
+    nickname,
+    facebook,
+    facebookProfilePhotoUrl,
+    aboutMe,
+    walletId,
+    user,
+  } = params;
+  const newAccount: Parse.Object = new Account();
+  newAccount.set('firstName', firstName);
+  newAccount.set('middleName', middleName);
+  newAccount.set('lastName', lastName);
+  newAccount.set('nickname', nickname || username);
+  newAccount.set('facebook', facebook);
+  newAccount.set('facebookProfilePhotoUrl', facebookProfilePhotoUrl);
+  newAccount.set('aboutMe', aboutMe);
+  newAccount.set('user', user);
+  newAccount.set('createdBy', user.toPointer());
+  newAccount.set('updatedBy', user.toPointer());
+  newAccount.set('walletId', walletId);
+
+  const acl: Parse.ACL = new Parse.ACL();
+  acl.setPublicReadAccess(true);
+  acl.setPublicWriteAccess(false);
+  acl.setWriteAccess(user, true);
+  acl.setReadAccess(user, true);
+  newAccount.setACL(acl);
+
+  await newAccount.save();
 
   return newAccount;
 };
@@ -179,6 +209,7 @@ const editAddress = async (
 export default {
   findAccountByUser,
   createAccount,
+  createAccountWithUser,
   findAccountById,
   addNewAddress,
   editAddress,
