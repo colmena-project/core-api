@@ -9,6 +9,21 @@ const findTransactionById = async (
   return transaction.toJSON();
 };
 
+const findTransactionHistoryContainerById = async (
+  request: Colmena.SecureFunctionRequest,
+): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
+  const { params, user } = request;
+  const { transactionId } = params;
+
+  const transaction = await TransactionService.findTransactionHistoryContainerById(
+    transactionId,
+    user,
+    true,
+  );
+  return transaction.toJSON();
+};
+
 export default {
   findTransactionById,
+  findTransactionHistoryContainerById,
 };

@@ -28,16 +28,16 @@ const findUserById = async (id: string): Promise<Parse.User> => {
 };
 
 const checkUserisAdmin = async (user: Parse.User) => {
-  const roleFactory: Parse.Role | undefined = await RoleService.findByName('ROLE_ADMIN');
-  if (roleFactory) {
-    const users = <Parse.Relation>roleFactory.get('users');
+  const roleAdmin: Parse.Role | undefined = await RoleService.findByName('ROLE_ADMIN');
+  if (roleAdmin) {
+    const users = <Parse.Relation>roleAdmin.get('users');
     try {
       await users.query().get(user.id);
     } catch (error) {
-      throw new Error('User is not allowed to operate in the domain');
+      throw new Error('User is not allowed to operate in the Administrator');
     }
   } else {
-    throw new Error('The Factory Role does not exist');
+    throw new Error('The Admin Role does not exist');
   }
 };
 
@@ -105,10 +105,10 @@ const createUser = async (params: any, currentUser: Parse.User) => {
     } = params;
 
     const values = {
-      username: username,
-      email: email,
-      password: password,
-      emailVerified: emailVerified,
+      username,
+      email,
+      password,
+      emailVerified,
     };
 
     await user.save(values, {
@@ -117,8 +117,14 @@ const createUser = async (params: any, currentUser: Parse.User) => {
 
     factory.forEach(async (element: string) => {
       const recycling: Parse.Object = await RecyclingCenterService.findRecyclingCenterById(element);
-      var relation = user.relation('recyclingCenter');
+      const relation = user.relation('recyclingCenter');
       relation.add(recycling);
+      const role: Parse.Role | undefined = await recycling.get('role');
+      if (role) {
+        await role.fetch();
+        role.getUsers().add(user);
+        role.save(null, { useMasterKey: true });
+      }
     });
 
     if (factory.length > 0) {
@@ -150,7 +156,7 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
   try {
     await checkUserisAdmin(currentUser);
 
-    //get the User to edit
+    // get the User to edit
     const query: Parse.Query = new Parse.Query(Parse.User);
     const user: Parse.User = <Parse.User>await query.get(id, { useMasterKey: true });
 
@@ -168,7 +174,7 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
     } = data;
 
     if (factory) {
-      //if the Use has a new factory selected, so a role is assign
+      // if the Use has a new factory selected, so a role is assign
       const roleFactory = await RoleService.findByName('ROLE_FACTORY');
       if (factory.length > 0) {
         if (roleFactory) {
@@ -180,35 +186,49 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
       const recyclingCentersRelation = await user.relation('recyclingCenter');
       let recyclingCenters = await recyclingCentersRelation.query().find();
 
-      //Add the RecyclingCenter to the user data
+      // Add the RecyclingCenter to the user data
       factory &&
         factory.map(async (idFactory: string) => {
           const query = new Parse.Query('RecyclingCenter');
           query.equalTo('objectId', idFactory);
           const recyclingCenterToAddTo = await query.first({ useMasterKey: true });
 
-          recyclingCenterToAddTo && recyclingCentersRelation.add(recyclingCenterToAddTo);
+          if (recyclingCenterToAddTo) {
+            recyclingCentersRelation.add(recyclingCenterToAddTo);
+            const role: Parse.Role | undefined = await recyclingCenterToAddTo.get('role');
+            if (role) {
+              await role.fetch();
+              role.getUsers().add(user);
+              role.save(null, { useMasterKey: true });
+            }
+          }
 
-          recyclingCenters = recyclingCenters.filter((value: Parse.Object) => {
-            return value.id !== idFactory;
-          });
+          recyclingCenters = recyclingCenters.filter(
+            (value: Parse.Object) => value.id !== idFactory,
+          );
         });
 
-      //If a RecyclingCenter is remove
-      recyclingCenters.map((recyclingCentersRemove: Parse.Object) => {
-        recyclingCentersRelation.remove(recyclingCentersRemove);
+      // If a RecyclingCenter is remove
+      recyclingCenters.map(async (recyclingCentersRemove: Parse.Object) => {
+        await recyclingCentersRelation.remove(recyclingCentersRemove);
+        const role: Parse.Role | undefined = await recyclingCentersRemove.get('role');
+        if (role) {
+          await role.fetch();
+          role.getUsers().remove(user);
+          role.save(null, { useMasterKey: true });
+        }
       });
     }
 
     let userValues: Colmena.UserType;
 
     const accountValues = {
-      user: user,
-      firstName: firstName,
-      middleName: middleName,
-      lastName: lastName,
-      nickname: nickname,
-      aboutMe: aboutMe,
+      user,
+      firstName,
+      middleName,
+      lastName,
+      nickname,
+      aboutMe,
     };
     const queryAccount: Parse.Query = new Parse.Query('Account');
     queryAccount.equalTo('user', user);
@@ -232,14 +252,14 @@ const updateUser = async (params: any, currentUser: Parse.User) => {
     }
 
     userValues = {
-      username: username,
-      email: email,
-      emailVerified: emailVerified,
+      username,
+      email,
+      emailVerified,
     };
 
-    userValues = password !== '' ? { ...userValues, password: password } : { ...userValues };
+    userValues = password !== '' ? { ...userValues, password } : { ...userValues };
 
-    //Update User data
+    // Update User data
     await user.save(userValues, {
       useMasterKey: true,
     });
@@ -263,6 +283,22 @@ const deleteUser = async (userId: any, currentUser: Parse.User) => {
   }
 };
 
+const checkUserHasRecyclingCenter = async (
+  recyclingCenter: Parse.Object,
+  user: Parse.User,
+): Promise<boolean> => {
+  const recyclingCentersUsers: Parse.Object[] = await user
+    .relation('recyclingCenter')
+    .query()
+    .find();
+
+  if (recyclingCentersUsers.indexOf(recyclingCenter) > -1) {
+    return false;
+  }
+
+  return true;
+};
+
 export default {
   findUserById,
   findRolesByUser,
@@ -273,4 +309,5 @@ export default {
   updateUser,
   deleteUser,
   checkUserisAdmin,
+  checkUserHasRecyclingCenter,
 };

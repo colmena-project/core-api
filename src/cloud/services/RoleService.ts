@@ -1,16 +1,25 @@
 import { UserService } from '.';
 
+const normalizeNameRole = (name: string): string => {
+  return name
+    .toUpperCase()
+    .replace(/ /g, '_')
+    .replace(/[^\w-]+/g, '');
+};
+
 const createRole = async (
   params: Colmena.RoleType,
   currentUser: Parse.User,
-): Promise<Parse.Object> => {
+): Promise<Parse.Role> => {
   const { name, users, roles } = params;
+
+  const nameNormalize = normalizeNameRole(name);
 
   await UserService.checkUserisAdmin(currentUser);
   const roleACL = new Parse.ACL();
   roleACL.setPublicReadAccess(true);
   roleACL.setPublicWriteAccess(true);
-  const role: Parse.Role = new Parse.Role(name, roleACL);
+  const role: Parse.Role = new Parse.Role(nameNormalize, roleACL);
 
   users &&
     users.map((idUser) => {
@@ -40,6 +49,8 @@ const updateRole = async (
   const { id, name, users, roles } = params;
 
   await UserService.checkUserisAdmin(currentUser);
+
+  const nameNormalize = normalizeNameRole(name);
 
   const query = new Parse.Query(Parse.Role);
   query.equalTo('objectId', id);
@@ -87,24 +98,70 @@ const updateRole = async (
       role.getRoles().remove(roleRemove);
     });
 
-    await role.save(
-      { name: name },
-      {
-        useMasterKey: true,
-      },
-    );
+    //update relations
+    await role.save(null, {
+      useMasterKey: true,
+    });
+
     return role;
   }
 };
 
+const changaNameRole = async ({
+  role,
+  newName,
+  currentUser,
+}: {
+  role: Parse.Role;
+  newName: string;
+  currentUser: Parse.User;
+}): Promise<Parse.Role> => {
+  const idPersonas = Array();
+  let usersRole = await role
+    .getUsers()
+    .query()
+    .find();
+  usersRole.forEach((userRoel) => {
+    idPersonas.push(userRoel.id);
+  });
+  const idRoles = Array();
+  let rolesRole = await role
+    .getRoles()
+    .query()
+    .find();
+  rolesRole.forEach((roleRole) => {
+    idRoles.push(roleRole.id);
+  });
+
+  const newRole: Parse.Role = await createRole(
+    { name: newName, users: idPersonas, roles: idRoles },
+    currentUser,
+  );
+
+  await deleteRole(role.get('name'));
+
+  return newRole;
+};
+
 const findByName = async (name: string): Promise<Parse.Role | undefined> => {
+  const nameNormalize = normalizeNameRole(name);
   const query = new Parse.Query(Parse.Role);
-  query.equalTo('name', name);
-  return await query.first({ useMasterKey: true });
+  query.equalTo('name', nameNormalize);
+
+  const roleSearch = await query.first({ useMasterKey: true });
+  return roleSearch;
+};
+
+const deleteRole = async (name: string): Promise<void> => {
+  const role = await findByName(name);
+  await role?.destroy({ useMasterKey: true });
 };
 
 export default {
   createRole,
   updateRole,
   findByName,
+  deleteRole,
+  normalizeNameRole,
+  changaNameRole,
 };

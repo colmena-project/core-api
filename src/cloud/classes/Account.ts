@@ -1,5 +1,5 @@
 import Base from './Base';
-import UserService from '../services/UserService';
+import { UserService } from '../services';
 
 class Account extends Base {
   constructor() {

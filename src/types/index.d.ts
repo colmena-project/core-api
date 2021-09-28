@@ -9,7 +9,9 @@ declare namespace Colmena {
     | 'TRANSPORT'
     | 'TRANSPORT_CANCEL'
     | 'TRANSPORT_ACCEPT'
-    | 'TRANSPORT_REJECT';
+    | 'TRANSPORT_REJECT'
+    | 'PAID'
+    | 'REJECT';
 
   type ContainerStatusType =
     | 'RECOVERED'

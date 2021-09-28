@@ -148,6 +148,24 @@ const validateDeleteContainers = (containers: Parse.Object[]): any => {
   }
 };
 
+const validateRecyclingCenter = async (transaction: Parse.Object, user: Parse.User) => {
+  const recyclingCenterTransaction: Parse.Object | undefined = await transaction.get(
+    'recyclingCenter',
+  );
+  if (!recyclingCenterTransaction) {
+    throw new Error('The Recycling Centers is not set in the transaction');
+  }
+
+  const userHasRecyclingCenter: boolean = await UserService.checkUserHasRecyclingCenter(
+    recyclingCenterTransaction,
+    user,
+  );
+
+  if (!userHasRecyclingCenter) {
+    throw new Error(`The Recycling Centers does no match with the user's Recycling Centers`);
+  }
+};
+
 /**
  * Register RECOVER method.
  * Inital point start of colmena recover proccess. It takes an input, wich contains
@@ -513,7 +531,7 @@ const registerTransferCancel = async (
 /**
  * Register Transport. Receive an array of containers ids.
  * Verifies if containers are in RECOVERED or TRANSFERRED status and then check if the user can transport it.
- * Creates one transaction, many details for each container and changes containers status to IN_TRANSIT.
+ * Creates one transaction, many details for each container and changes containers status to IN_TRANSIT with the reciclen center Role.
  * Then notifies to all the user involved except the user that request the endpoint.
  * A tracking code is generated for the transport to the recycling center.
  *
@@ -566,6 +584,7 @@ const registerTransport = async (
       estimatedDistance: distanceMatrix.distance,
       trackingCode,
     });
+    const role: Parse.Role | undefined = await recyclingCenter.get('role');
 
     const details: Parse.Object[] = containers.map((container) => {
       container.set('status', CONTAINER_STATUS.IN_TRANSIT);
@@ -578,6 +597,8 @@ const registerTransport = async (
 
     const retribution = await RetributionService.generateRetribution(transaction, user);
     transaction.set('retribution', retribution.toJSON());
+
+    await TransactionService.addRoleFactoryToTransacction(recyclingCenter, transaction, details);
 
     // get containers owners except user that request the endpoint
     const usersList: Parse.User[] = containers
@@ -646,6 +667,168 @@ const registerTransportCancel = async (
   }
 };
 
+/**
+ * Creates the accept transaction from the TRANSPORT in the Recycling Centers
+ *
+ * Verify if the transaction is type Transport and is asing to a recycling center.
+ * Check if the user and the transaction is the the same recycling center.
+ *
+ * Create a new Transaccion and Transaction details with the same information and change the type.
+ * The type for transaccion is TRANSPORT_ACCEPT and container status is IN_PROCESS.
+ *
+ * Then, the transaction recive is link to the new transaction (making a linkedList) and is mark as expired
+ *
+ * @param {*} transaction
+ * @param {*} user
+ */
+const registerTransportAccept = async (
+  transactionId: string,
+  user: Parse.User,
+): Promise<Parse.Object> => {
+  try {
+    const Transaction: string = Parse.Object.extend('Transaction');
+    const queryRecyclingCenters: Parse.Query = new Parse.Query(Transaction);
+    const transferRequestTransaction: Parse.Object = await queryRecyclingCenters.get(
+      transactionId,
+      {
+        useMasterKey: true,
+      },
+    );
+
+    if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSPORT) {
+      throw new Error('The transactions is not allow to be Accept in the Recycling Center');
+    }
+
+    const recyclingCenter: Parse.Object = transferRequestTransaction.get('recyclingCenter');
+
+    await validateRecyclingCenter(transferRequestTransaction, user);
+
+    const transaction: Parse.Object = await TransactionService.createTransaction({
+      from: transferRequestTransaction.get('from'),
+      to: transferRequestTransaction.get('to'),
+      type: TRANSACTIONS_TYPES.TRANSPORT_ACCEPT,
+      reason: undefined,
+      fromAddress: transferRequestTransaction.get('fromAddress'),
+      toAddress: transferRequestTransaction.get('toAddress'),
+      relatedTo: undefined,
+      recyclingCenter: transferRequestTransaction.get('recyclingCenter'),
+      trackingCode: transferRequestTransaction.get('trackingCode'),
+      kms: transferRequestTransaction.get('kms'),
+      estimatedDuration: transferRequestTransaction.get('estimatedDuration'),
+      estimatedDistance: transferRequestTransaction.get('estimatedDistance'),
+    });
+
+    transaction.set('relatedTo', transferRequestTransaction);
+    transferRequestTransaction.set('expiredAt', new Date());
+
+    const containers: Parse.Object[] = await ContainerService.findContainersByTransaction(
+      transferRequestTransaction,
+    );
+
+    const details: Parse.Object[] = containers.map((container) => {
+      container.set('status', CONTAINER_STATUS.IN_PROCESS);
+      return TransactionService.createTransactionDetail(transaction, container);
+    });
+
+    await Parse.Object.saveAll([transaction, transferRequestTransaction, ...details], {
+      sessionToken: user.getSessionToken(),
+    });
+
+    await TransactionService.addRoleFactoryToTransacction(recyclingCenter, transaction, details);
+
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+
+    return transaction;
+  } catch (error) {
+    throw new Error(`Transaction could not be Accept. Detail: ${error.message}`);
+  }
+};
+
+/**
+ * Creates the Reject transaction from the TRANSPORT in the Recycling Centers
+ *
+ * Verify if the transaction is type Transport and is asing to a recycling center.
+ * Check if the user and the transaction is the the same recycling center.
+ *
+ * Create a new Transaccion and Transaction details with the same information and change the type.
+ * The type for transaccion is TRANSPORT_REJECT and container status is TRANSFER_REJECTED.
+ *
+ * Then, the transaction recive is link to the new transaction (making a linkedList) and is mark as expired
+ *
+ * TODO is missing the process to recover the reject transaction by the User.
+ *
+ * @param {*} transaction
+ * @param {*} user
+ */
+const registerTransportReject = async (
+  transactionId: string,
+  reason: string,
+  user: Parse.User,
+): Promise<Parse.Object> => {
+  try {
+    const Transaction: string = Parse.Object.extend('Transaction');
+    const queryRecyclingCenters: Parse.Query = new Parse.Query(Transaction);
+    const transferRequestTransaction: Parse.Object = await queryRecyclingCenters.get(
+      transactionId,
+      {
+        useMasterKey: true,
+      },
+    );
+
+    if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSPORT) {
+      throw new Error('The transactions is not allow to be Accept in the Recycling Center');
+    }
+
+    const recyclingCenter: Parse.Object = transferRequestTransaction.get('recyclingCenter');
+
+    await validateRecyclingCenter(transferRequestTransaction, user);
+
+    const transaction: Parse.Object = await TransactionService.createTransaction({
+      from: transferRequestTransaction.get('from'),
+      to: transferRequestTransaction.get('to'),
+      type: TRANSACTIONS_TYPES.TRANSPORT_REJECT,
+      reason,
+      fromAddress: transferRequestTransaction.get('fromAddress'),
+      toAddress: transferRequestTransaction.get('toAddress'),
+      relatedTo: undefined,
+      recyclingCenter: transferRequestTransaction.get('recyclingCenter'),
+      trackingCode: transferRequestTransaction.get('trackingCode'),
+      kms: transferRequestTransaction.get('kms'),
+      estimatedDuration: transferRequestTransaction.get('estimatedDuration'),
+      estimatedDistance: transferRequestTransaction.get('estimatedDistance'),
+    });
+    transferRequestTransaction.set('relatedTo', transaction);
+    transferRequestTransaction.set('expiredAt', new Date());
+
+    const containers: Parse.Object[] = await ContainerService.findContainersByTransaction(
+      transferRequestTransaction,
+    );
+
+    const details: Parse.Object[] = containers.map((container) => {
+      container.set('status', CONTAINER_STATUS.TRANSFER_REJECTED);
+      return TransactionService.createTransactionDetail(transaction, container);
+    });
+
+    await Parse.Object.saveAll([transaction, transferRequestTransaction, ...details], {
+      sessionToken: user.getSessionToken(),
+    });
+
+    // TODO is missing the process to recover the reject transaction by the User.
+
+    transaction.set(
+      'details',
+      details.map((d) => d.toJSON()),
+    );
+
+    return transaction;
+  } catch (error) {
+    throw new Error(`Transaction could not be Accept. Detail: ${error.message}`);
+  }
+};
+
 export default {
   registerRecover,
   registerTransferRequest,
@@ -654,5 +837,7 @@ export default {
   registerTransferCancel,
   registerTransport,
   registerTransportCancel,
+  registerTransportAccept,
+  registerTransportReject,
   deleteContainers,
 };
