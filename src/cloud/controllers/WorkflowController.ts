@@ -99,6 +99,15 @@ const registerTransportReject = async (
   return transaction.toJSON();
 };
 
+const registerPayment = async (
+  request: Colmena.SecureFunctionRequest,
+): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
+  const { params, user } = request;
+  const { transactionId, containers } = params;
+  const transaction = await WorkflowService.registerPayment(transactionId, containers, user);
+  return transaction.toJSON();
+};
+
 const deleteContainers = async (
   request: Colmena.SecureFunctionRequest,
 ): Promise<Parse.Object.ToJSON<Parse.Attributes>> => {
@@ -118,5 +127,6 @@ export default {
   registerTransportCancel,
   registerTransportAccept,
   registerTransportReject,
+  registerPayment,
   deleteContainers,
 };

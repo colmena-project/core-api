@@ -30,17 +30,37 @@ const findTransactionWithDetailsById = async (
   detailQuery.include('container.type');
   const transactionDetail: Parse.Object[] = await detailQuery.find(authOptions);
 
-  const queryRetribution = new Parse.Query('Retribution');
-  queryRetribution.equalTo('transaction', transaction.toPointer());
-  const retribution: Parse.Object | undefined = await queryRetribution.first(authOptions);
-
   transaction.set(
     'details',
     transactionDetail.map((d) => d.toJSON()),
   );
 
+  const queryRetribution = new Parse.Query('Retribution');
+  queryRetribution.equalTo('transaction', transaction.toPointer());
+  const retribution: Parse.Object | undefined = await queryRetribution.first(authOptions);
+
   if (retribution) {
     transaction.set('retribution', retribution.toJSON());
+  }
+
+  const queryConfirmRetribution = new Parse.Query('Retribution');
+  queryConfirmRetribution.equalTo('confirmationTransaction', transaction.toPointer());
+  const retributionConfirmation: Parse.Object[] = await queryConfirmRetribution.find(authOptions);
+  if (retributionConfirmation.length > 0) {
+    transaction.set(
+      'retributionConfirm',
+      retributionConfirmation.map((element) => element.toJSON()),
+    );
+  }
+
+  const queryPayment = new Parse.Query('PaymentTransaction');
+  queryPayment.equalTo('transaction', transaction.toPointer());
+  const paymentTransaction: Parse.Object[] = await queryPayment.find(authOptions);
+  if (paymentTransaction.length > 0) {
+    transaction.set(
+      'paymentTransaction',
+      paymentTransaction.map((element) => element.toJSON()),
+    );
   }
 
   return transaction;
@@ -287,12 +307,11 @@ const generateHistoryTransactionFromContainer = async (
   const historyWithTransaction = await Promise.all(
     historyTransactionDetail.map((transactionDetail) => {
       const transactionId = transactionDetail.transaction.objectId;
-      const trans = findTransactionWithDetailsById(transactionId, user, master).then(
-        (transaction) =>
-          // eslint-disable-next-line no-param-reassign
-          // transactionDetail.transaction = transaction.toJSON();
-          transaction.toJSON(),
-      );
+      const trans = findTransactionWithDetailsById(
+        transactionId,
+        user,
+        master,
+      ).then((transaction) => transaction.toJSON());
       return trans;
     }),
   );
@@ -378,4 +397,5 @@ export default {
   destroyTransaction,
   addRoleFactoryToTransacction,
   findTransactionHistoryContainerById,
+  generateHistoryTransactionFromContainer,
 };
