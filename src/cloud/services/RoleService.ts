@@ -44,7 +44,7 @@ const updateRole = async (
 
   await UserService.checkUserisAdmin(currentUser);
 
-  const nameNormalize = normalizeNameRole(name);
+  const nameNormalize = normalizeRoleName(name);
 
   const query = new Parse.Query(Parse.Role);
   query.equalTo('objectId', id);
@@ -106,7 +106,7 @@ const changaNameRole = async ({
   newName: string;
   currentUser: Parse.User;
 }): Promise<Parse.Role> => {
-  const idPersonas = [];
+  const idPersonas: string[] = [];
   const usersRole = await role
     .getUsers()
     .query()
@@ -114,7 +114,7 @@ const changaNameRole = async ({
   usersRole.forEach((userRoel) => {
     idPersonas.push(userRoel.id);
   });
-  const idRoles = [];
+  const idRoles: string[] = [];
   const rolesRole = await role
     .getRoles()
     .query()
@@ -134,7 +134,7 @@ const changaNameRole = async ({
 };
 
 const findByName = async (name: string): Promise<Parse.Role | undefined> => {
-  const nameNormalize = normalizeNameRole(name);
+  const nameNormalize = normalizeRoleName(name);
   const query = new Parse.Query(Parse.Role);
   query.equalTo('name', nameNormalize);
 

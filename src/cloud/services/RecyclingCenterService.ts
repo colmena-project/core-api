@@ -1,5 +1,6 @@
 import { RecyclingCenter } from '../classes';
 import { RoleService } from '.';
+import { normalizeRoleName } from '../utils/role';
 
 const findRecyclingCenterById = async (id: string): Promise<Parse.Object> => {
   try {
@@ -16,7 +17,7 @@ const createRecyclingCenter = async (
   currentUser: Parse.User,
 ): Promise<Parse.Object> => {
   const { name } = params;
-  const nameNormalize = RoleService.normalizeNameRole(`ROL_RC_${name}`);
+  const nameNormalize = normalizeRoleName(`ROL_RC_${name}`);
   let role: Parse.Object | undefined = await RoleService.findByName(nameNormalize);
   if (!role) {
     role = await RoleService.createRole({ name: nameNormalize }, currentUser);
@@ -41,7 +42,7 @@ const editRecyclingCenter = async (
   if (!recyclingCenter) {
     throw new Error(`RecyclingCenter ${id} not found`);
   }
-  const nameNormalize = RoleService.normalizeNameRole(`ROL_RC_${name}`);
+  const nameNormalize = normalizeRoleName(`ROL_RC_${name}`);
   let role: Parse.Role | undefined = await recyclingCenter.get('role');
 
   if (role) {
@@ -62,7 +63,7 @@ const editRecyclingCenter = async (
 
 const deleteRecyclingCenter = async ({ id }: { id: string }): Promise<boolean> => {
   const recyclingCenter: Parse.Object = await findRecyclingCenterById(id);
-  const nameNormalize = RoleService.normalizeNameRole(`ROL_RC_${recyclingCenter.get('id')}`);
+  const nameNormalize = normalizeRoleName(`ROL_RC_${recyclingCenter.get('id')}`);
   await RoleService.deleteRole(nameNormalize);
   await recyclingCenter?.destroy();
   return true;
