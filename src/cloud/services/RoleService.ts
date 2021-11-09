@@ -1,11 +1,5 @@
+import { normalizeRoleName } from '../utils/role';
 import { UserService } from '.';
-
-const normalizeNameRole = (name: string): string => {
-  return name
-    .toUpperCase()
-    .replace(/ /g, '_')
-    .replace(/[^\w-]+/g, '');
-};
 
 const createRole = async (
   params: Colmena.RoleType,
@@ -13,7 +7,7 @@ const createRole = async (
 ): Promise<Parse.Role> => {
   const { name, users, roles } = params;
 
-  const nameNormalize = normalizeNameRole(name);
+  const nameNormalize = normalizeRoleName(name);
 
   await UserService.checkUserisAdmin(currentUser);
   const roleACL = new Parse.ACL();
@@ -69,9 +63,7 @@ const updateRole = async (
         usersToAddToRole.id = idUser;
         role.getUsers().add(usersToAddToRole);
 
-        usersRole = usersRole.filter((value) => {
-          return value.id !== idUser;
-        });
+        usersRole = usersRole.filter((value) => value.id !== idUser);
       });
 
     usersRole.map((user) => {
@@ -89,16 +81,14 @@ const updateRole = async (
         const roleToAddToRole = await query.first({ useMasterKey: true });
         roleToAddToRole && role.getRoles().add(roleToAddToRole);
 
-        rolesRole = rolesRole.filter((value) => {
-          return value.id !== idRole;
-        });
+        rolesRole = rolesRole.filter((value) => value.id !== idRole);
       });
 
     rolesRole.map((roleRemove) => {
       role.getRoles().remove(roleRemove);
     });
 
-    //update relations
+    // update relations
     await role.save(null, {
       useMasterKey: true,
     });
@@ -116,16 +106,16 @@ const changaNameRole = async ({
   newName: string;
   currentUser: Parse.User;
 }): Promise<Parse.Role> => {
-  const idPersonas = Array();
-  let usersRole = await role
+  const idPersonas = [];
+  const usersRole = await role
     .getUsers()
     .query()
     .find();
   usersRole.forEach((userRoel) => {
     idPersonas.push(userRoel.id);
   });
-  const idRoles = Array();
-  let rolesRole = await role
+  const idRoles = [];
+  const rolesRole = await role
     .getRoles()
     .query()
     .find();
@@ -162,6 +152,5 @@ export default {
   updateRole,
   findByName,
   deleteRole,
-  normalizeNameRole,
   changaNameRole,
 };

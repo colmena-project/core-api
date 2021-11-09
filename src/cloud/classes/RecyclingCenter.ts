@@ -1,4 +1,3 @@
-// import { RoleService } from '../services';
 import Base from './Base';
 
 class RecyclingCenter extends Base {

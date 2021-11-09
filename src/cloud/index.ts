@@ -20,7 +20,7 @@ Parse.Cloud.beforeLogin(async (request: Parse.Cloud.TriggerRequest) => {
     const role = <Parse.Object>domain.get('role');
     if (!role) throw new Error('The domain without Role');
     const users = <Parse.Relation>role.get('users');
-    if (!users) throw new Error('The Role wuithout Users');
+    if (!users) throw new Error('The Role without Users');
 
     try {
       await users.query().get(user.id);

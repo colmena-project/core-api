@@ -5,7 +5,7 @@ const findRecyclingCenterById = async (
 ): Promise<Parse.Object> => {
   const { params, user } = request;
   const { objectId } = params;
-  return await RecyclingCenterService.findRecyclingCenterById(objectId);
+  return RecyclingCenterService.findRecyclingCenterById(objectId);
 };
 
 const createRecyclingCenter = async (
