@@ -29,6 +29,18 @@ const definitions: Colmena.RouteDefinitions = {
     action: WorkflowController.registerTransportCancel,
     secure: true,
   },
+  registerTransportAccept: {
+    action: WorkflowController.registerTransportAccept,
+    secure: true,
+  },
+  registerTransportReject: {
+    action: WorkflowController.registerTransportReject,
+    secure: true,
+  },
+  registerPayment: {
+    action: WorkflowController.registerPayment,
+    secure: true,
+  },
   deleteContainers: {
     action: WorkflowController.deleteContainers,
     secure: true,

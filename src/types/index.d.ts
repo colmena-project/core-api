@@ -9,7 +9,10 @@ declare namespace Colmena {
     | 'TRANSPORT'
     | 'TRANSPORT_CANCEL'
     | 'TRANSPORT_ACCEPT'
-    | 'TRANSPORT_REJECT';
+    | 'TRANSPORT_REJECT'
+    | 'PROCESS'
+    | 'COMPLETE'
+    | 'REJECT';
 
   type ContainerStatusType =
     | 'RECOVERED'
@@ -27,6 +30,10 @@ declare namespace Colmena {
     | 'TRANSFER_REJECT'
     | 'TRANSFER_CANCEL'
     | 'TRANSPORT';
+
+  type PaymentTransactionStatusType = 'DRAFT' | 'PAID' | 'REJECT';
+
+  type RetributionType = 'MATERIAL' | 'TRANSPORT';
 
   interface SecureFunctionRequest extends Parse.Cloud.FunctionRequest {
     user: Parse.User;
@@ -168,5 +175,13 @@ declare namespace Colmena {
     name: string;
     description?: string;
     latLng?: Parse.GeoPoint;
+  };
+
+  type PaymentTransactionType = {
+    type: RetributionType;
+    status: PaymentTransactionStatusType;
+    transaction: Parse.Object;
+    container: Parse.Object;
+    amount: number;
   };
 }

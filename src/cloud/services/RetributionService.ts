@@ -130,10 +130,29 @@ const generateRetribution = async (
   }
 };
 
+const updateRetribution = async (
+  retributionId: string,
+  confirmationTransaction: Parse.Object,
+  confirm: number,
+) => {
+  const query = new Parse.Query('Retribution');
+  const retribution: Parse.Object | undefined = await query.get(retributionId, {
+    useMasterKey: true,
+  });
+  if (retribution) {
+    retribution.set('confirmationTransaction', confirmationTransaction);
+    retribution.set('confirmed', confirm);
+    retribution.set('accredited', true);
+    await retribution.save(null, { useMasterKey: true });
+  }
+  return retribution;
+};
+
 export default {
   getMaterialRetribution,
   getTransportRetribution,
   getAllRetributionParameters,
   getRetributionParametersBy,
   generateRetribution,
+  updateRetribution,
 };

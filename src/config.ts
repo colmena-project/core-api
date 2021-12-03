@@ -30,7 +30,7 @@ export default {
   silent: true,
   serverURL, // Don't forget to change to https if needed
   liveQuery: {
-    classNames: ['RecyclingPoint'],
+    classNames: ['RecyclingPoint', 'Transaction'],
     redisURL: redisDSN,
   },
   push: {

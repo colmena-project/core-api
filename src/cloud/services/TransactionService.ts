@@ -35,6 +35,34 @@ const findTransactionWithDetailsById = async (
     transactionDetail.map((d) => d.toJSON()),
   );
 
+  const queryRetribution = new Parse.Query('Retribution');
+  queryRetribution.equalTo('transaction', transaction.toPointer());
+  const retribution: Parse.Object | undefined = await queryRetribution.first(authOptions);
+
+  if (retribution) {
+    transaction.set('retribution', retribution.toJSON());
+  }
+
+  const queryConfirmRetribution = new Parse.Query('Retribution');
+  queryConfirmRetribution.equalTo('confirmationTransaction', transaction.toPointer());
+  const retributionConfirmation: Parse.Object[] = await queryConfirmRetribution.find(authOptions);
+  if (retributionConfirmation.length > 0) {
+    transaction.set(
+      'retributionConfirm',
+      retributionConfirmation.map((element) => element.toJSON()),
+    );
+  }
+
+  const queryPayment = new Parse.Query('PaymentTransaction');
+  queryPayment.equalTo('transaction', transaction.toPointer());
+  const paymentTransaction: Parse.Object[] = await queryPayment.find(authOptions);
+  if (paymentTransaction.length > 0) {
+    transaction.set(
+      'paymentTransaction',
+      paymentTransaction.map((element) => element.toJSON()),
+    );
+  }
+
   return transaction;
 };
 
@@ -66,7 +94,7 @@ const createTransaction = async (attributes: Colmena.TransactionType): Promise<P
   transaction.set('kms', kms);
   transaction.set('estimatedDuration', estimatedDuration);
   transaction.set('estimatedDistance', estimatedDistance);
-  transaction.set('trackingCode', trackingCode);
+  transaction.set('trackingCode', trackingCode?.toString());
   return transaction;
 };
 
@@ -179,11 +207,182 @@ const findTransferAcceptTransactionOfContainer = async (
 
 const findTransactionDetails = async (transaction: Parse.Object): Promise<Parse.Object[]> => {
   const authOptions = getQueryAuthOptions(undefined, true);
-  const query = new Parse.Query('TransactionDetail');
+  const query: Parse.Query = new Parse.Query('TransactionDetail');
   query.equalTo('transaction', transaction);
   query.include('container.type');
-  const details = query.find(authOptions);
+  const details: Promise<Parse.Object[]> = query.find(authOptions);
   return details;
+};
+
+/**
+ *
+ * Add the the Recycling Center's Role to: transaction, transactionDetails, container y retribution
+ *
+ * @param recyclingCenter : Parse.Object
+ * @param transaction : Parse.Object
+ * @param transactionDetails : Parse.Object[]
+ */
+const addRoleFactoryToTransacction = async (
+  recyclingCenter: Parse.Object,
+  transaction: Parse.Object,
+  transactionDetails: Parse.Object[],
+) => {
+  const role: Parse.Role | undefined = await recyclingCenter.get('role');
+
+  if (role) {
+    let acl: Parse.ACL | undefined = transaction.getACL();
+    if (!acl) {
+      acl = new Parse.ACL();
+    }
+    await role.fetch();
+    acl.setRoleReadAccess(role, true);
+    acl.setRoleWriteAccess(role, true);
+    transaction.setACL(acl);
+    transaction.save(null, { useMasterKey: true });
+
+    transactionDetails.forEach(async (detail) => {
+      let aclDetail: Parse.ACL | undefined = detail.getACL();
+      if (!aclDetail) {
+        aclDetail = new Parse.ACL();
+      }
+      if (role) {
+        aclDetail.setRoleReadAccess(role, true);
+        aclDetail.setRoleWriteAccess(role, true);
+        detail.setACL(aclDetail);
+        detail.save(null, { useMasterKey: true });
+
+        const container: Parse.Object = detail.get('container');
+
+        let aclContainer: Parse.ACL | undefined = detail.getACL();
+        if (!aclContainer) {
+          aclContainer = new Parse.ACL();
+        }
+        aclContainer.setRoleReadAccess(role, true);
+        aclContainer.setRoleWriteAccess(role, true);
+        container.setACL(aclContainer);
+        container.save(null, { useMasterKey: true });
+      }
+    });
+
+    const queryRetribution: Parse.Query = new Parse.Query('Retribution');
+    queryRetribution.equalTo('transaction', transaction);
+    const retributions: Parse.Object[] = await queryRetribution.find({
+      useMasterKey: true,
+    });
+
+    retributions.forEach((retribution) => {
+      let aclRetribution: Parse.ACL | undefined = retribution.getACL();
+      if (!aclRetribution) {
+        aclRetribution = new Parse.ACL();
+      }
+      aclRetribution.setRoleReadAccess(role, true);
+      aclRetribution.setRoleWriteAccess(role, true);
+      retribution.setACL(aclRetribution);
+      retribution.save(null, { useMasterKey: true });
+    });
+  }
+};
+
+/**
+ * Search for the history transaction where the container participated.
+ * Foreach transaction is add transacion detail and the retribution
+ *
+ * @param containerId: any[]
+ * @param user: Parse.User
+ * @param master: boolean
+ */
+const generateHistoryTransactionFromContainer = async (
+  containerId: any[],
+  user: Parse.User,
+  master: boolean = false,
+) => {
+  const detailContQuery = new Parse.Query('TransactionDetail');
+  detailContQuery.containedIn('container', containerId);
+  detailContQuery.ascending('createdAt');
+
+  const transactionContainerDetail = await detailContQuery.find({ useMasterKey: true });
+
+  const historyTransactionDetail = transactionContainerDetail.map((d) => d.toJSON());
+
+  const historyWithTransaction = await Promise.all(
+    historyTransactionDetail.map((transactionDetail) => {
+      const transactionId = transactionDetail.transaction.objectId;
+      const trans = findTransactionWithDetailsById(
+        transactionId,
+        user,
+        master,
+      ).then((transaction) => transaction.toJSON());
+      return trans;
+    }),
+  );
+  return historyWithTransaction;
+};
+
+/**
+ * Find by Transaction father all the transaction history group by container
+ * Fist find the transaction father, then search all the deailts of the transaction.
+ * After for each trransaction detail looks for its container.
+ * Then search for the history where the container participated.
+ *
+ * Thre return is a json response with all the data
+ *
+ * @param id : string
+ * @param user : Parse.User
+ * @param master : booelan
+ */
+const findTransactionHistoryContainerById = async (
+  id: string,
+  user: Parse.User,
+  master: boolean = false,
+): Promise<Parse.Object> => {
+  const authOptions: Parse.ScopeOptions = getQueryAuthOptions(user, master);
+
+  // Find the Transaction
+  const transaction: Parse.Object = await findRawTransaction(id, user, master);
+
+  // Search all the transaction details
+  const detailQuery: Parse.Query = new Parse.Query('TransactionDetail');
+  detailQuery.equalTo('transaction', transaction.toPointer());
+  detailQuery.include('container.type');
+  const transactionDetail: Parse.Object[] = await detailQuery.find(authOptions);
+
+  // const container = [];
+
+  // For each Transaction detail, then get the container, and find the history of transaction
+  const container = await Promise.all(
+    transactionDetail.map((detail) => {
+      const containerId = [detail.get('container').id];
+
+      // Find all the history from a specific container
+      const historyWithTransaction = generateHistoryTransactionFromContainer(
+        containerId,
+        user,
+        master,
+      ).then((hTransaction) => ({
+        containerId: detail.get('container').id,
+        containerName: detail.get('container').get('code'),
+        history: hTransaction,
+      }));
+      return historyWithTransaction;
+      // return the the container id, container coide and the history
+    }),
+  );
+  transaction.set('container', container);
+
+  const queryRetribution = new Parse.Query('Retribution');
+  queryRetribution.equalTo('transaction', transaction.toPointer());
+  const retribution: Parse.Object | undefined = await queryRetribution.first(authOptions);
+
+  transaction.set(
+    'details',
+    transactionDetail.map((d) => d.toJSON()),
+  );
+
+  if (retribution) {
+    transaction.set('retribution', retribution.toJSON());
+  }
+
+  return transaction;
 };
 
 export default {
@@ -196,4 +395,7 @@ export default {
   createTransaction,
   createTransactionDetail,
   destroyTransaction,
+  addRoleFactoryToTransacction,
+  findTransactionHistoryContainerById,
+  generateHistoryTransactionFromContainer,
 };

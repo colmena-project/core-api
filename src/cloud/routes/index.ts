@@ -6,6 +6,7 @@ import transaction from './transaction';
 import workflow from './workflow';
 import role from './role';
 import user from './user';
+import recyclingCenter from './recyclingCenter';
 
 export {
   defaultRoutes,
@@ -16,4 +17,5 @@ export {
   workflow,
   role,
   user,
+  recyclingCenter,
 };
