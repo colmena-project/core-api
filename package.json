@@ -5,7 +5,7 @@
   "main": "server.ts",
   "engines": {
     "node": "14.x",
-    "npm": "7.x"
+    "npm": "6.x"
   },
   "scripts": {
     "test": "jest",
