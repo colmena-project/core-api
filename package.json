@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.ts",
+  "engines": {
+    "node": "14.x",
+    "npm": "7.x"
+  },
   "scripts": {
     "test": "jest",
     "dev": "nodemon --ignore '**/logs/.*' --watch 'src/**/*' -e ts,js,json --exec 'ts-node --files src/server.ts'",
