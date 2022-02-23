@@ -12,6 +12,25 @@ services:
       default:
         aliases:
           - redis-server
+  mongo:
+    image: mongo:4.2
+    restart: always
+    volumes:
+      - ${MONGO_VOLUMEN}:/data/db:cached
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    logging:
+        driver: "json-file"
+        options:
+          max-size: "200k"
+          max-file: "10"
+    networks:
+      default:
+        aliases:
+          - mongo-server
   core-api:
     restart: always
     logging:
@@ -49,3 +68,6 @@ services:
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
       FCM_SERVER_KEY: ${FCM_SERVER_KEY}
+      SECRET_KEY_TOKEN: ${SECRET_KEY_TOKEN}
+      SECRET_INITIAL_VECTOR: ${SECRET_INITIAL_VECTOR}
+      CIRCULAR_API_KEY: ${CIRCULAR_API_KEY}

@@ -21,6 +21,8 @@ import {
   TRANSACTIONS_TYPES,
 } from '../constants';
 import PaymentTransactionService from './PaymentTransactionService';
+import { decrypt } from '../utils/cryptography';
+import { getBalance, transferPayment } from './WalletServices';
 
 const validateRegisterRecover = (containers: Colmena.ContainerInputType[], addressId: string) => {
   if (!containers) throw new Error('containers is required');
@@ -830,25 +832,127 @@ const registerTransportReject = async (
 };
 
 /**
+ * Check if the recicling center has the balance to pay the transaction
+ * @param containersPayment
+ * @param recyclingCenter
+ * @param user
+ */
+const checkBalanceTransaction = async ({
+  containersPayment,
+  recyclingCenter,
+  user,
+}: {
+  containersPayment: { container: string; total: number; payment: number }[];
+  recyclingCenter: Parse.Object;
+  user: Parse.User;
+}): Promise<void> => {
+  const totalPayment = containersPayment
+    .map((item) => item.payment)
+    .reduce((partialSum, a) => partialSum + a, 0);
+
+  // Find the containers by the code
+  const retributionUpdate = await Promise.all(
+    containersPayment.map((element) =>
+      ContainerService.findContainerByCode({
+        code: element.container,
+      }),
+    ),
+  );
+
+  // find all the transaction where the containers are used
+  const historyWithTransaction = await Promise.all(
+    retributionUpdate.map(
+      (element) =>
+        element &&
+        TransactionService.generateHistoryTransactionFromContainer([element.id], user, true).then(
+          (hTransaction) => ({
+            containerId: element.id,
+            containerName: element.get('code'),
+            history: hTransaction,
+          }),
+        ),
+    ),
+  );
+
+  // find tranports transaction from the history
+  const transactionTransport = historyWithTransaction.map(
+    (transaction) =>
+      transaction &&
+      transaction.history.filter((element) => element.type === TRANSACTIONS_TYPES.TRANSPORT),
+  );
+
+  let ammountTransport = 0;
+  transactionTransport.forEach((transaction) => {
+    if (transaction) {
+      transaction.forEach((historyTransaction) => {
+        ammountTransport += historyTransaction.retribution.estimated;
+      });
+    }
+  });
+
+  // Check the balance of the recycling center
+  const { balance } = await getBalance(recyclingCenter.get('walletId'));
+  if (balance <= totalPayment + ammountTransport) {
+    throw new Error(`The Recycling Center has not enough money, the balance is ${balance} jyc`);
+  }
+};
+
+const paymentCrypto = async ({
+  retributionId,
+  recyclingCenter,
+  motive,
+}: {
+  retributionId: string;
+  recyclingCenter: Parse.Object;
+  motive: string;
+}): Promise<void> => {
+  const query = new Parse.Query('Retribution');
+  const retribution: Parse.Object | undefined = await query.get(retributionId, {
+    useMasterKey: true,
+  });
+  if (retribution) {
+    const amout = retribution.get('confirmed');
+    const userClient = retribution.get('user');
+    const accountClient = await AccountService.findAccountByUser(userClient);
+
+    const walletId = recyclingCenter.get('walletId');
+    const walletToken = recyclingCenter.get('walletToken');
+    const walleKey = decrypt(walletToken);
+    await transferPayment({
+      accountFrom: walletId,
+      accountTo: accountClient.get('walletId'),
+      amount: amout,
+      motive,
+      privkey: walleKey,
+    });
+  }
+};
+
+/**
  * Generate the payment for a container.
  * First is search the container and generate the payment transaction.
  * Then search the history of the container, with his history search the recovery and transport transaction,
- * Afer find this, is update the retribution, with the amount of payment with con confirm transaction
+ * Afer find this, is update the retribution, with the amount of payment with con confirm transaction,
+ * generate the payment and the status of the container is CONFIRMED.
  *
  * @param transactionConfirm
  * @param container
  * @param user
+ * @param recyclingCenter
  */
-const registerContainerPayment = async (
-  transactionConfirm: Parse.Object,
-  container: { container: string; total: number; payment: number },
-  user: Parse.User,
-): Promise<Parse.Object | undefined> => {
+const registerContainerPayment = async ({
+  transactionConfirm,
+  container,
+  user,
+  recyclingCenter,
+}: {
+  transactionConfirm: Parse.Object;
+  container: { container: string; total: number; payment: number };
+  user: Parse.User;
+  recyclingCenter: Parse.Object;
+}): Promise<Parse.Object | undefined> => {
   // Find the container by the code
-  const Container: string = Parse.Object.extend('Container');
-  const detailQuery: Parse.Query = new Parse.Query(Container);
-  detailQuery.equalTo('code', container.container);
-  const containerObject: Parse.Object | undefined = await detailQuery.first({ useMasterKey: true });
+  const containerObject = await ContainerService.findContainerByCode({ code: container.container });
 
   if (!containerObject) {
     return undefined;
@@ -881,6 +985,17 @@ const registerContainerPayment = async (
     ),
   );
 
+  // Sent Crypto to wallets for recovery
+  await Promise.all(
+    transactionRecovery.map((contRecovey) =>
+      paymentCrypto({
+        retributionId: contRecovey.retribution.objectId,
+        recyclingCenter,
+        motive: RETRIBUTION_TYPES.MATERIAL,
+      }),
+    ),
+  );
+
   // Register Payment Recovery
   const paymentTransaction = await PaymentTransactionService.createPaymentTransaction({
     type: RETRIBUTION_TYPES.MATERIAL,
@@ -909,6 +1024,18 @@ const registerContainerPayment = async (
       ),
     ),
   );
+
+  // Sent Crypto to wallets for transportation
+  await Promise.all(
+    transactionTransport.map((contTransport) =>
+      paymentCrypto({
+        retributionId: contTransport.retribution.objectId,
+        recyclingCenter,
+        motive: RETRIBUTION_TYPES.TRANSPORT,
+      }),
+    ),
+  );
+
   let paymentTransport = 0;
   retributionUpdate.forEach((ret) => {
     paymentTransport += ret.get('confirmed');
@@ -959,6 +1086,11 @@ const registerPayment = async (
     }
     await validateRecyclingCenter(transferRequestTransaction, user);
 
+    const recyclingCenter = transferRequestTransaction.get('recyclingCenter');
+
+    // Fill the object
+    await recyclingCenter.fetch();
+
     // register a new transaction
     const reason = 'se Registra el Pago';
     const transaction: Parse.Object = await TransactionService.createTransaction({
@@ -969,7 +1101,7 @@ const registerPayment = async (
       fromAddress: transferRequestTransaction.get('fromAddress'),
       toAddress: transferRequestTransaction.get('toAddress'),
       relatedTo: undefined,
-      recyclingCenter: transferRequestTransaction.get('recyclingCenter'),
+      recyclingCenter,
       trackingCode: transferRequestTransaction.get('trackingCode'),
       kms: transferRequestTransaction.get('kms'),
       estimatedDuration: transferRequestTransaction.get('estimatedDuration'),
@@ -989,6 +1121,13 @@ const registerPayment = async (
       return TransactionService.createTransactionDetail(transaction, container);
     });
 
+    // Check if the factory has balance to pay
+    await checkBalanceTransaction({
+      containersPayment,
+      recyclingCenter,
+      user,
+    });
+
     await Parse.Object.saveAll(
       [transaction, transferRequestTransaction, ...details, ...containers],
       {
@@ -996,12 +1135,17 @@ const registerPayment = async (
       },
     );
 
-    // Register Payment
+    // Register Payment on the container
     await Promise.all(
-      containersPayment.map((container) => registerContainerPayment(transaction, container, user)),
+      containersPayment.map((container) =>
+        registerContainerPayment({
+          transactionConfirm: transaction,
+          container,
+          user,
+          recyclingCenter,
+        }),
+      ),
     );
-
-    // Sent Crypto to walletsyo
 
     transaction.set(
       'details',

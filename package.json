@@ -27,6 +27,9 @@
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^2.3.1",
     "@sendgrid/mail": "^6.5.3",
+    "axios": "0.19.2",
+    "eosjs": "^22.1.0",
+    "eosjs-ecc": "^4.0.7",
     "escape-html": "^1.0.3",
     "express": "^4.17.1",
     "hat": "0.0.3",
