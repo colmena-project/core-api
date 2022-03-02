@@ -6,6 +6,7 @@ const { TextEncoder, TextDecoder } = require('util');
 const ecc = require('eosjs-ecc');
 
 const CIRCULAR_API_KEY = process.env.CIRCULAR_API_KEY || 'not found';
+const CIRCULAR_BASE_URL = process.env.CIRCULAR_BASE_URL || 'http://not.found';
 
 interface Balance {
   accountName: string;
@@ -15,7 +16,7 @@ interface Balance {
 
 const getBalance = async (account: string): Promise<Balance> => {
   const response: Balance = await Axios.get(
-    `http://api.sandbox.circularnetwork.io/v1/project/${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}/users/${account}`,
+    `${CIRCULAR_BASE_URL}${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}/users/${account}`,
     {
       headers: {
         authorization: `Bearer ${CIRCULAR_API_KEY}`,
@@ -65,21 +66,18 @@ const transferPayment = async ({
     const buff = Buffer.from(sb.asUint8Array());
     const signature = ecc.sign(buff, privkey);
 
-    await Axios.post(
-      `http://api.sandbox.circularnetwork.io/v1/project/${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}/transfer`,
-      {
-        from: accountFrom,
-        to: accountTo,
-        amount: `${formatAmount} ${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}`,
-        signature,
-        account_type: 'INTERNAL',
-        memo: motive,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
+    await Axios.post(`${CIRCULAR_BASE_URL}${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}/transfer`, {
+      from: accountFrom,
+      to: accountTo,
+      amount: `${formatAmount} ${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}`,
+      signature,
+      account_type: 'INTERNAL',
+      memo: motive,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-    ).then((res) => res);
+    }).then((res) => res);
     return true;
   } catch (err) {
     return false;

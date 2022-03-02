@@ -13,10 +13,10 @@ services:
         aliases:
           - redis-server
   mongo:
-    image: mongo:4.2
+    image: mongo:4.4
     restart: always
     volumes:
-      - ${MONGO_VOLUMEN}:/data/db:cached
+      - ${MONGO_VOLUME}:/data/db:cached
     ports:
       - 27017:27017
     environment:

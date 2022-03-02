@@ -837,7 +837,7 @@ const registerTransportReject = async (
  * @param recyclingCenter
  * @param user
  */
-const checkBalanceTransaction = async ({
+const throwInsufficientBalance = async ({
   containersPayment,
   recyclingCenter,
   user,
@@ -893,11 +893,11 @@ const checkBalanceTransaction = async ({
   // Check the balance of the recycling center
   const { balance } = await getBalance(recyclingCenter.get('walletId'));
   if (balance <= totalPayment + ammountTransport) {
-    throw new Error(`The Recycling Center has not enough money, the balance is ${balance} jyc`);
+    throw new Error('insufficient funds');
   }
 };
 
-const paymentCrypto = async ({
+const executePayment = async ({
   retributionId,
   recyclingCenter,
   motive,
@@ -988,7 +988,7 @@ const registerContainerPayment = async ({
   // Sent Crypto to wallets for recovery
   await Promise.all(
     transactionRecovery.map((contRecovey) =>
-      paymentCrypto({
+      executePayment({
         retributionId: contRecovey.retribution.objectId,
         recyclingCenter,
         motive: RETRIBUTION_TYPES.MATERIAL,
@@ -1028,7 +1028,7 @@ const registerContainerPayment = async ({
   // Sent Crypto to wallets for transportation
   await Promise.all(
     transactionTransport.map((contTransport) =>
-      paymentCrypto({
+      executePayment({
         retributionId: contTransport.retribution.objectId,
         recyclingCenter,
         motive: RETRIBUTION_TYPES.TRANSPORT,
@@ -1122,7 +1122,7 @@ const registerPayment = async (
     });
 
     // Check if the factory has balance to pay
-    await checkBalanceTransaction({
+    await throwInsufficientBalance({
       containersPayment,
       recyclingCenter,
       user,

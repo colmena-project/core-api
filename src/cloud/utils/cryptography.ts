@@ -1,6 +1,5 @@
 const { randomBytes, createCipheriv, createDecipheriv } = require('crypto');
 
-// const iv = Buffer.from(originalIv);
 const IV_LENGTH = 16;
 
 const encrypt = (message: string) => {

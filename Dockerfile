@@ -1,4 +1,4 @@
-FROM node:10.15.3
+FROM node:14
 WORKDIR /srv/node-scripts/
 ARG NPM_RUN_SCRIPT=start
 ENV NPM_RUN_SCRIPT ${NPM_RUN_SCRIPT}
