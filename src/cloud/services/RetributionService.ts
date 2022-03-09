@@ -148,6 +148,15 @@ const updateRetribution = async (
   return retribution;
 };
 
+const getByTransaction = async (id: Parse.Object): Promise<Parse.Object | undefined> => {
+  const query = new Parse.Query('Retribution');
+  query.equalTo('transaction', id);
+  const results: Parse.Object | undefined = await query.first({
+    useMasterKey: true,
+  });
+  return results;
+};
+
 export default {
   getMaterialRetribution,
   getTransportRetribution,
@@ -155,4 +164,5 @@ export default {
   getRetributionParametersBy,
   generateRetribution,
   updateRetribution,
+  getByTransaction,
 };

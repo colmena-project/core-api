@@ -74,6 +74,17 @@ const findAllowedContainers = async (
   return containers;
 };
 
+const findContainerByCode = async ({
+  code,
+}: {
+  code: string;
+}): Promise<Parse.Object | undefined> => {
+  const detailQuery: Parse.Query = new Parse.Query(Parse.Object.extend('Container'));
+  detailQuery.equalTo('code', code);
+  const containerObject: Parse.Object | undefined = await detailQuery.first({ useMasterKey: true });
+  return containerObject;
+};
+
 const isRecyclerOfContainer = async (
   container: Parse.Object,
   user: Parse.User,
@@ -97,6 +108,7 @@ export default {
   findContainerById,
   findAllowedContainers,
   findContainersByTransaction,
+  findContainerByCode,
   createContainersOfType,
   isRecyclerOfContainer,
   isCarrierOfContainer,

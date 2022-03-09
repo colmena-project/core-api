@@ -63,3 +63,6 @@ typings/
 profiling
 backups
 dist
+
+#dockerfiles
+dockerfiles/mongo
