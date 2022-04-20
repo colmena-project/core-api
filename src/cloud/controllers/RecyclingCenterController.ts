@@ -13,7 +13,7 @@ const createRecyclingCenter = async (
 ): Promise<Parse.Object> => {
   const { params, user } = request;
   const { name, description, latLng, walletId, walletToken } = params;
-  return await RecyclingCenterService.createRecyclingCenter(
+  return RecyclingCenterService.createRecyclingCenter(
     {
       name,
       description,
@@ -30,7 +30,7 @@ const editRecyclingCenter = async (
 ): Promise<Parse.Object> => {
   const { params, user } = request;
   const { id, name, description, latLng, walletId, walletToken } = params;
-  return await RecyclingCenterService.editRecyclingCenter(
+  return RecyclingCenterService.editRecyclingCenter(
     {
       id,
       name,
