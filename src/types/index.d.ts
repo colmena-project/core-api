@@ -175,6 +175,8 @@ declare namespace Colmena {
     name: string;
     description?: string;
     latLng?: Parse.GeoPoint;
+    walletId?: string;
+    walletToken?: string;
   };
 
   type PaymentTransactionType = {
