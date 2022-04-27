@@ -987,13 +987,16 @@ const registerContainerPayment = async ({
 
   // Sent Crypto to wallets for recovery
   await Promise.all(
-    transactionRecovery.map((contRecovey) =>
-      executePayment({
+    transactionRecovery.map((contRecovey) => {
+      const wasteType = containerObject.get('type');
+      return executePayment({
         retributionId: contRecovey.retribution.objectId,
         recyclingCenter,
-        motive: RETRIBUTION_TYPES.MATERIAL,
-      }),
-    ),
+        motive: `${RETRIBUTION_TYPES.MATERIAL} - ${
+          contRecovey.retribution.confirmed
+        } ${wasteType.get('name')}`,
+      });
+    }),
   );
 
   // Register Payment Recovery
@@ -1031,7 +1034,7 @@ const registerContainerPayment = async ({
       executePayment({
         retributionId: contTransport.retribution.objectId,
         recyclingCenter,
-        motive: RETRIBUTION_TYPES.TRANSPORT,
+        motive: `${RETRIBUTION_TYPES.TRANSPORT}  - ${contTransport.retribution.confirmed}`,
       }),
     ),
   );
