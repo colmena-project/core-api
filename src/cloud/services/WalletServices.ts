@@ -34,13 +34,13 @@ const transferPayment = async ({
   accountFrom,
   accountTo,
   amount,
-  motive,
+  reason,
   privkey,
 }: {
   accountFrom: string;
   accountTo: string;
   amount: number;
-  motive?: string;
+  reason?: string;
   privkey: string;
 }): Promise<boolean> => {
   try {
@@ -59,7 +59,7 @@ const transferPayment = async ({
     sb.pushName(accountFrom);
     sb.pushName(accountTo);
     sb.pushAsset(`${formatAmount} ${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}`);
-    sb.pushString(motive);
+    sb.pushString(reason);
     sb.pushNumberAsUint64(lastSeqNum);
     sb.pushNumberAsUint64(1);
 
@@ -72,7 +72,7 @@ const transferPayment = async ({
       amount: `${formatAmount} ${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}`,
       signature,
       account_type: 'INTERNAL',
-      memo: motive,
+      memo: reason,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
