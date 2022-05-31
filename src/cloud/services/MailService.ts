@@ -11,7 +11,7 @@ const sendNewAccountCreated = async (params: {
     return getMailAdapter().sendMail({
       to,
       subject,
-      templateId: 'd-496bcadd14964012b70b8be0eaf9f8c2',
+      templateId: 'd-370b10218f5c4cd58a74c4bee3b44c28',
       dynamicTemplateData: {
         name,
         username,
