@@ -900,11 +900,11 @@ const throwInsufficientBalance = async ({
 const executePayment = async ({
   retributionId,
   recyclingCenter,
-  motive,
+  reason,
 }: {
   retributionId: string;
   recyclingCenter: Parse.Object;
-  motive: string;
+  reason: string;
 }): Promise<void> => {
   const query = new Parse.Query('Retribution');
   const retribution: Parse.Object | undefined = await query.get(retributionId, {
@@ -922,7 +922,7 @@ const executePayment = async ({
       accountFrom: walletId,
       accountTo: accountClient.get('walletId'),
       amount: amout,
-      motive,
+      reason,
       privkey: walleKey,
     });
   }
@@ -987,13 +987,16 @@ const registerContainerPayment = async ({
 
   // Sent Crypto to wallets for recovery
   await Promise.all(
-    transactionRecovery.map((contRecovey) =>
-      executePayment({
+    transactionRecovery.map((contRecovey) => {
+      const wasteType = containerObject.get('type');
+      return executePayment({
         retributionId: contRecovey.retribution.objectId,
         recyclingCenter,
-        motive: RETRIBUTION_TYPES.MATERIAL,
-      }),
-    ),
+        reason: `${RETRIBUTION_TYPES.MATERIAL} - ${
+          contRecovey.retribution.confirmed
+        } ${wasteType.get('name')}`,
+      });
+    }),
   );
 
   // Register Payment Recovery
@@ -1031,7 +1034,7 @@ const registerContainerPayment = async ({
       executePayment({
         retributionId: contTransport.retribution.objectId,
         recyclingCenter,
-        motive: RETRIBUTION_TYPES.TRANSPORT,
+        reason: `${RETRIBUTION_TYPES.TRANSPORT}  - ${contTransport.retribution.confirmed}`,
       }),
     ),
   );
