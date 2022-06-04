@@ -56,7 +56,7 @@ const editRecyclingCenter = async (
 
   if (role) {
     await role.fetch();
-    if (role.get('name') !== name) {
+    if (role.get('name') !== nameNormalize) {
       role = await RoleService.changaNameRole({ role, newName: nameNormalize, currentUser });
     }
   } else {
