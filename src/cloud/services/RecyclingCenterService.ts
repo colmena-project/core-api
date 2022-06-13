@@ -51,16 +51,16 @@ const editRecyclingCenter = async (
   if (!recyclingCenter) {
     throw new Error(`RecyclingCenter ${id} not found`);
   }
-  const nameNormalize = normalizeRoleName(`ROL_RC_${name}`);
+  const normalizedName = normalizeRoleName(`ROL_RC_${name}`);
   let role: Parse.Role | undefined = await recyclingCenter.get('role');
 
   if (role) {
     await role.fetch();
-    if (role.get('name') !== name) {
-      role = await RoleService.changaNameRole({ role, newName: nameNormalize, currentUser });
+    if (role.get('name') !== normalizedName) {
+      role = await RoleService.changaNameRole({ role, newName: normalizedName, currentUser });
     }
   } else {
-    role = await RoleService.createRole({ name: nameNormalize }, currentUser);
+    role = await RoleService.createRole({ name: normalizedName }, currentUser);
   }
   const encryptText = walletToken ? encrypt(walletToken) : undefined;
 
