@@ -10,4 +10,9 @@ function getMailAdapter() {
   return Config.get(Parse.applicationId).emailAdapter;
 }
 
-export { getDatabaseInstance, getMailAdapter };
+function getConfig() {
+  return Config.get(Parse.applicationId);
+}
+
+export { getDatabaseInstance, getMailAdapter, getConfig };
+

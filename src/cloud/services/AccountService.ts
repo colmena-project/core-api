@@ -2,6 +2,7 @@ import { getQueryAuthOptions } from '../utils';
 import Address from '../classes/Address';
 import Account from '../classes/Account';
 import MailService from './MailService';
+import { getConfig } from '../utils/core';
 
 const findAccountByUser = async (user: Parse.User): Promise<Parse.Object> => {
   const query = new Parse.Query('Account');
@@ -10,6 +11,20 @@ const findAccountByUser = async (user: Parse.User): Promise<Parse.Object> => {
   if (!account) throw new Error(`Account for user ${user.id} not found`);
   return account;
 };
+
+const buildEmailLink = (destination:string, username:string, token:string, config:any): string => {
+  const usernameAndToken = `token=${token}&username=${username}`;
+
+  if (config.parseFrameURL) {
+    const destinationWithoutHost = destination.replace(config.publicServerURL, '');
+
+    return `${config.parseFrameURL}?link=${encodeURIComponent(
+      destinationWithoutHost
+    )}&${usernameAndToken}`;
+  } else {
+    return `${destination}?${usernameAndToken}`;
+  }
+}
 
 const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object> => {
   const {
@@ -67,11 +82,26 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
     await newAddress.save(null, { useMasterKey: true });
   }
 
+  // Find the user with admin role
+  const queryUser: Parse.Query = new Parse.Query('_User');
+  queryUser.equalTo('objectId', user.id);
+  const userMaster = await queryUser.first({
+    useMasterKey: true,
+  });
+
+  //create a verification link
+  //@ts-ignore
+  const token = encodeURIComponent(userMaster.get('_email_verify_token'));
+  const config = getConfig();
+  const link = buildEmailLink(config.verifyEmailURL, username, token, config);
+
+    
   const mailParams = {
     name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
     username: user.get('username'),
     to: user.get('email'),
     subject: 'New Colmena Account created',
+    link,
   };
   await MailService.sendNewAccountCreated(mailParams);
 

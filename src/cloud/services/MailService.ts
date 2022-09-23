@@ -5,8 +5,9 @@ const sendNewAccountCreated = async (params: {
   username: string;
   to: string;
   subject: string;
+  link: string;
 }): Promise<any> => {
-  const { name, username, to, subject } = params;
+  const { name, username, to, subject, link } = params;
   try {
     return getMailAdapter().sendMail({
       to,
@@ -15,6 +16,7 @@ const sendNewAccountCreated = async (params: {
       dynamicTemplateData: {
         name,
         username,
+        link,
       },
     });
   } catch (error) {

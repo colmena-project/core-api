@@ -9,6 +9,11 @@ const SimpleSendGridAdapter = (mailOptions: { apiKey: string, fromAddress: strin
 
   const sendgrid = new SendGrid.MailService();
 
+  // this function disable the defaulte verification mail send by parse server
+  const sendVerificationEmail = async() => {
+    return Promise.resolve();
+  };
+
   const sendMail = ({
     to, subject, text, html, templateId, dynamicTemplateData,
   }: MailData): Promise<any> => {
@@ -28,6 +33,7 @@ const SimpleSendGridAdapter = (mailOptions: { apiKey: string, fromAddress: strin
 
   return Object.freeze({
     sendMail,
+    sendVerificationEmail,
   });
 };
 
