@@ -37,6 +37,7 @@ declare namespace Colmena {
 
   interface SecureFunctionRequest extends Parse.Cloud.FunctionRequest {
     user: Parse.User;
+    config?: any;
   }
 
   type SecureCloudFunction = (request: SecureFunctionRequest) => any;
