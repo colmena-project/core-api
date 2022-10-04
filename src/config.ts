@@ -12,6 +12,7 @@ const serverURL = process.env.PARSE_SERVER_URL || `http://localhost:${port}/pars
 const facebookAppId = process.env.FACEBOOK_APP_ID;
 const sendgridApiKey = process.env.SENDGRID_API_KEY;
 const publicServerURL = process.env.PUBLIC_SERVER_URL;
+const emailDomain = process.env.EMAIL_DOMAIN || 'colmenaproject.io';
 
 export default {
   port,
@@ -47,7 +48,7 @@ export default {
   publicServerURL,
   emailAdapter: SimpleSendGridAdapter({
     apiKey: sendgridApiKey,
-    fromAddress: 'notifications@colmenaapp.com',
+    fromAddress: `notifications@${emailDomain}`,
   }),
   verifyUserEmails: true,
   emailVerifyTokenValidityDuration: 21600,
