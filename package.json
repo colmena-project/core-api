@@ -35,7 +35,7 @@
     "eosjs": "^22.1.0",
     "eosjs-ecc": "^4.0.7",
     "escape-html": "^1.0.3",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "hat": "0.0.3",
     "parse": "^3.2.0",
     "parse-dashboard": "^2.1.0",
