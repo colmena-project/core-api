@@ -22,7 +22,7 @@ import {
 } from '../constants';
 import PaymentTransactionService from './PaymentTransactionService';
 import { decrypt } from '../utils/cryptography';
-import { getBalance, transferPayment } from './WalletServices';
+import WalletServices from './WalletServices';
 
 const validateRegisterRecover = (containers: Colmena.ContainerInputType[], addressId: string) => {
   if (!containers) throw new Error('containers is required');
@@ -891,7 +891,7 @@ const throwInsufficientBalance = async ({
   });
 
   // Check the balance of the recycling center
-  const { balance } = await getBalance(recyclingCenter.get('walletId'));
+  const { balance } = await WalletServices.getBalance(recyclingCenter.get('walletId'));
   if (balance <= totalPayment + ammountTransport) {
     throw new Error('insufficient funds');
   }
@@ -910,6 +910,7 @@ const executePayment = async ({
   const retribution: Parse.Object | undefined = await query.get(retributionId, {
     useMasterKey: true,
   });
+  console.log('retribution', retribution);
   if (retribution) {
     const amout = retribution.get('confirmed');
     const userClient = retribution.get('user');
@@ -917,13 +918,15 @@ const executePayment = async ({
 
     const walletId = recyclingCenter.get('walletId');
     const walletToken = recyclingCenter.get('walletToken');
-    const walleKey = decrypt(walletToken);
-    await transferPayment({
+    const walletKey = decrypt(walletToken);
+    console.log('walletId', walletId);
+    console.log('walletKey', walletKey);
+    await WalletServices.transferPayment({
       accountFrom: walletId,
       accountTo: accountClient.get('walletId'),
       amount: amout,
       reason,
-      privkey: walleKey,
+      privkey: walletKey,
     });
   }
 };
@@ -985,6 +988,7 @@ const registerContainerPayment = async ({
     ),
   );
 
+  console.log('transactionRecovery', transactionRecovery);
   // Sent Crypto to wallets for recovery
   await Promise.all(
     transactionRecovery.map((contRecovey) => {
@@ -1074,91 +1078,100 @@ const registerPayment = async (
   containersPayment: { container: string; total: number; payment: number }[],
   user: Parse.User,
 ): Promise<Parse.Object> => {
-  try {
-    const Transaction: string = Parse.Object.extend('Transaction');
-    const queryRecyclingCenters: Parse.Query = new Parse.Query(Transaction);
-    const transferRequestTransaction: Parse.Object = await queryRecyclingCenters.get(
-      transactionId,
-      {
-        useMasterKey: true,
-      },
-    );
+  // try {
+  const Transaction: string = Parse.Object.extend('Transaction');
+  const queryRecyclingCenters: Parse.Query = new Parse.Query(Transaction);
+  const transferRequestTransaction: Parse.Object = await queryRecyclingCenters.get(transactionId, {
+    useMasterKey: true,
+  });
 
-    if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSPORT_ACCEPT) {
-      throw new Error('The transactions is not allow to be Accept in the Recycling Center');
-    }
-    await validateRecyclingCenter(transferRequestTransaction, user);
-
-    const recyclingCenter = transferRequestTransaction.get('recyclingCenter');
-
-    // Fill the object
-    await recyclingCenter.fetch();
-
-    // register a new transaction
-    const reason = 'se Registra el Pago';
-    const transaction: Parse.Object = await TransactionService.createTransaction({
-      from: transferRequestTransaction.get('from'),
-      to: transferRequestTransaction.get('to'),
-      type: TRANSACTIONS_TYPES.COMPLETE,
-      reason,
-      fromAddress: transferRequestTransaction.get('fromAddress'),
-      toAddress: transferRequestTransaction.get('toAddress'),
-      relatedTo: undefined,
-      recyclingCenter,
-      trackingCode: transferRequestTransaction.get('trackingCode'),
-      kms: transferRequestTransaction.get('kms'),
-      estimatedDuration: transferRequestTransaction.get('estimatedDuration'),
-      estimatedDistance: transferRequestTransaction.get('estimatedDistance'),
-    });
-
-    transaction.set('relatedTo', transferRequestTransaction);
-    transaction.set('expiredAt', new Date());
-
-    const containers: Parse.Object[] = await ContainerService.findContainersByTransaction(
-      transferRequestTransaction,
-    );
-
-    // Update the container status
-    const details: Parse.Object[] = containers.map((container) => {
-      container.set('status', CONTAINER_STATUS.COMPLETED);
-      return TransactionService.createTransactionDetail(transaction, container);
-    });
-
-    // Check if the factory has balance to pay
-    await throwInsufficientBalance({
-      containersPayment,
-      recyclingCenter,
-      user,
-    });
-
-    await Parse.Object.saveAll(
-      [transaction, transferRequestTransaction, ...details, ...containers],
-      {
-        sessionToken: user.getSessionToken(),
-      },
-    );
-
-    // Register Payment on the container
-    await Promise.all(
-      containersPayment.map((container) =>
-        registerContainerPayment({
-          transactionConfirm: transaction,
-          container,
-          user,
-          recyclingCenter,
-        }),
-      ),
-    );
-
-    transaction.set(
-      'details',
-      details.map((d) => d.toJSON()),
-    );
-
-    return transaction;
-  } catch (error) {
-    throw new Error(`Transaction could not be Accept. Detail: ${error.message}`);
+  if (transferRequestTransaction.get('type') !== TRANSACTIONS_TYPES.TRANSPORT_ACCEPT) {
+    throw new Error('The transactions is not allow to be Accept in the Recycling Center');
   }
+  await validateRecyclingCenter(transferRequestTransaction, user);
+  const recyclingCenter = transferRequestTransaction.get('recyclingCenter');
+
+  // Fill the object
+  await recyclingCenter.fetch();
+
+  // register a new transaction
+  const reason = 'se Registra el Pago';
+  const transaction: Parse.Object = await TransactionService.createTransaction({
+    from: transferRequestTransaction.get('from'),
+    to: transferRequestTransaction.get('to'),
+    type: TRANSACTIONS_TYPES.COMPLETE,
+    reason,
+    fromAddress: transferRequestTransaction.get('fromAddress'),
+    toAddress: transferRequestTransaction.get('toAddress'),
+    relatedTo: undefined,
+    recyclingCenter,
+    trackingCode: transferRequestTransaction.get('trackingCode'),
+    kms: transferRequestTransaction.get('kms'),
+    estimatedDuration: transferRequestTransaction.get('estimatedDuration'),
+    estimatedDistance: transferRequestTransaction.get('estimatedDistance'),
+  });
+
+  transaction.set('relatedTo', transferRequestTransaction);
+  transaction.set('expiredAt', new Date());
+
+  const containers: Parse.Object[] = await ContainerService.findContainersByTransaction(
+    transferRequestTransaction,
+  );
+
+  // Update the container status
+  const details = [];
+  for (let i = 0; i < containers.length; i += 1) {
+    const container = containers[i];
+    container.set('status', CONTAINER_STATUS.COMPLETED);
+    details.push(TransactionService.createTransactionDetail(transaction, container));
+  }
+
+  // Check if the factory has balance to pay
+  await throwInsufficientBalance({
+    containersPayment,
+    recyclingCenter,
+    user,
+  });
+
+  await transaction.save(null, {
+    sessionToken: user.getSessionToken(),
+  });
+
+  await transferRequestTransaction.save(null, {
+    sessionToken: user.getSessionToken(),
+  });
+
+  console.log('Save the transaction, transaction details and containers');
+  console.log('transaction', transaction);
+  console.log('containers', containers);
+  console.log('transferRequestTransaction', transferRequestTransaction);
+  console.log('details', details);
+  await Parse.Object.saveAll([transaction, transferRequestTransaction, ...details, ...containers], {
+    sessionToken: user.getSessionToken(),
+  });
+  console.log('Register Payment on the container');
+  // Register Payment on the container
+  await Promise.all(
+    containersPayment.map((container) =>
+      registerContainerPayment({
+        transactionConfirm: transaction,
+        container,
+        user,
+        recyclingCenter,
+      }),
+    ),
+  );
+  console.log('registerPayment', transaction);
+  transaction.set(
+    'details',
+    details.map((d) => d.toJSON()),
+  );
+
+  return transaction;
+  // } catch (error) {
+  //   console.log('registerPayment error', error);
+  //   throw new Error(`Transaction could not be Accept. Detail: ${error.message}`);
+  // }
 };
 
 export default {

@@ -19,12 +19,11 @@ const buildEmailLink = (destination:string, username:string, token:string, confi
     const destinationWithoutHost = destination.replace(config.publicServerURL, '');
 
     return `${config.parseFrameURL}?link=${encodeURIComponent(
-      destinationWithoutHost
+      destinationWithoutHost,
     )}&${usernameAndToken}`;
-  } else {
-    return `${destination}?${usernameAndToken}`;
   }
-}
+  return `${destination}?${usernameAndToken}`;
+};
 
 const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object> => {
   const {
@@ -66,7 +65,9 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
   });
 
   if (address) {
-    const { street, city, state, country, description, latLng } = address;
+    const {
+      street, city, state, country, description, latLng,
+    } = address;
     const newAddress = new Address();
     newAddress.set('street', street);
     newAddress.set('city', city);
@@ -89,13 +90,13 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
     useMasterKey: true,
   });
 
-  //create a verification link
-  //@ts-ignore
+  // create a verification link
+  // @ts-ignore
   const token = encodeURIComponent(userMaster.get('_email_verify_token'));
   const config = getConfig();
   const link = buildEmailLink(config.verifyEmailURL, username, token, config);
+  // const link = 'parse';
 
-    
   const mailParams = {
     name: `${newAccount.get('firstName')} ${newAccount.get('lastName')}`,
     username: user.get('username'),

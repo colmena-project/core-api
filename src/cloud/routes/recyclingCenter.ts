@@ -17,6 +17,14 @@ const definitions: Colmena.RouteDefinitions = {
     action: RecyclingCenterController.deleteRecyclingCenter,
     secure: true,
   },
+  refreshToken: {
+    action: RecyclingCenterController.refreshToken,
+    secure: true,
+  },
+  storeNewToken: {
+    action: RecyclingCenterController.storeNewToken,
+    secure: true,
+  },
 };
 
 export default definitions;

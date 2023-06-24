@@ -45,7 +45,6 @@ const transferPayment = async ({
 }): Promise<boolean> => {
   try {
     const formatAmount = (Math.round(amount * 100) / 100).toFixed(2);
-
     const { balance, lastSeqNum } = await getBalance(accountFrom);
     if (balance < amount) {
       throw new Error('Insufficient funds');
@@ -84,4 +83,87 @@ const transferPayment = async ({
   }
 };
 
-export { getBalance, transferPayment };
+interface CreateWallet {
+  id: string | null;
+  token: string | null;
+  error?: string | null;
+}
+
+const createWallet = async (
+  firstName: string,
+  lastName: string,
+  email: string,
+): Promise<CreateWallet> => {
+  const publicKey = await ecc.randomKey().then((key: string) => ecc.privateToPublic(key));
+
+  return Axios.post(`${CIRCULAR_BASE_URL}${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}/users`, {
+    pubkey: publicKey,
+    data: {
+      name: firstName,
+      lastname: lastName,
+      email,
+    },
+  })
+    .then((res) => ({
+      id: res.data.userid,
+      token: publicKey,
+    }))
+    .catch((error) => ({ id: null, token: null, error: error.message }));
+};
+
+const refreshToken = async (walletId: string): Promise<{ status: boolean; message: string }> => {
+  const response = await Axios.get(
+    `${CIRCULAR_BASE_URL}${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}/users/${walletId}/changekey`,
+    {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+    .then(() => ({ status: true, message: 'success' }))
+    .catch((err) => {
+      if (err.response.data.error) {
+        return { status: false, message: err.response.data.error };
+      }
+      return { status: false, message: err.message };
+    });
+  return response;
+};
+
+const confirmNewToken = async (
+  walletId: string,
+  securityCode: string,
+): Promise<{ status: boolean; message: string; privateKey?: string }> => {
+  let privateKey = '';
+  let publicKey = '';
+  await ecc.randomKey().then((tokenTtemp: string) => {
+    privateKey = tokenTtemp;
+    publicKey = ecc.privateToPublic(privateKey);
+  });
+
+  const response = await Axios.post(
+    `${CIRCULAR_BASE_URL}${CRYPTOS_SYMBOL_TYPES.JELLYCOIN}/users/${walletId}/changekey`,
+    {
+      pubkey: publicKey,
+      account: walletId,
+      code: securityCode,
+    },
+  )
+    .then((res) => ({
+      status: true,
+      message: 'success',
+      data: res.data.result,
+      privateKey,
+    }))
+    .catch((err) => ({ status: false, message: err.message }));
+  return response;
+};
+
+export default {
+  getBalance,
+  transferPayment,
+  createWallet,
+  refreshToken,
+  confirmNewToken,
+};

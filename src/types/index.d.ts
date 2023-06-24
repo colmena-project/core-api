@@ -174,8 +174,10 @@ declare namespace Colmena {
   type RecyclingCenterType = {
     id?: string;
     name: string;
+    secondName: string;
     description?: string;
     latLng?: Parse.GeoPoint;
+    email: string;
     walletId?: string;
     walletToken?: string;
   };

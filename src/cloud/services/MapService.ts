@@ -4,6 +4,8 @@ import {
   AddressComponent,
   LatLng,
   DistanceMatrixRow,
+  TravelMode,
+  UnitSystem,
 } from '@googlemaps/google-maps-services-js/dist/common';
 import { PlaceAutocompleteResult } from '@googlemaps/google-maps-services-js/dist/places/autocomplete';
 
@@ -104,8 +106,8 @@ const distancematrix = async (
     params: {
       origins: [origin],
       destinations: [destination],
-      mode: 'driving',
-      units: 'metric',
+      mode: TravelMode.driving,
+      units: UnitSystem.metric,
       key: GOOGLE_MAPS_API_KEY,
     },
     timeout: 1000, // milliseconds
