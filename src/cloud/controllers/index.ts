@@ -7,6 +7,7 @@ import WorkflowController from './WorkflowController';
 import RoleController from './RoleController';
 import UserController from './UserController';
 import RecyclingCenterController from './RecyclingCenterController';
+import ReportController from './ReportController';
 
 export {
   DefaultController,
@@ -18,4 +19,5 @@ export {
   RoleController,
   UserController,
   RecyclingCenterController,
+  ReportController
 };

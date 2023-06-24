@@ -17,7 +17,7 @@ const createRecyclingCenter = async (
   params: Colmena.RecyclingCenterType,
   currentUser: Parse.User,
 ): Promise<Parse.Object> => {
-  const { name, description, latLng, walletId, walletToken } = params;
+  const { name, secondName, description, latLng, email, walletId, walletToken } = params;
   const nameNormalize = normalizeRoleName(`ROL_RC_${name}`);
   let role: Parse.Object | undefined = await RoleService.findByName(nameNormalize);
   if (!role) {
@@ -30,8 +30,10 @@ const createRecyclingCenter = async (
   recyclingCenter.set('role', role);
   await recyclingCenter.save({
     name,
+    secondName,
     description,
     latLng,
+    email,
     walletId,
     walletToken: encryptText,
   });
@@ -43,7 +45,7 @@ const editRecyclingCenter = async (
   params: Colmena.RecyclingCenterType,
   currentUser: Parse.User,
 ): Promise<Parse.Object> => {
-  const { id, name, description, latLng, walletId, walletToken } = params;
+  const { id, name, secondName, description, latLng, email } = params;
   if (!id) {
     throw new Error('RecyclingCenter id is missing');
   }
@@ -51,9 +53,9 @@ const editRecyclingCenter = async (
   if (!recyclingCenter) {
     throw new Error(`RecyclingCenter ${id} not found`);
   }
+
   const normalizedName = normalizeRoleName(`ROL_RC_${name}`);
   let role: Parse.Role | undefined = await recyclingCenter.get('role');
-
   if (role) {
     await role.fetch();
     if (role.get('name') !== normalizedName) {
@@ -62,16 +64,15 @@ const editRecyclingCenter = async (
   } else {
     role = await RoleService.createRole({ name: normalizedName }, currentUser);
   }
-  const encryptText = walletToken ? encrypt(walletToken) : undefined;
 
   recyclingCenter.set('role', role);
 
   await recyclingCenter.save({
     name,
+    secondName,
     description,
     latLng,
-    walletId,
-    walletToken: encryptText,
+    email,
   });
 
   return recyclingCenter;

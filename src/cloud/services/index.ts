@@ -13,6 +13,7 @@ import RecyclingCenterService from './RecyclingCenterService';
 import RetributionService from './RetributionService';
 import WorkflowService from './WorkflowService';
 import RoleService from './RoleService';
+import WalletServices from './WalletServices';
 
 export {
   AccountService,
@@ -29,5 +30,6 @@ export {
   RecyclingCenterService,
   RetributionService,
   WorkflowService,
-  RoleService
+  RoleService,
+  WalletServices,
 };

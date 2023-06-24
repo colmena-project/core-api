@@ -48,7 +48,7 @@ export default {
   publicServerURL,
   emailAdapter: SimpleSendGridAdapter({
     apiKey: sendgridApiKey,
-    fromAddress: `notifications@${emailDomain}`,
+    fromAddress: 'notifications@colmenaproject.io',
   }),
   verifyUserEmails: true,
   emailVerifyTokenValidityDuration: 21600,
