@@ -10,7 +10,9 @@ const SimpleSendGridAdapter = (mailOptions: { apiKey: string; fromAddress: strin
   const sendgrid = new SendGrid.MailService();
 
   // this function disable the defaulte verification mail send by parse server
+
   const sendVerificationEmail = async () => Promise.resolve();
+
 
   const sendMail = ({
     to,

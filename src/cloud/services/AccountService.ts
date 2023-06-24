@@ -19,6 +19,7 @@ const buildEmailLink = (destination:string, username:string, token:string, confi
     const destinationWithoutHost = destination.replace(config.publicServerURL, '');
 
     return `${config.parseFrameURL}?link=${encodeURIComponent(
+
       destinationWithoutHost,
     )}&${usernameAndToken}`;
   }
@@ -89,6 +90,7 @@ const createAccount = async (params: Colmena.AccountType): Promise<Parse.Object>
   const userMaster = await queryUser.first({
     useMasterKey: true,
   });
+
 
   // create a verification link
   // @ts-ignore
